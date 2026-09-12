@@ -87,6 +87,22 @@ public struct ThemeWindowState {
   public let title: String
   public let active: Bool
   public let close: @MainActor () -> Void
+  public let minimise: (@MainActor () -> Void)?
+  public let zoom: (@MainActor () -> Void)?
+  public let zoomed: Bool
+
+  public init(
+    title: String, active: Bool, close: @escaping @MainActor () -> Void,
+    minimise: (@MainActor () -> Void)? = nil, zoom: (@MainActor () -> Void)? = nil,
+    zoomed: Bool = false
+  ) {
+    self.title = title
+    self.active = active
+    self.close = close
+    self.minimise = minimise
+    self.zoom = zoom
+    self.zoomed = zoomed
+  }
 }
 
 public struct ThemeControlState {

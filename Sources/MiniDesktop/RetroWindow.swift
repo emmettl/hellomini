@@ -10,6 +10,9 @@ struct RetroWindow<Content: View>: View {
   let active: Bool
   let activate: () -> Void
   let close: @MainActor () -> Void
+  let minimise: @MainActor () -> Void
+  let zoom: @MainActor () -> Void
+  let zoomed: Bool
   @ViewBuilder let content: () -> Content
   @GestureState private var drag: WindowDrag?
   @GestureState private var resize: WindowResize?
@@ -32,32 +35,34 @@ struct RetroWindow<Content: View>: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      ThemeWindowTitleBar(title: title, active: active, close: close)
-        .contentShape(Rectangle())
-        .gesture(
-          DragGesture(minimumDistance: 1, coordinateSpace: .named(DesktopCoordinateSpace.windows))
-            .updating($drag) { value, state, transaction in
-              transaction.disablesAnimations = true
-              if state == nil {
-                state = WindowDrag(
-                  origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
-              }
-              state?.location = value.location
+      ThemeWindowTitleBar(
+        title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed
+      )
+      .contentShape(Rectangle())
+      .gesture(
+        DragGesture(minimumDistance: 1, coordinateSpace: .named(DesktopCoordinateSpace.windows))
+          .updating($drag) { value, state, transaction in
+            transaction.disablesAnimations = true
+            if state == nil {
+              state = WindowDrag(
+                origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
             }
-            .onChanged { _ in if !active { activate() } }
-            .onEnded { value in
-              var completed =
-                drag
-                ?? WindowDrag(
-                  origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
-              completed.location = value.location
-              var transaction = Transaction()
-              transaction.disablesAnimations = true
-              withTransaction(transaction) {
-                placement = WindowPlacement(origin: completed.position(in: bounds), size: size)
-              }
+            state?.location = value.location
+          }
+          .onChanged { _ in if !active { activate() } }
+          .onEnded { value in
+            var completed =
+              drag
+              ?? WindowDrag(
+                origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
+            completed.location = value.location
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+              placement = WindowPlacement(origin: completed.position(in: bounds), size: size)
             }
-        )
+          }
+      )
       Rectangle().fill(theme.ink).frame(height: theme.titleBarDivider)
       content()
         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)

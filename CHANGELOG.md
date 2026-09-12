@@ -5,7 +5,7 @@
 The first complete little desktop. This candidate is being prepared; no signed public binary release has been published yet.
 
 - A Macintosh startup homage, themed desktop menus, pixel icons, and saved, resizable windows.
-- Finder, Activity Monitor, Clock, and Control Panel with Classic, Paper, Midnight, System 7, and Aqua themes. Aqua adds pinstripes, gel controls, smooth colour icons, and blue wave wallpaper.
+- Finder, Activity Monitor, Clock, and Control Panel with Classic, Paper, Midnight, System 7, and Aqua themes. Aqua adds pinstripes, gel controls, smooth colour icons, blue wave wallpaper, and working red/yellow/green close, minimise, and zoom buttons. Minimised and zoomed states survive relaunch, and Window menu actions work across themes.
 - Aquarium, Utah Teapot, and a decorative World Clock globe rendered with Metal in the selected theme's palette.
 - Scrapbook for local notes, commands, links, and image snapshots.
 - Desk Calculator with expressions, exact programmer arithmetic, units, timestamps, plots, and unreasonable mathematics.

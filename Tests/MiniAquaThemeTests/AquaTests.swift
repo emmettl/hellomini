@@ -41,8 +41,11 @@ import Testing
   let button = try #require(theme.button)
   let titles = try [true, false].map { active in
     try bitmap(
-      titleBar(ThemeWindowState(title: "A very shiny window", active: active, close: {}), theme)
-        .frame(width: 300, height: 30)
+      titleBar(
+        ThemeWindowState(
+          title: "A very shiny window", active: active, close: {}, minimise: {}, zoom: {}), theme
+      )
+      .frame(width: 300, height: 30)
     ).representation(using: .png, properties: [:])
   }
   #expect(titles[0] != titles[1])
@@ -91,4 +94,28 @@ import Testing
     try #require(image.representation(using: .png, properties: [:])).write(
       to: URL(filePath: destination))
   }
+}
+
+@Test @MainActor func aquaTrafficLightsRenderInRedYellowGreenOrder() throws {
+  let theme = AquaTheme.definition
+  let draw = try #require(theme.titleBar)
+  let bar = try bitmap(
+    draw(
+      ThemeWindowState(
+        title: "Window", active: true, close: {}, minimise: {}, zoom: {}), theme
+    ).frame(width: 320, height: 30))
+  let red = try #require(bar.colorAt(x: 17, y: 18)?.usingColorSpace(.deviceRGB))
+  let yellow = try #require(bar.colorAt(x: 41, y: 18)?.usingColorSpace(.deviceRGB))
+  let green = try #require(bar.colorAt(x: 65, y: 18)?.usingColorSpace(.deviceRGB))
+  #expect(red.redComponent > red.greenComponent + 0.3)
+  #expect(yellow.redComponent > yellow.blueComponent + 0.3)
+  #expect(yellow.greenComponent > yellow.blueComponent + 0.2)
+  #expect(green.greenComponent > green.redComponent + 0.2)
+  let disabled = try bitmap(
+    draw(
+      ThemeWindowState(
+        title: "Window", active: true, close: {}), theme
+    ).frame(width: 320, height: 30))
+  let grey = try #require(disabled.colorAt(x: 41, y: 18)?.usingColorSpace(.deviceRGB))
+  #expect(abs(grey.redComponent - grey.greenComponent) < 0.05)
 }

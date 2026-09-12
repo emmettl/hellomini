@@ -14,6 +14,9 @@ struct DesktopSession: Codable, Equatable {
   var version = 1
   var openIDs: [String]
   var windows: [String: WindowPlacement]
+  // Optional fields keep existing version-one sessions readable.
+  var minimisedIDs: [String]?
+  var zoomedIDs: [String]?
 }
 
 struct DesktopSessionStore {
