@@ -98,7 +98,7 @@ The Dock and Finder icon uses the same pixel Macintosh artwork as the desktop. `
 
 ## Theme framework
 
-Themes are registered values with stable string IDs, rather than a closed enum. `HelloMiniApp` owns the `MiniThemeRegistry` and gives its metadata to `AppearanceSettings`, and the same registry to the desktop and Control Panel. Control Panel discovers every registered theme automatically and its scrollable previews use the real shared renderers. The existing `classic`, `paper`, and `midnight` preference IDs are preserved; unavailable themes fall back to Classic (or the first registered theme) without erasing the saved preference.
+Themes are registered values with stable string IDs, rather than a closed enum. `HelloMiniApp` owns the `MiniThemeRegistry` and gives its metadata to `AppearanceSettings`, and the same registry to the desktop and Control Panel. Control Panel discovers every registered theme automatically and its scrollable previews use the real shared renderers. The appearance strip has a persistent horizontal scrollbar, independent of macOS overlay-scrollbar preferences. The existing `classic`, `paper`, and `midnight` preference IDs are preserved; unavailable themes fall back to Classic (or the first registered theme) without erasing the saved preference.
 
 `MiniSystem7Theme` and `MiniAquaTheme` each depend on `MiniCore` and `MiniUI`, export a `MiniThemeDefinition`, and are added by the executable to the shared registry. No application or desktop behavior needs an era-specific switch. Definitions provide:
 

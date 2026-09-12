@@ -120,7 +120,7 @@ private struct ControlPanelView: View {
         }
       }
       Rectangle().frame(height: 1)
-      ScrollView(.horizontal) {
+      AppearanceScrollView {
         HStack(alignment: .top, spacing: 14) {
           ForEach(themes.themes) { definition in
             Button {
@@ -152,6 +152,9 @@ private struct ControlPanelView: View {
             .accessibilityAddTraits(settings.theme.id == definition.id ? .isSelected : [])
           }
         }
+        .padding(.bottom, 8)
+        .environment(\.miniTheme, theme)
+        .environment(\.colorScheme, theme.colorScheme)
       }
       Text(settings.theme.description)
         .font(theme.typography.body)
