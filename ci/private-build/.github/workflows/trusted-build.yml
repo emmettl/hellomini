@@ -1,0 +1,74 @@
+name: Build on Mac Mini
+run-name: Mac Mini · ${{ inputs.source_sha || 'latest main' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Full commit SHA already on emmettl/hellomini main; leave empty for latest main"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hello-mini-trusted-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # This file belongs in the private build repository, never in public Actions workflows.
+    if: github.event.repository.private && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, macOS, ARM64, hello-mini]
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      MINI_ALLOW_MISSING_METAL: "0"
+    steps:
+      - name: Check out private build configuration
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Fetch and verify trusted source
+        id: source
+        env:
+          REQUESTED_SHA: ${{ inputs.source_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/hello-mini-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir "$source_dir"
+          git -C "$source_dir" init --quiet
+          git -C "$source_dir" remote add origin https://github.com/emmettl/hellomini.git
+          git -C "$source_dir" fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          source_sha="$(bash validate-trusted-commit.sh "$source_dir" "$REQUESTED_SHA")"
+          git -C "$source_dir" -c core.hooksPath=/dev/null checkout --detach "$source_sha"
+          printf 'source_dir=%s\nsource_sha=%s\n' "$source_dir" "$source_sha" >> "$GITHUB_OUTPUT"
+      - name: Check toolchain
+        working-directory: ${{ steps.source.outputs.source_dir }}
+        run: bash scripts/ci-check-toolchain.sh
+      - name: Format, test including Metal, and build
+        working-directory: ${{ steps.source.outputs.source_dir }}
+        run: make check
+      - name: Bundle release build
+        working-directory: ${{ steps.source.outputs.source_dir }}
+        run: make app CONFIGURATION=release
+      - name: Verify and archive app
+        working-directory: ${{ steps.source.outputs.source_dir }}
+        run: bash scripts/ci-package.sh
+      - name: Upload app
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Hello-Mini-macos-arm64-${{ steps.source.outputs.source_sha }}
+          path: ${{ steps.source.outputs.source_dir }}/dist/Hello-Mini-macos-arm64.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Record source revision
+        env:
+          SOURCE_SHA: ${{ steps.source.outputs.source_sha }}
+        run: |
+          printf 'Built [emmettl/hellomini@%s](https://github.com/emmettl/hellomini/commit/%s) on the Mac Mini.\n\nThe artifact is ad-hoc signed and not notarized. No installed app was changed.\n' "$SOURCE_SHA" "$SOURCE_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove temporary source checkout
+        if: always()
+        run: rm -rf -- "${RUNNER_TEMP:?}/hello-mini-${GITHUB_RUN_ID:?}-${GITHUB_RUN_ATTEMPT:?}"
