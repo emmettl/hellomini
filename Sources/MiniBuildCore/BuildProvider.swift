@@ -23,6 +23,7 @@ public struct BuildRun: Identifiable, Sendable {
 }
 public protocol BuildProvider: Sendable {
   func runs(project: String, token: String?) async throws -> [BuildRun]
+  func jobs(project: String, runID: Int, page: Int, token: String?) async throws -> BuildJobPage
 }
 public struct BuildServiceError: LocalizedError, Sendable {
   public let message: String

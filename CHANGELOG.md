@@ -11,7 +11,7 @@ The first complete little desktop. This candidate is being prepared; no signed p
 - Desk Calculator with expressions, exact programmer arithmetic, units, timestamps, plots, and unreasonable mathematics.
 - A sliding Puzzle made from the live desktop, playable with the keyboard.
 - Chooser for Bonjour services, Disk First Aid for read-only volume inspection, and Wastebasket for reviewed cache cleanup through macOS Trash.
-- Print Monitor for GitHub Actions and GitLab.com, with saved projects, combined queues, and per-project errors and refresh history. Successful builds can feed Aquarium; repeated polls and old history do not.
+- Print Monitor for GitHub Actions and GitLab.com, with saved projects, combined queues, and per-project errors and refresh history, and job sheets with failed steps, failure reasons, and direct log links. Successful builds can feed Aquarium; repeated polls and old history do not.
 - Aquarium and original Metal Flying Toasters screensavers with shared presentation, saved selection, opt-in idle timing, and input dismissal.
 - Optional spectacle switches, Reduce Motion support, and pausing for fully covered graphics windows.
 - Independent SwiftPM application modules and shared theme and CI-provider contracts.

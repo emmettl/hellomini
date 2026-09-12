@@ -22,21 +22,23 @@ public struct GitLabProvider: BuildProvider {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
     return try decoder.decode([Run].self, from: data).map { run in
-      let state: BuildState
-      switch run.status {
-      case "success": state = .passed
-      case "failed": state = .failed
-      case "canceled": state = .cancelled
-      case "skipped": state = .skipped
-      case "running": state = .running
-      case "created", "waiting_for_resource", "preparing", "pending", "scheduled": state = .queued
-      case "manual": state = .waiting
-      default: state = .unknown
-      }
+      let state = Self.state(run.status)
       return BuildRun(
         id: run.id, title: "Pipeline #\(run.id)", branch: run.ref, state: state,
         url: URL(string: "https://gitlab.com/\(project)/-/pipelines/\(run.id)")!,
         createdAt: BuildHTTP.date(run.createdAt))
+    }
+  }
+  static func state(_ value: String) -> BuildState {
+    switch value {
+    case "success": return .passed
+    case "failed": return .failed
+    case "canceled": return .cancelled
+    case "skipped": return .skipped
+    case "running", "canceling": return .running
+    case "created", "waiting_for_resource", "preparing", "pending", "scheduled": return .queued
+    case "manual", "waiting_for_callback": return .waiting
+    default: return .unknown
     }
   }
 }

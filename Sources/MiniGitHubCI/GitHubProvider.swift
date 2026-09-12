@@ -24,21 +24,23 @@ public struct GitHubProvider: BuildProvider {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
     return try decoder.decode(Response.self, from: data).workflowRuns.map { run in
-      let state: BuildState
-      switch run.conclusion ?? run.status {
-      case "success": state = .passed
-      case "failure", "timed_out", "startup_failure", "action_required": state = .failed
-      case "cancelled": state = .cancelled
-      case "skipped", "neutral": state = .skipped
-      case "in_progress": state = .running
-      case "queued", "requested", "pending": state = .queued
-      case "waiting": state = .waiting
-      default: state = .unknown
-      }
+      let state = Self.state(run.conclusion ?? run.status)
       return BuildRun(
         id: run.id, title: run.name ?? "Workflow #\(run.id)", branch: run.headBranch ?? "—",
         state: state, url: URL(string: "https://github.com/\(project)/actions/runs/\(run.id)")!,
         createdAt: BuildHTTP.date(run.createdAt))
+    }
+  }
+  static func state(_ value: String) -> BuildState {
+    switch value {
+    case "success": return .passed
+    case "failure", "timed_out", "startup_failure", "action_required": return .failed
+    case "cancelled": return .cancelled
+    case "skipped", "neutral": return .skipped
+    case "in_progress": return .running
+    case "queued", "requested", "pending": return .queued
+    case "waiting": return .waiting
+    default: return .unknown
     }
   }
 }

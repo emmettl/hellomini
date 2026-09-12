@@ -34,6 +34,7 @@ private struct PrintMonitorView: View {
   let playfulness: PlayfulnessSettings
   let model: ProjectQueue
   @State private var managing = false
+  @State private var inspecting: ProjectBuild?
   @State private var error: String?
   @State private var active = NSApp.isActive
   @State private var manualRefreshTask: Task<Void, Never>?
@@ -114,7 +115,10 @@ private struct PrintMonitorView: View {
               }
               Spacer()
               Text(build.run.state.rawValue.uppercased()).font(theme.typography.small)
-              Button("Build & artifacts") { NSWorkspace.shared.open(build.run.url) }
+              Button("Jobs…") { inspecting = build }
+                .accessibilityLabel(
+                  "Inspect jobs for " + build.run.title + " #" + String(build.run.id)
+                )
                 .buttonStyle(RetroButtonStyle())
             }
             Rectangle().frame(height: 1)
@@ -153,6 +157,9 @@ private struct PrintMonitorView: View {
           await model.refresh(onlyDue: true)
           do { try await Task.sleep(for: .seconds(model.refreshInterval)) } catch { return }
         }
+      }
+      .sheet(item: $inspecting) { build in
+        JobDetailsView(build: build).id(build.id).environment(\.miniTheme, theme)
       }
       .sheet(isPresented: $managing) {
         ProjectManager(model: model) { if model.paused { refreshManually() } }
