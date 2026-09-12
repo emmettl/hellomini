@@ -96,7 +96,11 @@ struct RetroMenuBar: View {
     .buttonStyle(.plain)
     .accessibilityLabel("\(menu.title) menu")
     .accessibilityValue(openMenuID == menu.id ? "Open" : "Closed")
-    .accessibilityHint("Use arrow keys to browse and Escape to dismiss.")
+    .accessibilityHint(
+      menu.id == "mini"
+        ? "Option-Command-M opens this menu. Use arrow keys to browse and Escape to dismiss."
+        : "Use arrow keys to browse and Escape to dismiss."
+    )
     .anchorPreference(key: MenuAnchors.self, value: .bounds) { [menu.id: $0] }
     .onHover { inside in
       if inside && openMenuID != nil && openMenuID != menu.id { open(menu) }
@@ -182,6 +186,15 @@ struct RetroMenuBar: View {
   }
 
   private func handleKey(_ event: NSEvent) -> Bool {
+    if event.charactersIgnoringModifiers?.lowercased() == "m",
+      event.modifierFlags.intersection([.command, .option, .control, .shift]) == [
+        .command, .option,
+      ],
+      let menu = menus.first
+    {
+      open(menu, selectFirst: true)
+      return true
+    }
     // Keep shortcuts available when dropdowns are closed; disabled commands are consumed too.
     if let item = menus.flatMap(\.items).first(where: { $0.shortcut?.matches(event) == true }) {
       if !event.isARepeat { perform(item) }

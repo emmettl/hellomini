@@ -1,4 +1,4 @@
-.PHONY: build app run test lint format check icons ci-test
+.PHONY: build app run test lint format check icons ci-test release-check release
 
 CONFIGURATION ?= debug
 
@@ -30,5 +30,12 @@ format:
 
 ci-test:
 	python3 scripts/test-ci.py
+	python3 scripts/test-release.py
+
+release-check:
+	python3 scripts/release.py check
+
+release:
+	python3 scripts/release.py prepare
 
 check: lint test ci-test build

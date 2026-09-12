@@ -77,6 +77,7 @@ private struct TeapotView: View {
   @Environment(\.self) private var environment
   let playfulness: PlayfulnessSettings
   @Bindable var model: TeapotModel
+  @Environment(\.miniWindowVisible) private var visible
   @State private var active = NSApp.isActive
 
   private var rotationAllowed: Bool { playfulness.allows(TeapotApplication.rotationEffect.id) }
@@ -116,7 +117,7 @@ private struct TeapotView: View {
         } else {
           TeapotMetalView(
             model: model, ink: rgba(theme.ink), paper: rgba(theme.paper),
-            animate: model.spinning && active && !reduceMotion && rotationAllowed,
+            animate: model.spinning && active && visible && !reduceMotion && rotationAllowed,
             mode: model.mode, yaw: model.yaw, tilt: model.tilt, resetRevision: model.resetRevision
           )
 

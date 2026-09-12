@@ -70,17 +70,20 @@ public struct DesktopView: View {
   @State private var model: DesktopModel
   private let settings: AppearanceSettings
   private let themes: MiniThemeRegistry
+  private let picture: DesktopPicture?
   private var theme: MiniThemeDefinition { themes.definition(for: settings.theme.id)! }
 
   public init(
     applications: [any MiniApplication], initiallyOpen: [String] = [], settings: AppearanceSettings,
-    themes: MiniThemeRegistry = .builtIns, defaults: UserDefaults = .standard
+    themes: MiniThemeRegistry = .builtIns, defaults: UserDefaults = .standard,
+    picture: DesktopPicture? = nil
   ) {
     precondition(
       settings.availableThemes == themes.metadata, "Settings and desktop must share a theme catalog"
     )
     self.settings = settings
     self.themes = themes
+    self.picture = picture
     _model = State(
       initialValue: DesktopModel(
         applications: applications, initiallyOpen: initiallyOpen, defaults: defaults))
@@ -90,31 +93,35 @@ public struct DesktopView: View {
     GeometryReader { geometry in
       ZStack(alignment: .topLeading) {
         ThemeSurfaceView(theme.desktop)
-        VStack(
-          spacing: min(
-            26,
-            max(
-              8,
-              (geometry.size.height - 80 - CGFloat(model.applications.count) * 73)
-                / CGFloat(max(1, model.applications.count - 1))))
-        ) {
-          ForEach(model.applications, id: \.id) { app in
-            Button {
-              model.launch(app)
-            } label: {
-              VStack(spacing: 8) {
-                PixelIcon(symbol: symbol(for: app.icon), scale: 3)
-                Text(app.name).font(theme.typography.small)
-                  .padding(.horizontal, 4).padding(.vertical, 2)
-                  .background { Rectangle().fill(theme.paper) }
+        ScrollView(.vertical) {
+          VStack(
+            spacing: min(
+              26,
+              max(
+                8,
+                (geometry.size.height - 80 - CGFloat(model.applications.count) * 73)
+                  / CGFloat(max(1, model.applications.count - 1))))
+          ) {
+            ForEach(model.applications, id: \.id) { app in
+              Button {
+                model.launch(app)
+              } label: {
+                VStack(spacing: 8) {
+                  PixelIcon(symbol: symbol(for: app.icon), scale: 3)
+                  Text(app.name).font(theme.typography.small)
+                    .padding(.horizontal, 4).padding(.vertical, 2)
+                    .background { Rectangle().fill(theme.paper) }
+                }
+                .frame(width: 134)
+                .contentShape(Rectangle())
               }
-              .frame(width: 134)
-              .contentShape(Rectangle())
+              .buttonStyle(.plain)
+              .accessibilityLabel("Launch \(app.name)")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Launch \(app.name)")
           }
         }
+        .scrollIndicators(.hidden)
+        .frame(width: 134, height: max(0, geometry.size.height - 72), alignment: .top)
         .offset(x: geometry.size.width - 146, y: 60)
 
         VStack(alignment: .leading, spacing: 6) {
@@ -135,7 +142,11 @@ public struct DesktopView: View {
             active: model.active?.id == app.id,
             activate: { if model.openIDs.contains(app.id) { model.launch(app) } },
             close: { model.close(app) }
-          ) { app.content() }
+          ) {
+            app.content()
+              .environment(\.miniWindowActive, model.active?.id == app.id)
+              .environment(\.miniWindowVisible, isVisible(app, desktop: geometry.size))
+          }
           .zIndex(Double((model.openIDs.firstIndex(of: app.id) ?? 0) + 1))
         }
         RetroMenuBar(menus: menus, applicationName: model.active?.name ?? "Hello Mini")
@@ -145,11 +156,32 @@ public struct DesktopView: View {
       .foregroundStyle(theme.ink)
       .font(theme.typography.body)
       .background(DesktopWindowConfiguration())
+      .background { if let picture { DesktopPictureCapture(picture: picture) } }
     }
     .ignoresSafeArea()
     .environment(\.miniTheme, theme)
     .tint(theme.accent)
     .preferredColorScheme(theme.colorScheme)
+  }
+
+  private func isVisible(_ app: any MiniApplication, desktop: CGSize) -> Bool {
+    func rectangle(_ app: any MiniApplication) -> CGRect {
+      let placement = model.placement(for: app)
+      let size = WindowResize.constrain(
+        placement.size, minimum: app.minimumSize,
+        maximum: CGSize(
+          width: desktop.width - 16, height: desktop.height - theme.menuBarHeight - 18))
+      let origin = WindowBounds(
+        desktopSize: desktop, windowSize: size, menuBarHeight: theme.menuBarHeight
+      )
+      .constrain(placement.origin)
+      return CGRect(origin: origin, size: size)
+    }
+    guard let index = model.openIDs.firstIndex(of: app.id) else { return false }
+    let covers = model.openIDs.dropFirst(index + 1).compactMap { id in
+      model.applications.first { $0.id == id }.map(rectangle)
+    }
+    return WindowVisibility.isVisible(rectangle(app), behind: covers)
   }
 
   private var menus: [RetroMenu] {
@@ -215,6 +247,14 @@ public struct DesktopView: View {
     case .clock: .clock
     case .settings: .settings
     case .teapot: .teapot
+    case .aquarium: .aquarium
+    case .scrapbook: .scrapbook
+    case .calculator: .calculator
+    case .puzzle: .puzzle
+    case .disk: .disk
+    case .chooser: .chooser
+    case .wastebasket: .wastebasket
+    case .printer: .printer
     }
   }
 }

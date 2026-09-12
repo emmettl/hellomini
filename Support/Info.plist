@@ -13,5 +13,7 @@
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
+  <key>NSLocalNetworkUsageDescription</key><string>Chooser discovers SSH, screen sharing, and web services on your local network when you choose Browse.</string>
+  <key>NSBonjourServices</key><array><string>_ssh._tcp</string><string>_rfb._tcp</string><string>_http._tcp</string><string>_https._tcp</string></array>
 </dict>
 </plist>
