@@ -56,7 +56,7 @@ The first screensaver pass is now implemented: shared host, Aquarium, original M
 
 ## Other continuing directions
 
-- **Themes:** System 7 and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, and working Aqua traffic lights for close, minimise, and zoom. More era-specific controls can follow without duplicating application behavior.
+- **Themes:** System 7 and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** MIT is selected; local signing/notarization tooling and release documentation are ready. Supply a Developer ID Application identity and notarization profile, validate the downloadable candidate, then publish the first GitHub release and evaluate Homebrew. Explicit installation on the Mini remains separate from its working private build pipeline.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.

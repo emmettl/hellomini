@@ -38,6 +38,15 @@ public enum AquaTheme {
     theme.menu.cornerRadius = 5
     theme.menu.shadowRadius = 5
     theme.menu.shadowOffset = CGSize(width: 0, height: 4)
+    theme.dock = ThemeFrameStyle(
+      surface: .gradient([
+        .white.opacity(0.86), Color(red: 0.76, green: 0.84, blue: 0.94).opacity(0.76),
+      ]),
+      border: .white.opacity(0.8), shadow: .black.opacity(0.3))
+    theme.dock?.cornerRadius = 12
+    theme.dock?.borderWidth = 1
+    theme.dock?.shadowRadius = 6
+    theme.dock?.shadowOffset = CGSize(width: 0, height: 2)
     theme.menuBar = pinstripes
     theme.menuBarHeight = 28
     theme.menuBarBorderWidth = 0.5

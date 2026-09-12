@@ -15,6 +15,8 @@ import Testing
   let defaults = try #require(UserDefaults(suiteName: suite))
   defer { defaults.removePersistentDomain(forName: suite) }
   let definition = AquaTheme.definition
+  #expect(definition.dock != nil)
+  #expect(MiniThemeDefinition.classic.dock == nil)
   let registry = MiniThemeRegistry(MiniThemeRegistry.builtIns.themes + [definition])
   let settings = AppearanceSettings(defaults: defaults, themes: registry.metadata)
   #expect(settings.selectTheme(id: "aqua"))

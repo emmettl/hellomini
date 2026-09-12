@@ -130,6 +130,8 @@ public struct MiniThemeDefinition: Identifiable, Sendable {
   public var inactiveWindow = ThemeFrameStyle(
     surface: .solid(.white), border: .black, shadow: .black)
   public var menu = ThemeFrameStyle(surface: .solid(.white), border: .black, shadow: .black)
+  /// A dock replaces the desktop application rail when a theme supplies its shelf styling.
+  public var dock: ThemeFrameStyle?
   public var menuBar: ThemeSurface = .solid(.white)
   public var titleBarHeight: CGFloat = 30
   public var titleBarDivider: CGFloat = 1

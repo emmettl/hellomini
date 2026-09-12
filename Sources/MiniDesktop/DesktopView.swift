@@ -107,6 +107,7 @@ final class DesktopModel {
 public struct DesktopView: View {
   @Environment(\.miniDesktopSuspended) private var suspended
   @State private var model: DesktopModel
+  @State private var dockFocusRequest = 0
   private let settings: AppearanceSettings
   private let themes: MiniThemeRegistry
   private let picture: DesktopPicture?
@@ -130,47 +131,51 @@ public struct DesktopView: View {
 
   public var body: some View {
     GeometryReader { geometry in
+      let windowArea = DesktopDockLayout.windowArea(
+        desktop: geometry.size, hasDock: theme.dock != nil)
       ZStack(alignment: .topLeading) {
         ThemeSurfaceView(theme.desktop)
-        ScrollView(.vertical) {
-          VStack(
-            spacing: min(
-              26,
-              max(
-                8,
-                (geometry.size.height - 80 - CGFloat(model.applications.count) * 73)
-                  / CGFloat(max(1, model.applications.count - 1))))
-          ) {
-            ForEach(model.applications, id: \.id) { app in
-              Button {
-                model.launch(app)
-              } label: {
-                VStack(spacing: 8) {
-                  PixelIcon(symbol: symbol(for: app.icon), scale: 3)
-                  Text(app.name).font(theme.typography.small)
-                    .foregroundStyle(theme.desktopInk ?? theme.ink)
-                    .shadow(color: theme.desktopTextShadow, radius: 1, x: 0, y: 1)
-                    .padding(.horizontal, 4).padding(.vertical, 2)
-                    .background {
-                      ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper))
-                    }
+        if theme.dock == nil {
+          ScrollView(.vertical) {
+            VStack(
+              spacing: min(
+                26,
+                max(
+                  8,
+                  (geometry.size.height - 80 - CGFloat(model.applications.count) * 73)
+                    / CGFloat(max(1, model.applications.count - 1))))
+            ) {
+              ForEach(model.applications, id: \.id) { app in
+                Button {
+                  model.launch(app)
+                } label: {
+                  VStack(spacing: 8) {
+                    PixelIcon(symbol: app.icon.desktopSymbol, scale: 3)
+                    Text(app.name).font(theme.typography.small)
+                      .foregroundStyle(theme.desktopInk ?? theme.ink)
+                      .shadow(color: theme.desktopTextShadow, radius: 1, x: 0, y: 1)
+                      .padding(.horizontal, 4).padding(.vertical, 2)
+                      .background {
+                        ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper))
+                      }
+                  }
+                  .frame(width: 134)
+                  .contentShape(Rectangle())
                 }
-                .frame(width: 134)
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                  "\(model.minimisedIDs.contains(app.id) ? "Restore" : "Launch") \(app.name)"
+                )
+                .help(
+                  model.minimisedIDs.contains(app.id)
+                    ? "Restore minimised \(app.name) window" : "Open \(app.name)")
               }
-              .buttonStyle(.plain)
-              .accessibilityLabel(
-                "\(model.minimisedIDs.contains(app.id) ? "Restore" : "Launch") \(app.name)"
-              )
-              .help(
-                model.minimisedIDs.contains(app.id)
-                  ? "Restore minimised \(app.name) window" : "Open \(app.name)")
             }
           }
+          .scrollIndicators(.hidden)
+          .frame(width: 134, height: max(0, geometry.size.height - 72), alignment: .top)
+          .offset(x: geometry.size.width - 146, y: 60)
         }
-        .scrollIndicators(.hidden)
-        .frame(width: 134, height: max(0, geometry.size.height - 72), alignment: .top)
-        .offset(x: geometry.size.width - 146, y: 60)
 
         VStack(alignment: .leading, spacing: 6) {
           Text("hello, again.").font(theme.typography.display(28))
@@ -180,17 +185,17 @@ public struct DesktopView: View {
         .shadow(color: theme.desktopTextShadow, radius: 1, x: 0, y: 1)
         .padding(10)
         .background { ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper)) }
-        .offset(x: 28, y: geometry.size.height - 90)
+        .offset(x: 28, y: windowArea.height - 90)
 
         ForEach(model.applications.filter { model.openIDs.contains($0.id) }, id: \.id) { app in
           RetroWindow(
             title: app.title,
             minimumSize: app.minimumSize,
-            desktopSize: geometry.size,
+            desktopSize: windowArea,
             placement: Binding(
               get: {
                 model.displayedPlacement(
-                  for: app, desktop: geometry.size, menuBarHeight: theme.menuBarHeight)
+                  for: app, desktop: windowArea, menuBarHeight: theme.menuBarHeight)
               }, set: { model.place(app, at: $0) }),
             active: model.active?.id == app.id,
             activate: {
@@ -203,15 +208,26 @@ public struct DesktopView: View {
           ) {
             app.content()
               .environment(\.miniWindowActive, !suspended && model.active?.id == app.id)
-              .environment(\.miniWindowVisible, isVisible(app, desktop: geometry.size))
+              .environment(\.miniWindowVisible, isVisible(app, desktop: windowArea))
           }
           .opacity(model.minimisedIDs.contains(app.id) ? 0 : 1)
           .allowsHitTesting(!model.minimisedIDs.contains(app.id))
           .accessibilityHidden(model.minimisedIDs.contains(app.id))
           .zIndex(Double((model.openIDs.firstIndex(of: app.id) ?? 0) + 1))
         }
-        RetroMenuBar(menus: menus, applicationName: model.active?.name ?? "Hello Mini")
+        if let style = theme.dock {
+          DesktopDock(
+            model: model, desktopWidth: geometry.size.width, style: style,
+            focusRequest: dockFocusRequest
+          )
+          .frame(
+            width: geometry.size.width, height: DesktopDockLayout.reservedHeight, alignment: .bottom
+          )
+          .offset(y: windowArea.height)
           .zIndex(Double(model.applications.count + 1))
+        }
+        RetroMenuBar(menus: menus, applicationName: model.active?.name ?? "Hello Mini")
+          .zIndex(Double(model.applications.count + 2))
       }
       .coordinateSpace(name: DesktopCoordinateSpace.windows)
       .foregroundStyle(theme.ink)
@@ -285,6 +301,12 @@ public struct DesktopView: View {
     } else {
       appMenus.append(RetroMenu(id: "view", title: "View", width: 330, items: [fullScreen]))
     }
+    if theme.dock != nil, let index = appMenus.firstIndex(where: { $0.id == "view" }) {
+      appMenus[index].items.append(
+        RetroMenuItem(id: "focus-dock", title: "Focus Dock") {
+          dockFocusRequest += 1
+        })
+    }
     result += appMenus
     result.append(
       RetroMenu(
@@ -316,22 +338,4 @@ public struct DesktopView: View {
     return result
   }
 
-  private func symbol(for icon: MiniApplicationIcon) -> PixelSymbol {
-    switch icon {
-    case .folder: .folder
-    case .computer: .computer
-    case .activity: .activity
-    case .clock: .clock
-    case .settings: .settings
-    case .teapot: .teapot
-    case .aquarium: .aquarium
-    case .scrapbook: .scrapbook
-    case .calculator: .calculator
-    case .puzzle: .puzzle
-    case .disk: .disk
-    case .chooser: .chooser
-    case .wastebasket: .wastebasket
-    case .printer: .printer
-    }
-  }
 }

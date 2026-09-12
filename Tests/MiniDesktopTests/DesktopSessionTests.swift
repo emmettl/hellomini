@@ -167,3 +167,50 @@ import Testing
   #expect(restored.minimisedIDs == [app.id])
   #expect(restored.zoomedIDs.isEmpty)
 }
+
+@Test @MainActor func dockKeepsZoomDragAndResizeClearWithoutChangingSavedGeometry() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let app = SessionTestApp("a")
+  let model = DesktopModel(applications: [app], initiallyOpen: [app.id], defaults: defaults)
+  let saved = WindowPlacement(
+    origin: CGPoint(x: 700, y: 400), size: CGSize(width: 550, height: 300))
+  model.place(app, at: saved)
+  let desktop = CGSize(width: 1280, height: 720)
+  let area = DesktopDockLayout.windowArea(desktop: desktop, hasDock: true)
+  #expect(area == CGSize(width: 1280, height: 632))
+  let bounds = WindowBounds(desktopSize: area, windowSize: saved.size, menuBarHeight: 28)
+  #expect(bounds.constrain(saved.origin).y + saved.size.height == area.height - 8)
+  var resize = WindowResize(origin: CGPoint(x: 100, y: 90), size: saved.size, startLocation: .zero)
+  resize.location = CGPoint(x: 2000, y: 2000)
+  #expect(
+    resize.size(minimum: app.minimumSize, desktop: area).height + resize.origin.y == area.height - 8
+  )
+  model.toggleZoom(app)
+  let zoomed = model.displayedPlacement(for: app, desktop: area, menuBarHeight: 28)
+  #expect(zoomed.origin.y + zoomed.size.height == area.height - 8)
+  #expect(model.placement(for: app) == saved)
+  let classicArea = DesktopDockLayout.windowArea(desktop: desktop, hasDock: false)
+  #expect(classicArea == desktop)
+  let classicZoom = model.displayedPlacement(for: app, desktop: classicArea, menuBarHeight: 30)
+  #expect(classicZoom.origin.y + classicZoom.size.height == desktop.height - 8)
+  model.toggleZoom(app)
+  #expect(model.placement(for: app) == saved)
+}
+
+@Test func dockFitsTheAppLineupAndProvidesOverflowForCrowdedDesktops() {
+  for width: CGFloat in [640, 800, 960, 1280, 1920] {
+    for count in [15, 22, 30, 60] {
+      let layout = DesktopDockLayout(
+        desktopWidth: width, entryCount: count, hasMinimised: count > 15)
+      #expect(layout.width <= width - 32)
+      #expect(layout.iconSize >= 28 && layout.iconSize <= 48)
+      #expect(layout.scrollWidth > 0 && layout.scrollWidth <= layout.width)
+      #expect(layout.overflows == (layout.scrollWidth < layout.width))
+    }
+  }
+  #expect(!DesktopDockLayout(desktopWidth: 1280, entryCount: 15, hasMinimised: false).overflows)
+  #expect(DesktopDockLayout(desktopWidth: 640, entryCount: 30, hasMinimised: true).overflows)
+  #expect(DesktopDockLayout(desktopWidth: 1280, entryCount: 0, hasMinimised: false).width.isFinite)
+}
