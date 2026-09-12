@@ -79,7 +79,7 @@ private struct System7TitleBar: View {
               Rectangle().strokeBorder(state.active ? .black : Color(white: 0.55), lineWidth: 1)
             )
             .overlay(alignment: .top) {
-              Rectangle().fill(.white).frame(height: 1).padding(.horizontal, 1)
+              Rectangle().fill(.white).frame(height: 1).padding(.horizontal, 1).padding(.top, 1)
             }
             .padding(5).background(paper)
         }.buttonStyle(.plain).accessibilityLabel("Close \(state.title)")
