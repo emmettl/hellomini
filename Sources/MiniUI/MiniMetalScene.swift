@@ -5,7 +5,7 @@ import SwiftUI
 
 /// Shared, bounded GPU spectacle for desk accessories. Useful content stays in its owning app.
 public struct MiniMetalScene: View {
-  public enum Scene: Float { case mathematics, globe }
+  public enum Scene: Float { case mathematics, globe, toasters }
   @Environment(\.miniTheme) private var theme
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.self) private var environment
@@ -100,7 +100,9 @@ private struct MetalSceneView: NSViewRepresentable {
     }
     view.setAccessibilityElement(true)
     view.setAccessibilityLabel(
-      scene == 0 ? "Animated Mandelbrot mathematics" : "Decorative rotating globe")
+      scene == 0
+        ? "Animated Mandelbrot mathematics"
+        : scene == 1 ? "Decorative rotating globe" : "Flying winged toasters and slices of toast")
     return view
   }
   func updateNSView(_ view: MTKView, context: Context) {
@@ -150,7 +152,7 @@ private struct MetalSceneView: NSViewRepresentable {
   }
 }
 
-private final class BoundedMetalView: MTKView {
+private final class BoundedMetalView: MiniMetalView {
   override func layout() {
     super.layout()
     let scale = min(2, 800 / max(1, bounds.width), 600 / max(1, bounds.height))

@@ -11,10 +11,11 @@ import SwiftUI
   private let settings: AppearanceSettings
   private let playfulness: PlayfulnessSettings
   private let themes: MiniThemeRegistry
+  private let screensavers: ScreensaverSettings?
 
   public init(
     settings: AppearanceSettings, playfulness: PlayfulnessSettings,
-    themes: MiniThemeRegistry = .builtIns
+    themes: MiniThemeRegistry = .builtIns, screensavers: ScreensaverSettings? = nil
   ) {
     precondition(
       settings.availableThemes == themes.metadata,
@@ -22,9 +23,12 @@ import SwiftUI
     self.settings = settings
     self.playfulness = playfulness
     self.themes = themes
+    self.screensavers = screensavers
   }
   public func content() -> AnyView {
-    AnyView(ControlPanelView(settings: settings, playfulness: playfulness, themes: themes))
+    AnyView(
+      ControlPanelView(
+        settings: settings, playfulness: playfulness, themes: themes, screensavers: screensavers))
   }
 
   public var menus: [RetroMenu] {
@@ -67,11 +71,13 @@ private struct ControlPanelView: View {
   let settings: AppearanceSettings
   let playfulness: PlayfulnessSettings
   let themes: MiniThemeRegistry
+  let screensavers: ScreensaverSettings?
   @State private var pane = Pane.appearance
 
   private enum Pane: String, CaseIterable {
     case appearance = "Appearance"
     case playfulness = "Playfulness"
+    case screensavers = "Screensavers"
   }
 
   var body: some View {
@@ -90,6 +96,8 @@ private struct ControlPanelView: View {
       ScrollView {
         if pane == .appearance {
           appearance
+        } else if pane == .screensavers, let screensavers {
+          ScreensaverSettingsView(settings: screensavers, playfulness: playfulness).padding(22)
         } else {
           PlayfulnessView(settings: playfulness).padding(22)
         }

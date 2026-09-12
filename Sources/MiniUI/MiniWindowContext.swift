@@ -2,6 +2,7 @@ import SwiftUI
 
 extension EnvironmentValues {
   /// The desktop updates visibility after changes to window geometry or stacking order.
+  @Entry public var miniDesktopSuspended = false
   @Entry public var miniWindowVisible = true
   @Entry public var miniWindowActive = true
 }

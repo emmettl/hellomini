@@ -26,7 +26,20 @@ import SwiftUI
   let model = AquariumModel()
   private let playfulness: PlayfulnessSettings
 
-  public init(playfulness: PlayfulnessSettings) { self.playfulness = playfulness }
+  public init(playfulness: PlayfulnessSettings, preview: (() -> Void)? = nil) {
+    self.playfulness = playfulness
+    model.preview = preview
+  }
+  public static let screensaver = MiniScreensaver(
+    id: "aquarium", name: "Aquarium",
+    description: "Nine fish. An entire screen. No responsibilities.")
+  public func screensaverContent() -> AnyView {
+    AnyView(AquariumTank(model: model, playfulness: playfulness))
+  }
+  public func setScreensaverPresented(_ presented: Bool) {
+    model.presenting = presented
+    model.simulation.previousTime = nil
+  }
   public func feedFromSuccessfulBuilds(_ count: Int) {
     guard count > 0, playfulness.allows(Self.buildFeeding.id) else { return }
     model.feedFromBuilds(count)
@@ -65,7 +78,7 @@ import SwiftUI
   var presenting = false
   let sampler = AquariumSampler()
   @ObservationIgnored var simulation = AquariumSimulation()
-  @ObservationIgnored var presentation: AquariumPresentation?
+  @ObservationIgnored var preview: (() -> Void)?
 
   func feed() {
     feedRevision += 1
@@ -118,9 +131,8 @@ struct AquariumView: View {
         Button("Feed fish", action: model.feed)
         Spacer()
         Button("Screensaver preview") {
-          model.presentation = AquariumPresentation()
-          model.presentation?.show(model: model, playfulness: playfulness, theme: theme)
-        }
+          model.preview?()
+        }.disabled(model.preview == nil || !playfulness.enabled)
       }
       .buttonStyle(RetroButtonStyle()).padding(10)
       Rectangle().frame(height: 1)

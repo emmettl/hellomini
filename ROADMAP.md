@@ -26,7 +26,7 @@ Chooser discovers advertised SSH, Screen Sharing, HTTP, and HTTPS services using
 
 Desk Calculator includes expressions, exact 64-bit programmer arithmetic, unit and timestamp conversions, plotting, and an optional Metal Mandelbrot excursion. World Clock shares the Clock module, saves chosen time zones and weekday working hours, previews time offsets, and supplies a decorative Metal globe. Puzzle uses solvable shuffles and a live picture of Hello Mini's own window, with freeze and manual refresh controls.
 
-Aquarium now has an optional **Reflect system activity** setting in Control Panel, a decorative mode, manual feeding, and a screensaver preview sharing the same Metal renderer. Print Monitor now feeds fish after new successful builds, with initial-history suppression and duplicate protection. Automatic idle activation and screensaver packaging remain undecided.
+Aquarium now has an optional **Reflect system activity** setting in Control Panel, a decorative mode, manual feeding, and a screensaver preview sharing the same Metal renderer. Print Monitor now feeds fish after new successful builds, with initial-history suppression and duplicate protection. Aquarium and Flying Toasters share a screensaver host with optional idle activation and saved Control Panel choices. Standalone macOS screensaver packaging remains undecided.
 
 Scrapbook now keeps notes, commands, links, and image snapshots, with explicit paste/import, full-text and caption search, editing, copy, and recoverable archiving. Its local library survives relaunches. OCR and cloud sync are not part of this first version.
 
@@ -44,10 +44,20 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 - Keyboard launcher access, arrow-key Puzzle play, compact CI rows, and helpful empty states are implemented and checked at 720p.
 - Successful CI builds feed Aquarium through an independent, toggleable connection. The first refresh establishes history; repeat polls do not produce repeat meals.
 
+## Next priorities
+
+- Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
+- Deepen Print Monitor with saved projects, job/failure details, and self-hosted GitHub/GitLab endpoints.
+- Build System 7 as the first distinct-era theme, then early Aqua, exercising the shared theme framework.
+- Add deliberate Finder file operations and Scrapbook export/import.
+- Decide the external binary plugin model when contributor needs are clearer.
+
+The first screensaver pass is now implemented: shared host, Aquarium, original Metal flying toasters, opt-in idle activation, and Control Panel settings. Additional effects can register through the same host.
+
 ## Other continuing directions
 
 - **Themes:** System 7 and Mac OS X 10.0–era Aqua, including its pinstripes.
-- **More spectacle:** Flying toasters, Living dither, Impossible instruments, Physical windows, and Depth behind glass, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** MIT is selected; local signing/notarization tooling and release documentation are ready. Supply a Developer ID Application identity and notarization profile, validate the downloadable candidate, then publish the first GitHub release and evaluate Homebrew. Explicit installation on the Mini remains separate from its working private build pipeline.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 

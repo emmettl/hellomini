@@ -77,7 +77,7 @@ Each application is its own SwiftPM target, depending on `MiniCore` and the shar
 - `MiniClock` supplies both Clock (local/UTC time and a monotonic stopwatch) and World Clock (saved time zones, working hours, and a decorative globe). A running stopwatch continues counting while its window is closed.
 - `MiniControlPanel` provides Appearance and Playfulness panes, with live theme previews and saved effect switches. Classic uses the original dotted desktop, Paper uses a plain white desktop, and Midnight uses white ink on black. Select a preview or use the app's Appearance menu; the choice applies immediately and persists across launches.
 - `MiniAbout` shows application and system information.
-- `MiniAquarium` owns a Metal fish tank, lightweight CPU/network sampling, and a manual screensaver preview. It depends only on the core and shared UI modules.
+- `MiniAquarium` owns a Metal fish tank, lightweight CPU/network sampling, and shared content for the screensaver host. It depends only on the core and shared UI modules.
 - `MiniScrapbook` keeps searchable notes, commands, links, and image snapshots in local storage, with recoverable archiving. It depends only on the core and shared UI modules.
 
 `AppearanceSettings` in `MiniCore` stores the selected theme in the app's preferences and falls back to Classic if a saved theme is unavailable. The executable shares one settings instance with the desktop and Control Panel. `MiniUI` supplies `MiniThemeDefinition`, the theme registry, and the `miniTheme` environment value used by windows, menus, icons, and app content. Themes affect Hello Mini's appearance, not the Mac's system-wide appearance. Theme changes keep open applications and their state intact.
@@ -90,7 +90,7 @@ The current build requires macOS 26; macOS 15 compatibility has not been validat
 
 ## Public release direction
 
-The aim is a public GitHub project that other people can install and enjoy, with distribution channels such as Homebrew to be evaluated later. Build CI and local release-preparation tooling are configured. Public signing still needs a Developer ID Application identity and notarization credentials; no binary release has been published yet. Print Monitor now supports GitHub Actions and GitLab.com pipelines through provider modules and per-user configuration. Aquarium now provides a desk accessory and manual screensaver preview; automatic idle activation and screensaver packaging remain future work. See the [roadmap](ROADMAP.md) for the full application lineup.
+The aim is a public GitHub project that other people can install and enjoy, with distribution channels such as Homebrew to be evaluated later. Build CI and local release-preparation tooling are configured. Public signing still needs a Developer ID Application identity and notarization credentials; no binary release has been published yet. Print Monitor now supports GitHub Actions and GitLab.com pipelines through provider modules and per-user configuration. Aquarium and Flying Toasters now share an app screensaver host with optional idle activation. Standalone macOS screensaver packaging remains future work. See the [roadmap](ROADMAP.md) for the full application lineup.
 
 ## App icon
 
@@ -149,7 +149,15 @@ Creeping anachronism is part of the design: modern GPU effects should borrow the
 
 The Playfulness pane also lists the future ideas explicitly as planned: fluid **Living dither**, particle-based **Impossible instruments**, folding **Physical windows**, and stippled 3D **Depth behind glass**. These renderers are not implemented yet; each will receive its own working switch when registered.
 
-**Flying toasters**, with winged appliances and passing toast, remains a planned After Dark–inspired screensaver. Aquarium is the first working renderer in this direction; automatic idle activation and standalone screensaver packaging remain undecided.
+## Screensavers
+
+**Control Panel → Screensavers** selects Aquarium or Flying Toasters, previews the selected saver, and sets an idle delay of 1, 2, 5, 10, 15, or 30 minutes. The default is **Never**. Selection and delay survive relaunches. Aquarium's own **Screensaver preview** button previews its fish without changing the saved selection.
+
+**Flying Toasters** supplies original procedural pixel artwork: winged appliances and slices of toast travelling diagonally across a field of theme ink. Metal renders the parade at up to 30 fps with a bounded drawable. **Control Panel → Playfulness → Flying toaster animation** freezes the flight; Aquarium retains its own animation and activity switches. Turning off **Extra silliness** disables both previews and idle activation while preserving preferences. Reduce Motion disables automatic activation and keeps manual previews still.
+
+Automatic activation requires Hello Mini to be active, with its desktop window visible and focused, no native sheet or modal dialog, and no held mouse button or live window resize. Input resets the timer. Time spent inactive, asleep, or across a delayed timer callback does not count toward activation. The saver covers the desktop window's current display; it dismisses on mouse movement, clicking, scrolling, or a key press, and when focus leaves it. The waking event is consumed so it does not also invoke a desktop command. macOS sleep and lock behaviour are unchanged; this is an app presentation, not an installed `.saver` or lock screen.
+
+`MiniCore` owns saver metadata and preferences. `MiniScreensaver` owns presentation, idle timing, and input handling; registered definitions supply content and optional start/stop hooks. `MiniToasters` registers the toaster effect and renderer. The executable wires Aquarium into the same registry without an Aquarium dependency on the screensaver host. Covered desktop graphics pause through the desktop visibility environment, while window positions, editors, and application models stay intact.
 
 ## Aquarium
 
@@ -157,7 +165,7 @@ Open **Aquarium** from the desktop or application menus for nine fish, bubbles, 
 
 **Control Panel → Playfulness → Aquarium animation** and the Extra silliness master switch control automatic motion. Reduce Motion also keeps the tank still. **Reflect system activity** is off by default and persists independently: enable it in Control Panel or the Aquarium menu for CPU-driven plant and bubble currents and extra bubbles from network traffic. The tank displays numerical readings alongside the animation. Sampling runs in an actor every two seconds while the tank is open and Hello Mini is active. It reads CPU tick deltas and combined inbound/outbound byte counters for active Ethernet/Wi-Fi (`en*`) interfaces, excluding VPN and loopback traffic. It reads no packet content and sends no telemetry anywhere. Initial readings and counter resets wait for a fresh delta.
 
-**Screensaver preview** opens the same renderer across the current screen. Click or press any key to return; switching away also dismisses it. This is a manually invoked app presentation, not a lock screen or an installed macOS screensaver. The windowed tank suspends its animation and sampling during the preview. Print Monitor can now feed the fish after newly observed successful builds; see Print Monitor below.
+**Screensaver preview** uses the shared screensaver host described above. The windowed tank suspends its animation and sampling during the presentation; the saver uses the same fish, simulation clock, and pending food. Print Monitor can now feed the fish after newly observed successful builds; see Print Monitor below.
 
 Metal renders the tank at 30 fps with a fixed logical pixel height and the active theme's ink/paper palette. Frame timing stays outside SwiftUI observation and desktop persistence. Inactive or closed views stop animation; occluded native windows skip GPU drawing. There is no simulation catch-up after a pause. A missing GPU or shader produces an explanation in the tank. Tests cover pause/resume and feeding timing, telemetry deltas, preference persistence, and actual Metal frames for animation, feeding, activity response, and palette inversion.
 

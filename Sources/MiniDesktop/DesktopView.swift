@@ -67,6 +67,7 @@ final class DesktopModel {
 }
 
 public struct DesktopView: View {
+  @Environment(\.miniDesktopSuspended) private var suspended
   @State private var model: DesktopModel
   private let settings: AppearanceSettings
   private let themes: MiniThemeRegistry
@@ -144,7 +145,7 @@ public struct DesktopView: View {
             close: { model.close(app) }
           ) {
             app.content()
-              .environment(\.miniWindowActive, model.active?.id == app.id)
+              .environment(\.miniWindowActive, !suspended && model.active?.id == app.id)
               .environment(\.miniWindowVisible, isVisible(app, desktop: geometry.size))
           }
           .zIndex(Double((model.openIDs.firstIndex(of: app.id) ?? 0) + 1))
@@ -165,6 +166,7 @@ public struct DesktopView: View {
   }
 
   private func isVisible(_ app: any MiniApplication, desktop: CGSize) -> Bool {
+    guard !suspended else { return false }
     func rectangle(_ app: any MiniApplication) -> CGRect {
       let placement = model.placement(for: app)
       let size = WindowResize.constrain(

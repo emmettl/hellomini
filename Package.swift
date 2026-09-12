@@ -8,6 +8,8 @@ let package = Package(
   products: [.executable(name: "HelloMini", targets: ["HelloMini"])],
   targets: [
     .target(name: "MiniCore"),
+    .target(name: "MiniScreensaver", dependencies: ["MiniCore", "MiniUI"]),
+    .target(name: "MiniToasters", dependencies: ["MiniCore", "MiniUI", "MiniScreensaver"]),
     .target(name: "MiniUI", dependencies: ["MiniCore"], resources: [.copy("Resources")]),
     .target(name: "MiniDesktop", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniFinder", dependencies: ["MiniCore", "MiniUI"]),
@@ -38,7 +40,7 @@ let package = Package(
         "MiniDesktop", "MiniFinder", "MiniAbout", "MiniActivityMonitor", "MiniClock",
         "MiniControlPanel", "MiniUI", "MiniTeapot", "MiniAquarium", "MiniScrapbook",
         "MiniCalculator", "MiniPuzzle", "MiniChooser", "MiniDiskFirstAid", "MiniWastebasket",
-        "MiniPrintMonitor",
+        "MiniPrintMonitor", "MiniScreensaver", "MiniToasters",
       ]),
     .testTarget(name: "MiniUITests", dependencies: ["MiniUI"], resources: [.process("Resources")]),
     .testTarget(name: "MiniTeapotTests", dependencies: ["MiniTeapot"]),

@@ -39,7 +39,7 @@ import Testing
     }
     return bytes
   }
-  for scene: Float in [0, 1] {
+  for scene: Float in [0, 1, 2] {
     let frame = try render(scene: scene, time: 0)
     let values = stride(from: 0, to: frame.count, by: 4).map { frame[$0] }
     #expect(Set(values) == [0, 255])

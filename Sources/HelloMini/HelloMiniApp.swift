@@ -13,7 +13,9 @@ import MiniFinder
 import MiniPrintMonitor
 import MiniPuzzle
 import MiniScrapbook
+import MiniScreensaver
 import MiniTeapot
+import MiniToasters
 import MiniUI
 import MiniWastebasket
 import SwiftUI
@@ -21,22 +23,19 @@ import SwiftUI
 @main
 struct HelloMiniApp: App {
   private static let themes = MiniThemeRegistry.builtIns
-  @State private var settings = AppearanceSettings(themes: Self.themes.metadata)
-  @State private var picture = DesktopPicture()
-  @State private var playfulness = PlayfulnessSettings(
-    effects: [
-      MiniStartup.effect, TeapotApplication.rotationEffect, CalculatorApplication.effect,
-      WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
-    ]
-      + AquariumApplication.effects)
+  @State private var system = MiniSystem()
+  private var settings: AppearanceSettings { system.settings }
+  private var picture: DesktopPicture { system.picture }
+  private var playfulness: PlayfulnessSettings { system.playfulness }
   @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
   private func applications() -> [any MiniApplication] {
-    let aquarium = AquariumApplication(playfulness: playfulness)
+    let aquarium = system.aquarium
     return [
       FinderApplication(), ActivityMonitorApplication(), ClockApplication(),
       ControlPanelApplication(
-        settings: settings, playfulness: playfulness, themes: Self.themes),
+        settings: settings, playfulness: playfulness, themes: Self.themes,
+        screensavers: system.screensavers),
       AboutApplication(),
       TeapotApplication(playfulness: playfulness),
       aquarium,
@@ -55,10 +54,16 @@ struct HelloMiniApp: App {
       StartupView(
         playfulness: playfulness, theme: Self.themes.definition(for: settings.theme.id)!
       ) {
-        DesktopView(
-          applications: applications(), initiallyOpen: ["activity"], settings: settings,
-          themes: Self.themes, picture: picture
-        )
+        ScreensaverHost(
+          settings: system.screensavers, playfulness: playfulness,
+          definitions: system.saverDefinitions,
+          theme: Self.themes.definition(for: settings.theme.id)!
+        ) {
+          DesktopView(
+            applications: applications(), initiallyOpen: ["activity"], settings: settings,
+            themes: Self.themes, picture: picture
+          )
+        }
       }
       .frame(minWidth: 960, minHeight: 600)
     }
@@ -84,5 +89,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
     true
+  }
+}
+
+/// Owns shared app instances so Aquarium's desk and screensaver views use the same fish and meals.
+@MainActor private final class MiniSystem {
+  let settings = AppearanceSettings(themes: MiniThemeRegistry.builtIns.metadata)
+  let picture = DesktopPicture()
+  let playfulness = PlayfulnessSettings(
+    effects: [
+      MiniStartup.effect, TeapotApplication.rotationEffect, CalculatorApplication.effect,
+      WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
+      FlyingToasters.effect,
+    ] + AquariumApplication.effects)
+  let screensavers = ScreensaverSettings(savers: [
+    AquariumApplication.screensaver, FlyingToasters.metadata,
+  ])
+  let aquarium: AquariumApplication
+  init() {
+    let screensavers = screensavers
+    aquarium = AquariumApplication(playfulness: playfulness) {
+      screensavers.preview(AquariumApplication.screensaver.id)
+    }
+  }
+  var saverDefinitions: [MiniScreensaverDefinition] {
+    [
+      MiniScreensaverDefinition(
+        metadata: AquariumApplication.screensaver,
+        presenting: aquarium.setScreensaverPresented, content: aquarium.screensaverContent),
+      FlyingToasters.definition(playfulness: playfulness),
+    ]
   }
 }

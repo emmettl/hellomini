@@ -1,5 +1,6 @@
 import MetalKit
 import MiniCore
+import MiniUI
 import SwiftUI
 
 struct AquariumUniforms {
@@ -55,7 +56,7 @@ struct AquariumMetalView: NSViewRepresentable {
 
   func makeCoordinator() -> Coordinator { Coordinator(model: model) }
   func makeNSView(context: Context) -> MTKView {
-    let view = MTKView(frame: .zero, device: MTLCreateSystemDefaultDevice())
+    let view = MiniMetalView(frame: .zero, device: MTLCreateSystemDefaultDevice())
     view.colorPixelFormat = .bgra8Unorm
     view.preferredFramesPerSecond = 30
     view.isPaused = true
