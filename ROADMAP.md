@@ -20,7 +20,7 @@ All nine belong on the roadmap. Each should work as a small, coherent applicatio
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-Print Monitor now reads GitHub Actions and GitLab.com pipelines through separate provider modules, with per-user project configuration, optional Keychain tokens, and links to build pages for logs and artifacts. More providers, self-hosted service URLs, job-level details, and artifact downloads inside the app remain future work. Successful builds can now feed Aquarium through an optional completion callback.
+Print Monitor now reads GitHub Actions and GitLab.com pipelines through separate provider modules, with up to 12 saved projects, combined and individual queues, independent refresh errors and completion histories, optional Keychain tokens, and links to build pages for logs and artifacts. More providers, self-hosted service URLs, job-level details, and artifact downloads inside the app remain future work. Successful builds can now feed Aquarium through an optional completion callback.
 
 Chooser discovers advertised SSH, Screen Sharing, HTTP, and HTTPS services using Bonjour, with manual host entry and explicit connection opening. Wastebasket reviews known Xcode/SwiftPM caches and chosen projects' `.build` contents, then moves only reviewed selections to macOS Trash. Disk First Aid lists mounted volumes and reads available SMART information; it performs no repairs.
 
@@ -33,7 +33,7 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 ## Shared design commitments
 
 - Keep applications in their own SwiftPM modules using `MiniCore` and shared themed controls. External plugins containing compiled code and assets remain a possible distribution model; the exact model is undecided.
-- Express modern graphics through the selected theme's visual language, including future System 7 and early Aqua designs.
+- Express modern graphics through the selected theme's visual language, including the shipped System 7 theme and future early Aqua designs.
 - Put optional spectacle in **Control Panel → Playfulness**, with individual switches and the existing Extra silliness master switch. Keep useful information available when effects are disabled.
 - Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or inactive. Elaborate effects must not compromise solid window interaction.
 - Preserve the distinction between real status and decorative storytelling: a printer jam may represent a failed build, but the actual failure details must remain accessible.
@@ -47,8 +47,8 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 ## Next priorities
 
 - Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
-- Deepen Print Monitor with saved projects, job/failure details, and self-hosted GitHub/GitLab endpoints.
-- Build System 7 as the first distinct-era theme, then early Aqua, exercising the shared theme framework.
+- Deepen Print Monitor with job/failure details, branch/workflow filters, and self-hosted GitHub/GitLab endpoints. Saved projects and the combined queue are implemented.
+- System 7 is implemented as its own theme module. Early Aqua is the next distinct-era theme.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.
 
@@ -56,7 +56,7 @@ The first screensaver pass is now implemented: shared host, Aquarium, original M
 
 ## Other continuing directions
 
-- **Themes:** System 7 and Mac OS X 10.0–era Aqua, including its pinstripes.
+- **Themes:** System 7 is available. Mac OS X 10.0–era Aqua, including its pinstripes, remains planned.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** MIT is selected; local signing/notarization tooling and release documentation are ready. Supply a Developer ID Application identity and notarization profile, validate the downloadable candidate, then publish the first GitHub release and evaluate Homebrew. Explicit installation on the Mini remains separate from its working private build pipeline.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.

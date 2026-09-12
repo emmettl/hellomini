@@ -1,48 +1,8 @@
 import AppKit
 import MiniBuildCore
 import MiniCore
-import MiniGitHubCI
-import MiniGitLabCI
 import MiniUI
-import Security
 import SwiftUI
-
-private enum CIToken {
-  static func query(_ account: String) -> [String: Any] {
-    [
-      kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "HelloMini.CI",
-      kSecAttrAccount as String: account,
-    ]
-  }
-  static func read(_ account: String) throws -> String? {
-    var query = query(account)
-    query[kSecReturnData as String] = true
-    var item: CFTypeRef?
-    let status = SecItemCopyMatching(query as CFDictionary, &item)
-    if status == errSecItemNotFound { return nil }
-    guard status == errSecSuccess, let data = item as? Data else {
-      throw BuildServiceError("Could not read the CI token from Keychain (\(status)).")
-    }
-    return String(data: data, encoding: .utf8)
-  }
-  static func save(_ token: String, account: String) throws {
-    let query = query(account)
-    let value = [kSecValueData as String: Data(token.utf8)]
-    var status = SecItemUpdate(query as CFDictionary, value as CFDictionary)
-    if status == errSecItemNotFound {
-      status = SecItemAdd(query.merging(value) { _, new in new } as CFDictionary, nil)
-    }
-    guard status == errSecSuccess else {
-      throw BuildServiceError("Could not save the CI token to Keychain (\(status)).")
-    }
-  }
-  static func forget(_ account: String) throws {
-    let status = SecItemDelete(query(account) as CFDictionary)
-    guard status == errSecSuccess || status == errSecItemNotFound else {
-      throw BuildServiceError("Could not remove the token (\(status)).")
-    }
-  }
-}
 
 @MainActor public final class PrintMonitorApplication: MiniApplication {
   public let id = "print-monitor"
@@ -54,26 +14,16 @@ private enum CIToken {
     id: "printer.paper", name: "Print Monitor paper",
     description: "Feed imaginary paper through the printer while CI runs.")
   private let playfulness: PlayfulnessSettings
-  private let observer: CompletionObserver
+  private let model: ProjectQueue
   public init(
     playfulness: PlayfulnessSettings,
     onSuccessfulBuilds: @escaping @MainActor (Int) -> Void = { _ in }
   ) {
     self.playfulness = playfulness
-    observer = CompletionObserver(notify: onSuccessfulBuilds)
+    model = ProjectQueue(observer: CompletionObserver(notify: onSuccessfulBuilds))
   }
   public func content() -> AnyView {
-    AnyView(PrintMonitorView(playfulness: playfulness, observer: observer))
-  }
-}
-
-@MainActor final class CompletionObserver {
-  private var tracker = BuildCompletionTracker()
-  let notify: @MainActor (Int) -> Void
-  init(notify: @escaping @MainActor (Int) -> Void) { self.notify = notify }
-  func observe(_ runs: [BuildRun], source: String) {
-    let count = tracker.observe(runs, source: source)
-    if count > 0 { notify(count) }
+    AnyView(PrintMonitorView(playfulness: playfulness, model: model))
   }
 }
 
@@ -82,98 +32,111 @@ private struct PrintMonitorView: View {
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   let playfulness: PlayfulnessSettings
-  let observer: CompletionObserver
-  @AppStorage("ci.provider") private var savedProvider = "GitHub"
-  @AppStorage("ci.project") private var savedProject = ""
-  @State private var provider = "GitHub"
-  @State private var project = ""
-  @State private var token = ""
-  @State private var credentials = false
-  @State private var runs: [BuildRun] = []
+  let model: ProjectQueue
+  @State private var managing = false
   @State private var error: String?
-  @State private var updated: Date?
-  @State private var busy = false
   @State private var active = NSApp.isActive
-  @State private var paused = false
   @State private var manualRefreshTask: Task<Void, Never>?
-  private var account: String { savedProvider + ":" + savedProject }
-  private var taskID: String { "\(savedProvider)|\(savedProject)|\(active)|\(paused)" }
-  private var printing: Bool { runs.contains { $0.state == .running } }
+  private var printing: Bool { model.builds.contains { $0.run.state == .running } }
+  private var taskID: String { "\(model.configurationID)|\(active)|\(model.paused)" }
+
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Picker("Provider", selection: $provider) {
-          Text("GitHub").tag("GitHub")
-          Text("GitLab").tag("GitLab")
-        }.labelsHidden().frame(width: 110)
-        TextField("owner/project", text: $project).accessibilityLabel("CI project path")
-          .onSubmit { if !busy { configure() } }
-        Button("Load") { configure() }.disabled(busy)
-        Button("Token…") { credentials = true }.disabled(savedProject.isEmpty || busy)
-      }.buttonStyle(RetroButtonStyle())
+        Picker(
+          "Queue",
+          selection: Binding(
+            get: { model.selection ?? "" },
+            set: { value in
+              do { try model.select(value.isEmpty ? nil : value) } catch {
+                self.error = error.localizedDescription
+              }
+            })
+        ) {
+          Text("All projects").tag("")
+          ForEach(model.projects) { project in
+            Text(project.service.rawValue + " · " + project.path).tag(project.id)
+          }
+        }.accessibilityLabel("Build queue")
+        Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
+      }
       HStack(spacing: 14) {
         printer.frame(width: 130, height: 76)
         VStack(alignment: .leading, spacing: 4) {
+          Text(model.jammed ? "Paper jam." : printing ? "Printing software…" : "Printer ready.")
+            .font(theme.typography.display(23))
           Text(
-            runs.first?.state == .failed
-              ? "Paper jam." : printing ? "Printing software…" : "Printer ready."
-          ).font(theme.typography.display(23))
-          Text(
-            savedProject.isEmpty
-              ? "Choose a project to load its build queue." : savedProvider + " · " + savedProject
-          ).font(theme.typography.small).lineLimit(2).help(savedProject)
-          if let updated {
-            Text("Updated " + updated.formatted(date: .omitted, time: .standard)).font(
-              theme.typography.small)
-          }
+            model.projects.isEmpty
+              ? "Add a project to load its build queue."
+              : "\(model.selectedProjects.count) \(model.selectedProjects.count == 1 ? "project" : "projects") · \(model.builds.filter { $0.active }.count) active builds"
+          )
+          .font(theme.typography.small)
         }
-        Spacer()
-        Button(paused ? "Resume" : "Pause") { paused.toggle() }.buttonStyle(RetroButtonStyle())
-        Button("Refresh", action: refreshManually).buttonStyle(RetroButtonStyle()).disabled(
-          savedProject.isEmpty || busy)
+        Spacer(minLength: 0)
+        Button(model.paused ? "Resume" : "Pause") { model.paused.toggle() }
+          .buttonStyle(RetroButtonStyle())
+        Button("Refresh all", action: refreshManually).buttonStyle(RetroButtonStyle())
+          .disabled(model.projects.isEmpty || model.busy)
       }
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 10) {
-          ForEach(runs) { run in
+          ForEach(model.selectedProjects) { project in
+            VStack(alignment: .leading, spacing: 3) {
+              Text(project.service.rawValue + " · " + project.path)
+                .font(theme.typography.title).lineLimit(1).help(project.path)
+              let snapshot = model.snapshots[project.id]
+              if let updated = snapshot?.updated {
+                Text("Updated " + updated.formatted(date: .abbreviated, time: .shortened))
+                  .font(theme.typography.small)
+              } else {
+                Text("Awaiting first successful refresh").font(theme.typography.small)
+              }
+              if let error = snapshot?.error {
+                Text(
+                  error + (snapshot?.updated == nil ? "" : " Showing the last successful refresh.")
+                )
+                .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
+              }
+            }.frame(maxWidth: .infinity, alignment: .leading)
+            Rectangle().frame(height: 1)
+          }
+          ForEach(model.builds) { build in
             HStack {
               VStack(alignment: .leading, spacing: 3) {
-                Text(run.title).font(theme.typography.title).lineLimit(2).help(run.title)
-                Text("#\(String(run.id)) · \(run.branch)").font(theme.typography.small).lineLimit(1)
-                  .help(run.branch)
+                if model.selection == nil {
+                  Text(build.project.service.rawValue + " · " + build.project.path)
+                    .font(theme.typography.small).lineLimit(1).help(build.project.path)
+                }
+                Text(build.run.title).font(theme.typography.title).lineLimit(2).help(
+                  build.run.title)
+                Text("#\(String(build.run.id)) · \(build.run.branch)")
+                  .font(theme.typography.small).lineLimit(1).help(build.run.branch)
               }
               Spacer()
-              Text(run.state.rawValue.uppercased()).font(theme.typography.small)
-              Button("Build & artifacts") { NSWorkspace.shared.open(run.url) }.buttonStyle(
-                RetroButtonStyle())
+              Text(build.run.state.rawValue.uppercased()).font(theme.typography.small)
+              Button("Build & artifacts") { NSWorkspace.shared.open(build.run.url) }
+                .buttonStyle(RetroButtonStyle())
             }
             Rectangle().frame(height: 1)
           }
-          if runs.isEmpty && updated != nil {
+          if model.builds.isEmpty {
             MiniEmptyState(
-              "An exceptionally tidy print queue.",
-              message: "No recent builds were returned for this project.")
-          } else if runs.isEmpty {
-            MiniEmptyState(
-              busy ? "Checking the queue…" : "Software, printed to order.",
-              message: savedProject.isEmpty
-                ? "Enter a GitHub or GitLab project above and choose Load. Public projects usually need no token."
-                : "Use Refresh to check the project. Any connection problem appears below.")
+              model.busy ? "Checking the queues…" : "An exceptionally tidy print queue.",
+              message: model.projects.isEmpty
+                ? "Choose Projects… to add GitHub or GitLab projects. Public projects usually need no token."
+                : "No builds to show. Each project's refresh status appears above.")
           }
         }
       }
-      if let error { Text(error).font(theme.typography.small) }
+      if let error = model.storageError ?? error { Text(error).font(theme.typography.small) }
       Text(
-        busy
-          ? "Checking the queue…"
-          : "Latest 20 builds · refreshes every 90 seconds while active · logs and artifacts open on the build page"
+        model.busy
+          ? "Checking all projects…"
+          : "20 builds/project · refresh every \(Int(model.refreshInterval))s while active · active builds first"
       )
       .font(theme.typography.small)
     }.padding(16)
       .onDisappear { manualRefreshTask?.cancel() }
-      .onAppear {
-        provider = savedProvider
-        project = savedProject
-      }
       .onReceive(
         NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
       ) { _ in active = true }
@@ -181,87 +144,24 @@ private struct PrintMonitorView: View {
         NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
       ) { _ in active = false }
       .task(id: taskID) {
-        guard active && !paused && !savedProject.isEmpty else { return }
+        guard active && !model.paused && !model.projects.isEmpty else { return }
         while !Task.isCancelled {
-          while busy {
+          while model.busy {
             do { try await Task.sleep(for: .milliseconds(50)) } catch { return }
           }
           guard !Task.isCancelled else { return }
-          await refresh()
-          do { try await Task.sleep(for: .seconds(90)) } catch { return }
+          await model.refresh(onlyDue: true)
+          do { try await Task.sleep(for: .seconds(model.refreshInterval)) } catch { return }
         }
       }
-      .sheet(isPresented: $credentials) {
-        VStack(alignment: .leading, spacing: 14) {
-          Text("Token for \(account)").font(theme.typography.title)
-          Text(
-            "Optional for public projects. Use Actions read access on GitHub or read_api access on GitLab. Stored in this Mac's Keychain."
-          )
-          .font(theme.typography.small)
-          SecureField("Token", text: $token)
-          HStack {
-            Button("Save token") {
-              do {
-                try CIToken.save(token, account: account)
-                token = ""
-                credentials = false
-                error = nil
-              } catch { self.error = error.localizedDescription }
-            }.disabled(token.isEmpty)
-            Button("Forget token") {
-              do {
-                try CIToken.forget(account)
-                token = ""
-                credentials = false
-                error = nil
-              } catch { self.error = error.localizedDescription }
-            }
-            Spacer()
-            Button("Cancel") {
-              token = ""
-              credentials = false
-            }
-          }.buttonStyle(RetroButtonStyle())
-          if let error { Text(error).font(theme.typography.small) }
-        }.padding(20).frame(width: 470).foregroundStyle(theme.ink).background(theme.paper)
+      .sheet(isPresented: $managing) {
+        ProjectManager(model: model) { if model.paused { refreshManually() } }
+          .environment(\.miniTheme, theme)
       }
   }
-  private func configure() {
-    do {
-      let path = try BuildHTTP.validateProject(
-        project.trimmingCharacters(in: .whitespacesAndNewlines), github: provider == "GitHub")
-      let changed = savedProvider != provider || savedProject != path
-      savedProvider = provider
-      savedProject = path
-      runs = []
-      updated = nil
-      error = nil
-      if !changed || paused { refreshManually() }
-    } catch { self.error = error.localizedDescription }
-  }
   private func refreshManually() {
-    manualRefreshTask?.cancel()
-    manualRefreshTask = Task { await refresh() }
-  }
-  private func refresh() async {
-    guard !busy, !savedProject.isEmpty else { return }
-    busy = true
-    defer { busy = false }
-    let identity = account
-    let project = savedProject
-    do {
-      let service: any BuildProvider =
-        savedProvider == "GitHub" ? GitHubProvider() : GitLabProvider()
-      let token = try CIToken.read(identity)
-      let result = try await service.runs(project: project, token: token)
-      guard !Task.isCancelled, identity == account else { return }
-      runs = result
-      observer.observe(result, source: identity)
-      updated = .now
-      error = nil
-    } catch is CancellationError {} catch {
-      if !Task.isCancelled, identity == account { self.error = error.localizedDescription }
-    }
+    guard !model.busy else { return }
+    manualRefreshTask = Task { await model.refresh() }
   }
   private var printer: some View {
     TimelineView(

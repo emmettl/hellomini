@@ -9,12 +9,16 @@ public struct BuildRun: Identifiable, Sendable {
   public let branch: String
   public let state: BuildState
   public let url: URL
-  public init(id: Int, title: String, branch: String, state: BuildState, url: URL) {
+  public let createdAt: Date?
+  public init(
+    id: Int, title: String, branch: String, state: BuildState, url: URL, createdAt: Date? = nil
+  ) {
     self.id = id
     self.title = title
     self.branch = branch
     self.state = state
     self.url = url
+    self.createdAt = createdAt
   }
 }
 public protocol BuildProvider: Sendable {
@@ -26,6 +30,14 @@ public struct BuildServiceError: LocalizedError, Sendable {
   public var errorDescription: String? { message }
 }
 public enum BuildHTTP {
+  public static func date(_ value: String?) -> Date? {
+    guard let value else { return nil }
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = formatter.date(from: value) { return date }
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter.date(from: value)
+  }
   public static func validateProject(_ project: String, github: Bool) throws -> String {
     let parts = project.split(separator: "/", omittingEmptySubsequences: false)
     let allowed = CharacterSet(

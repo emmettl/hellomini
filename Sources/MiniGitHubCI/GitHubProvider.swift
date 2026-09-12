@@ -18,6 +18,7 @@ public struct GitHubProvider: BuildProvider {
       let headBranch: String?
       let status: String
       let conclusion: String?
+      let createdAt: String?
     }
     struct Response: Decodable { let workflowRuns: [Run] }
     let decoder = JSONDecoder()
@@ -36,7 +37,8 @@ public struct GitHubProvider: BuildProvider {
       }
       return BuildRun(
         id: run.id, title: run.name ?? "Workflow #\(run.id)", branch: run.headBranch ?? "—",
-        state: state, url: URL(string: "https://github.com/\(project)/actions/runs/\(run.id)")!)
+        state: state, url: URL(string: "https://github.com/\(project)/actions/runs/\(run.id)")!,
+        createdAt: BuildHTTP.date(run.createdAt))
     }
   }
 }

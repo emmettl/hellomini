@@ -17,8 +17,11 @@ public struct GitLabProvider: BuildProvider {
       let id: Int
       let status: String
       let ref: String
+      let createdAt: String?
     }
-    return try JSONDecoder().decode([Run].self, from: data).map { run in
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return try decoder.decode([Run].self, from: data).map { run in
       let state: BuildState
       switch run.status {
       case "success": state = .passed
@@ -32,7 +35,8 @@ public struct GitLabProvider: BuildProvider {
       }
       return BuildRun(
         id: run.id, title: "Pipeline #\(run.id)", branch: run.ref, state: state,
-        url: URL(string: "https://gitlab.com/\(project)/-/pipelines/\(run.id)")!)
+        url: URL(string: "https://gitlab.com/\(project)/-/pipelines/\(run.id)")!,
+        createdAt: BuildHTTP.date(run.createdAt))
     }
   }
 }

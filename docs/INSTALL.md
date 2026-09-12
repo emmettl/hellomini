@@ -22,7 +22,7 @@ There is no published notarized download or Homebrew cask yet. The temporary ZIP
 
 - Launch apps from desktop icons or **Option-Command-M**, then use arrows/initial letters and Return.
 - Open Control Panel to choose a theme and enable or disable the extra silliness.
-- Print Monitor starts without a configured project. Enter a GitHub or GitLab.com `owner/project` path and choose Load. Public projects usually need no token; optional tokens are stored in Keychain.
+- Print Monitor starts without a configured project. Use **Projects…** to add GitHub or GitLab.com `owner/project` paths, then select an individual or combined queue. Public projects usually need no token; optional tokens are stored in Keychain.
 - Chooser discovers nearby services only after Browse. macOS may request Local Network access.
 - Finder and file import use normal macOS file access. Aquarium reads local activity only when enabled. Puzzle captures only Hello Mini's own window, without Screen Recording access.
 

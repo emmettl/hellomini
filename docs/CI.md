@@ -6,7 +6,7 @@ The public source repository is `emmettl/hellomini`. The private runner reposito
 
 `.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub-hosted `macos-26` ARM runners with Xcode 26.6 explicitly selected. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
 
-The workflow runs `make check`, builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
+The workflow runs `make check` (including Print Monitor tests in both debug and release configurations), builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
 
 ## Private Mini builds
 

@@ -14,6 +14,7 @@ import MiniPrintMonitor
 import MiniPuzzle
 import MiniScrapbook
 import MiniScreensaver
+import MiniSystem7Theme
 import MiniTeapot
 import MiniToasters
 import MiniUI
@@ -22,7 +23,7 @@ import SwiftUI
 
 @main
 struct HelloMiniApp: App {
-  private static let themes = MiniThemeRegistry.builtIns
+  private static let themes = MiniSystem.themes
   @State private var system = MiniSystem()
   private var settings: AppearanceSettings { system.settings }
   private var picture: DesktopPicture { system.picture }
@@ -94,7 +95,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 /// Owns shared app instances so Aquarium's desk and screensaver views use the same fish and meals.
 @MainActor private final class MiniSystem {
-  let settings = AppearanceSettings(themes: MiniThemeRegistry.builtIns.metadata)
+  static let themes = MiniThemeRegistry(
+    MiniThemeRegistry.builtIns.themes + [System7Theme.definition])
+  let settings = AppearanceSettings(themes: MiniSystem.themes.metadata)
   let picture = DesktopPicture()
   let playfulness = PlayfulnessSettings(
     effects: [
