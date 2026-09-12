@@ -10,11 +10,13 @@ public struct ScreensaverHost<Content: View>: View {
   private let playfulness: PlayfulnessSettings
   private let definitions: [MiniScreensaverDefinition]
   private let theme: MiniThemeDefinition
+  private let displaySize: CGSize?
   private let content: () -> Content
 
   public init(
     settings: ScreensaverSettings, playfulness: PlayfulnessSettings,
     definitions: [MiniScreensaverDefinition], theme: MiniThemeDefinition,
+    displaySize: CGSize? = nil,
     @ViewBuilder content: @escaping () -> Content
   ) {
     precondition(settings.savers == definitions.map(\.metadata))
@@ -22,6 +24,7 @@ public struct ScreensaverHost<Content: View>: View {
     self.playfulness = playfulness
     self.definitions = definitions
     self.theme = theme
+    self.displaySize = displaySize
     self.content = content
   }
   public var body: some View {
@@ -29,7 +32,7 @@ public struct ScreensaverHost<Content: View>: View {
       .environment(\.miniDesktopSuspended, settings.isPresenting)
       .background {
         ScreensaverProbe(
-          settings: settings, definitions: definitions, theme: theme,
+          settings: settings, definitions: definitions, theme: theme, displaySize: displaySize,
           allowed: playfulness.enabled, reduceMotion: reduceMotion,
           previewRevision: settings.previewRevision, idleMinutes: settings.idleMinutes)
       }
@@ -40,6 +43,7 @@ private struct ScreensaverProbe: NSViewRepresentable {
   let settings: ScreensaverSettings
   let definitions: [MiniScreensaverDefinition]
   let theme: MiniThemeDefinition
+  let displaySize: CGSize?
   let allowed: Bool
   let reduceMotion: Bool
   let previewRevision: Int
@@ -60,7 +64,9 @@ private struct ScreensaverProbe: NSViewRepresentable {
       coordinator.reset()
     }
     // Defer changes to observable presentation state until after this SwiftUI update.
-    if !allowed || old.theme.id != theme.id || old.reduceMotion != reduceMotion {
+    if !allowed || old.theme.id != theme.id || old.reduceMotion != reduceMotion
+      || old.displaySize != displaySize
+    {
       Task { @MainActor [weak coordinator] in coordinator?.close() }
     }
     if previewRevision != coordinator.previewRevision {
@@ -185,7 +191,7 @@ private struct ScreensaverProbe: NSViewRepresentable {
       let theme = configuration.theme
       window.contentView = NSHostingView(
         rootView: definition.content()
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .frame(width: configuration.displaySize?.width, height: configuration.displaySize?.height)
           .background(theme.paper)
           .overlay(alignment: .bottom) {
             Text("Move the mouse or press any key to return")
@@ -194,7 +200,9 @@ private struct ScreensaverProbe: NSViewRepresentable {
           }
           .environment(\.miniTheme, theme)
           .environment(\.colorScheme, theme.colorScheme)
-          .foregroundStyle(theme.ink))
+          .foregroundStyle(theme.ink)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .background(configuration.displaySize == nil ? theme.paper : .black))
       self.window = window
       definition.presenting(true)
       configuration.settings.setPresenting(true)

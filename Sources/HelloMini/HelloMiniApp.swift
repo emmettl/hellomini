@@ -26,6 +26,7 @@ import SwiftUI
 struct HelloMiniApp: App {
   private static let themes = MiniSystem.themes
   @State private var system = MiniSystem()
+  @State private var displayWindowChromeHeight: CGFloat = 0
   private var settings: AppearanceSettings { system.settings }
   private var picture: DesktopPicture { system.picture }
   private var playfulness: PlayfulnessSettings { system.playfulness }
@@ -53,29 +54,41 @@ struct HelloMiniApp: App {
 
   var body: some Scene {
     Window("Hello Mini", id: "desktop") {
-      StartupView(
-        playfulness: playfulness, theme: Self.themes.definition(for: settings.theme.id)!
+      MiniDisplayViewport(
+        puristMode: settings.puristMode, windowChromeChanged: { displayWindowChromeHeight = $0 }
       ) {
-        ScreensaverHost(
-          settings: system.screensavers, playfulness: playfulness,
-          definitions: system.saverDefinitions,
-          theme: Self.themes.definition(for: settings.theme.id)!
+        StartupView(
+          playfulness: playfulness, theme: Self.themes.definition(for: settings.theme.id)!
         ) {
-          DesktopView(
-            applications: applications(), initiallyOpen: ["activity"], settings: settings,
-            themes: Self.themes, picture: picture
-          )
+          ScreensaverHost(
+            settings: system.screensavers, playfulness: playfulness,
+            definitions: system.saverDefinitions,
+            theme: Self.themes.definition(for: settings.theme.id)!,
+            displaySize: settings.puristMode ? CGSize(width: 512, height: 384) : nil
+          ) {
+            DesktopView(
+              applications: applications(), initiallyOpen: ["activity"], settings: settings,
+              themes: Self.themes, picture: picture
+            )
+          }
         }
       }
-      .frame(minWidth: 960, minHeight: 600)
+      .frame(
+        width: settings.puristMode ? 512 : nil,
+        height: settings.puristMode ? max(1, 384 - displayWindowChromeHeight) : nil
+      )
+      .frame(minWidth: settings.puristMode ? nil : 960, minHeight: settings.puristMode ? nil : 600)
+      .ignoresSafeArea()
+      .containerBackground(.black, for: .window)
     }
     .defaultSize(width: 1280, height: 720)
     .windowStyle(.hiddenTitleBar)
+    .windowResizability(.contentMinSize)
     .commands {
       CommandGroup(replacing: .newItem) {}
       CommandGroup(after: .windowArrangement) {
         Button("Enter / Exit Full Screen") {
-          NSApp.keyWindow?.toggleFullScreen(nil)
+          MiniDesktopWindowActions.toggleFullScreen()
         }
         .keyboardShortcut("f", modifiers: [.control, .command])
       }

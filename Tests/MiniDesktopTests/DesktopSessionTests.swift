@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import MiniCore
 import SwiftUI
@@ -213,4 +214,65 @@ import Testing
   #expect(!DesktopDockLayout(desktopWidth: 1280, entryCount: 15, hasMinimised: false).overflows)
   #expect(DesktopDockLayout(desktopWidth: 640, entryCount: 30, hasMinimised: true).overflows)
   #expect(DesktopDockLayout(desktopWidth: 1280, entryCount: 0, hasMinimised: false).width.isFinite)
+}
+
+@Test @MainActor func puristDesktopLeavesWindowChromeReachableAndPreservesNormalPlacement() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let app = SessionTestApp("a")
+  let model = DesktopModel(applications: [app], initiallyOpen: [app.id], defaults: defaults)
+  let saved = WindowPlacement(
+    origin: CGPoint(x: 900, y: 450), size: CGSize(width: 800, height: 500))
+  model.place(app, at: saved)
+  for hasDock in [true, false] {
+    let area = DesktopDockLayout.windowArea(
+      desktop: CGSize(width: 512, height: 384), hasDock: hasDock)
+    let size = WindowResize.constrain(
+      saved.size, minimum: app.minimumSize,
+      maximum: CGSize(width: area.width - 16, height: area.height - 46))
+    let origin = WindowBounds(desktopSize: area, windowSize: size, menuBarHeight: 28).constrain(
+      saved.origin)
+    #expect(origin.x >= 8 && origin.y >= 38)
+    #expect(origin.x + size.width <= area.width - 8)
+    #expect(origin.y + size.height <= area.height - 8)
+    #expect(model.placement(for: app) == saved)
+  }
+}
+
+@Test func undersizedWindowsScrollTheirMinimumContentWithoutShrinkingControls() {
+  let normal = WindowContentLayout(
+    window: CGSize(width: 800, height: 500),
+    minimum: CGSize(width: 640, height: 400), chromeHeight: 48)
+  #expect(normal.scrollAxes.isEmpty)
+  #expect(normal.visible == normal.content)
+  let purist = WindowContentLayout(
+    window: CGSize(width: 496, height: 250),
+    minimum: CGSize(width: 640, height: 400), chromeHeight: 48)
+  #expect(purist.visible == CGSize(width: 496, height: 202))
+  #expect(purist.content == CGSize(width: 640, height: 352))
+  #expect(purist.scrollAxes == [.horizontal, .vertical])
+  let narrow = WindowContentLayout(
+    window: CGSize(width: 496, height: 500),
+    minimum: CGSize(width: 640, height: 400), chromeHeight: 48)
+  #expect(narrow.scrollAxes == .horizontal)
+}
+
+@Test @MainActor func puristCanvasStays512By384InsideALargerWindow() throws {
+  let view = MiniDisplayViewport(puristMode: true) {
+    Color(.sRGB, red: 1, green: 0, blue: 0, opacity: 1)
+  }
+  .frame(width: 1280, height: 720)
+  let image = NSBitmapImageRep(cgImage: try #require(ImageRenderer(content: view).cgImage))
+  func red(_ x: Int, _ y: Int) -> Bool {
+    guard let color = image.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { return false }
+    return color.redComponent > color.greenComponent + 0.2
+      && color.redComponent > color.blueComponent + 0.2
+  }
+  #expect(red(384, 168))
+  #expect(red(895, 551))
+  #expect(!red(383, 168))
+  #expect(!red(384, 167))
+  #expect(!red(896, 551))
+  #expect(!red(895, 552))
 }

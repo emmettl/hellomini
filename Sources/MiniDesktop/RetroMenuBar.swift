@@ -17,6 +17,8 @@ struct RetroMenuBar: View {
   @Environment(\.miniTheme) private var theme
   let menus: [RetroMenu]
   let applicationName: String
+  let desktopSize: CGSize
+  private var compact: Bool { desktopSize.width < 800 }
   @State private var openMenuID: String?
   @State private var highlightedID: String?
 
@@ -33,20 +35,25 @@ struct RetroMenuBar: View {
           .accessibilityAction { dismiss() }
       }
       HStack(spacing: 0) {
-        ForEach(menus) { menu in
-          menuHeading(menu)
-          if menu.id == "mini" {
-            Text(applicationName).font(theme.typography.title).padding(.horizontal, 12)
-          }
+        if compact {
+          ScrollView(.horizontal) { menuHeadings }
+            .scrollIndicators(.hidden)
+        } else {
+          menuHeadings
+          Spacer(minLength: 0)
         }
-        Spacer(minLength: 0)
         TimelineView(.periodic(from: .now, by: 1)) { context in
-          Text(context.date, format: .dateTime.weekday(.abbreviated).hour().minute())
-            .font(theme.typography.body)
+          Group {
+            if compact {
+              Text(context.date, format: .dateTime.hour().minute())
+            } else {
+              Text(context.date, format: .dateTime.weekday(.abbreviated).hour().minute())
+            }
+          }.font(compact ? theme.typography.small : theme.typography.body).fixedSize()
         }
-        .padding(.trailing, 20)
+        .padding(.horizontal, compact ? 6 : 20)
       }
-      .padding(.leading, 12)
+      .padding(.leading, compact ? 4 : 12)
       .frame(height: theme.menuBarHeight)
       .background { ThemeSurfaceView(theme.menuBar) }
       .overlay(alignment: .bottom) {
@@ -76,6 +83,17 @@ struct RetroMenuBar: View {
     }
   }
 
+  private var menuHeadings: some View {
+    HStack(spacing: 0) {
+      ForEach(menus) { menu in
+        menuHeading(menu)
+        if menu.id == "mini" && !compact {
+          Text(applicationName).font(theme.typography.title).padding(.horizontal, 12)
+        }
+      }
+    }
+  }
+
   private func menuHeading(_ menu: RetroMenu) -> some View {
     Button {
       if openMenuID == menu.id { dismiss() } else { open(menu) }
@@ -84,10 +102,10 @@ struct RetroMenuBar: View {
         if menu.id == "mini" {
           PixelIcon(symbol: .computer, scale: 1, selected: openMenuID == menu.id)
         } else {
-          Text(menu.title).font(theme.typography.title)
+          Text(menu.title).font(compact ? theme.typography.small : theme.typography.title)
         }
       }
-      .padding(.horizontal, 12)
+      .padding(.horizontal, compact ? 6 : 12)
       .frame(height: theme.menuBarHeight - theme.menuBarBorderWidth)
       .foregroundStyle(openMenuID == menu.id ? theme.selectionInk : theme.ink)
       .background { ThemeSurfaceView(openMenuID == menu.id ? theme.selection : theme.menuBar) }
@@ -108,21 +126,29 @@ struct RetroMenuBar: View {
   }
 
   private func menuPanel(_ menu: RetroMenu) -> some View {
-    VStack(spacing: 0) {
-      ForEach(menu.items) { item in
-        if item.isSeparator {
-          Rectangle().fill(theme.ink)
-            .frame(height: 1)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .accessibilityHidden(true)
-        } else {
-          menuRow(item)
-        }
-      }
+    let contentHeight = menu.items.reduce(CGFloat(8)) { height, item in
+      height + (item.isSeparator ? 11 : theme.menuRowHeight)
     }
-    .padding(.vertical, 4)
-    .frame(width: menu.width)
+    return ScrollViewReader { proxy in
+      ScrollView(.vertical) {
+        VStack(spacing: 0) {
+          ForEach(menu.items) { item in
+            if item.isSeparator {
+              Rectangle().fill(theme.ink)
+                .frame(height: 1).padding(.horizontal, 10).padding(.vertical, 5)
+            } else {
+              menuRow(item).id(item.id)
+            }
+          }
+        }.padding(.vertical, 4)
+      }
+      .scrollIndicators(.visible)
+      .onChange(of: highlightedID) { _, id in if let id { proxy.scrollTo(id) } }
+    }
+    .frame(
+      width: min(menu.width, desktopSize.width - 4),
+      height: min(contentHeight, max(1, desktopSize.height - theme.menuBarHeight - 4))
+    )
     .themeFrame(theme.menu)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("\(menu.title) menu items")

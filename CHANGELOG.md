@@ -4,7 +4,7 @@
 
 The first complete little desktop. This candidate is being prepared; no signed public binary release has been published yet.
 
-- A Macintosh startup homage, themed desktop menus, pixel icons, and saved, resizable windows.
+- A Macintosh startup homage, themed desktop menus, pixel icons, and saved, resizable windows. Optional Purist mode fixes the logical desktop at 512 × 384, with compact menus, scrollable oversized app content, and restoration of the larger window.
 - Finder, Activity Monitor, Clock, and Control Panel with Classic, Paper, Midnight, System 7, and Aqua themes. Aqua adds pinstripes, gel controls, smooth colour icons, blue wave wallpaper, and working red/yellow/green close, minimise, and zoom buttons. Minimised and zoomed states survive relaunch, and Window menu actions work across themes. Aqua also includes a translucent dock with running indicators, app launching, minimised-window tiles, keyboard navigation, and reserved window space.
 - Aquarium, Utah Teapot, and a decorative World Clock globe rendered with Metal in the selected theme's palette.
 - Scrapbook for local notes, commands, links, and image snapshots.

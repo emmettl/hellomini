@@ -42,3 +42,19 @@ import Testing
   #expect(AppearanceSettings(defaults: defaults, themes: catalog).theme == custom)
   #expect(AppearanceSettings(defaults: defaults, themes: [.paper]).theme == .paper)
 }
+
+@Test @MainActor func puristModePersistsIndependentlyOfTheTheme() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let settings = AppearanceSettings(defaults: defaults)
+  #expect(!settings.puristMode)
+  settings.setPuristMode(true)
+  settings.selectTheme(id: MiniTheme.midnight.id)
+  let restored = AppearanceSettings(defaults: defaults)
+  #expect(restored.puristMode)
+  #expect(restored.theme == .midnight)
+  restored.setPuristMode(false)
+  #expect(!AppearanceSettings(defaults: defaults).puristMode)
+  #expect(AppearanceSettings(defaults: defaults).theme == .midnight)
+}

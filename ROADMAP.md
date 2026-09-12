@@ -48,7 +48,7 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 
 - Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
-- System 7 and early Aqua are implemented as independent theme modules. Refine era-specific controls as the shared framework grows.
+- System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.
 

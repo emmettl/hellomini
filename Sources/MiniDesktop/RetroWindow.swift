@@ -64,9 +64,14 @@ struct RetroWindow<Content: View>: View {
           }
       )
       Rectangle().fill(theme.ink).frame(height: theme.titleBarDivider)
-      content()
-        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-        .clipped()
+      let viewport = WindowContentLayout(
+        window: size, minimum: minimumSize,
+        chromeHeight: theme.titleBarHeight + theme.titleBarDivider + 17)
+      ScrollView(viewport.scrollAxes) {
+        content().frame(width: viewport.content.width, height: viewport.content.height).clipped()
+      }
+      .scrollIndicators(.visible)
+      .frame(width: viewport.visible.width, height: viewport.visible.height)
       Rectangle().fill(theme.ink).frame(height: 1)
       HStack(spacing: 0) {
         Spacer(minLength: 0)

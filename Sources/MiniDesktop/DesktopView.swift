@@ -226,8 +226,11 @@ public struct DesktopView: View {
           .offset(y: windowArea.height)
           .zIndex(Double(model.applications.count + 1))
         }
-        RetroMenuBar(menus: menus, applicationName: model.active?.name ?? "Hello Mini")
-          .zIndex(Double(model.applications.count + 2))
+        RetroMenuBar(
+          menus: menus, applicationName: model.active?.name ?? "Hello Mini",
+          desktopSize: geometry.size
+        )
+        .zIndex(Double(model.applications.count + 2))
       }
       .coordinateSpace(name: DesktopCoordinateSpace.windows)
       .foregroundStyle(theme.ink)
@@ -235,7 +238,6 @@ public struct DesktopView: View {
       .background(DesktopWindowConfiguration())
       .background { if let picture { DesktopPictureCapture(picture: picture) } }
     }
-    .ignoresSafeArea()
     .environment(\.miniTheme, theme)
     .tint(theme.accent)
     .preferredColorScheme(theme.colorScheme)
@@ -295,11 +297,17 @@ public struct DesktopView: View {
     let fullScreen = RetroMenuItem(
       id: "fullscreen", title: "Enter / Exit Full Screen",
       shortcut: RetroShortcut(key: "f", modifiers: [.control, .command], label: "⌃⌘F")
-    ) { NSApp.keyWindow?.toggleFullScreen(nil) }
+    ) { MiniDesktopWindowActions.toggleFullScreen() }
     if let index = appMenus.firstIndex(where: { $0.id == "view" }) {
       appMenus[index].items += [.separator("fullscreen-divider"), fullScreen]
     } else {
       appMenus.append(RetroMenu(id: "view", title: "View", width: 330, items: [fullScreen]))
+    }
+    if let index = appMenus.firstIndex(where: { $0.id == "view" }) {
+      appMenus[index].items.append(
+        RetroMenuItem(
+          id: "purist", title: "Purist Mode — 512 × 384", checked: settings.puristMode
+        ) { settings.setPuristMode(!settings.puristMode) })
     }
     if theme.dock != nil, let index = appMenus.firstIndex(where: { $0.id == "view" }) {
       appMenus[index].items.append(

@@ -29,19 +29,27 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
 /// The composition root supplies the same catalog to preferences and rendering.
 @MainActor @Observable public final class AppearanceSettings {
   public private(set) var theme: MiniTheme
+  public private(set) var puristMode: Bool
   public let availableThemes: [MiniTheme]
   @ObservationIgnored private let defaults: UserDefaults
   static let themeKey = "appearance.theme"
+  static let puristKey = "appearance.puristMode"
 
   public init(defaults: UserDefaults = .standard, themes: [MiniTheme] = MiniTheme.builtIns) {
     precondition(!themes.isEmpty, "At least one theme is required")
     precondition(Set(themes.map(\.id)).count == themes.count, "Theme IDs must be unique")
     self.defaults = defaults
+    puristMode = defaults.object(forKey: Self.puristKey) as? Bool ?? false
     availableThemes = themes
     let savedID = defaults.string(forKey: Self.themeKey)
     theme =
       themes.first { $0.id == savedID }
       ?? themes.first { $0.id == MiniTheme.classic.id } ?? themes[0]
+  }
+
+  public func setPuristMode(_ enabled: Bool) {
+    puristMode = enabled
+    defaults.set(enabled, forKey: Self.puristKey)
   }
 
   /// Unknown IDs cannot leave settings pointing at a renderer that isn't installed.

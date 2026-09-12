@@ -42,7 +42,14 @@ import SwiftUI
             ) {
               self.settings.selectTheme(id: theme.id)
             }
-          }
+          } + [
+            .separator("display-mode"),
+            RetroMenuItem(
+              id: "purist", title: "Purist Mode — 512 × 384", checked: settings.puristMode
+            ) {
+              self.settings.setPuristMode(!self.settings.puristMode)
+            },
+          ]
       ),
       RetroMenu(
         id: "playfulness", title: "Playfulness", width: 280,
@@ -119,6 +126,13 @@ private struct ControlPanelView: View {
           Text("Choose a look for your desktop.").font(theme.typography.small)
         }
       }
+      Toggle(
+        "Purist mode — 512 × 384",
+        isOn: Binding(
+          get: { settings.puristMode }, set: { settings.setPuristMode($0) })
+      )
+      .toggleStyle(.checkbox)
+      .help("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
       Rectangle().frame(height: 1)
       AppearanceScrollView {
         HStack(alignment: .top, spacing: 14) {
