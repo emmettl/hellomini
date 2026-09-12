@@ -10,8 +10,10 @@ public struct BuildRun: Identifiable, Sendable {
   public let state: BuildState
   public let url: URL
   public let createdAt: Date?
+  public let workflow: String?
   public init(
-    id: Int, title: String, branch: String, state: BuildState, url: URL, createdAt: Date? = nil
+    id: Int, title: String, branch: String, state: BuildState, url: URL, createdAt: Date? = nil,
+    workflow: String? = nil
   ) {
     self.id = id
     self.title = title
@@ -19,6 +21,7 @@ public struct BuildRun: Identifiable, Sendable {
     self.state = state
     self.url = url
     self.createdAt = createdAt
+    self.workflow = workflow
   }
 }
 public protocol BuildProvider: Sendable {
@@ -51,6 +54,16 @@ public enum BuildHTTP {
       throw BuildServiceError("Use an owner/project path, with no URL, query, or credentials.")
     }
     return project
+  }
+  public static func allowsRedirect(from original: URL?, to destination: URL?) -> Bool {
+    guard let original, let destination,
+      original.scheme == "https", destination.scheme == "https",
+      let originalHost = original.host, !originalHost.isEmpty,
+      originalHost.lowercased() == destination.host?.lowercased(),
+      (original.port ?? 443) == (destination.port ?? 443),
+      destination.user == nil, destination.password == nil
+    else { return false }
+    return true
   }
   public static func data(url: URL, headers: [String: String]) async throws -> Data {
     var request = URLRequest(url: url)
@@ -90,7 +103,7 @@ private final class SameOriginRedirects: NSObject, URLSessionTaskDelegate, @unch
     newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void
   ) {
     completionHandler(
-      request.url?.scheme == "https" && request.url?.host == task.originalRequest?.url?.host
+      BuildHTTP.allowsRedirect(from: task.originalRequest?.url, to: request.url)
         ? request : nil)
   }
 }

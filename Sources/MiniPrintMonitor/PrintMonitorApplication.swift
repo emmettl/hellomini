@@ -56,10 +56,35 @@ private struct PrintMonitorView: View {
         ) {
           Text("All projects").tag("")
           ForEach(model.projects) { project in
-            Text(project.service.rawValue + " · " + project.path).tag(project.id)
+            Text(project.label).tag(project.id)
           }
         }.accessibilityLabel("Build queue")
         Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
+      }
+      HStack {
+        Picker(
+          "Branch",
+          selection: Binding(get: { model.filters.branch }, set: { setFilter(branch: $0) })
+        ) {
+          Text("All branches").tag(String?.none)
+          ForEach(model.branchChoices, id: \.self) { Text($0).tag(Optional($0)) }
+        }.accessibilityLabel("Filter by branch")
+        Picker(
+          "Workflow",
+          selection: Binding(get: { model.filters.workflow }, set: { setFilter(workflow: $0) })
+        ) {
+          Text("All workflows").tag(String?.none)
+          ForEach(model.workflowChoices, id: \.self) { Text($0).tag(Optional($0)) }
+        }.accessibilityLabel("Filter by GitHub workflow")
+        Button("Clear") { updateFilters(QueueFilters()) }.buttonStyle(RetroButtonStyle())
+          .disabled(!model.filters.isActive)
+      }
+      if model.filters.isActive {
+        Text(
+          "Filtering the latest 20 builds per project"
+            + (model.filters.workflow == nil ? "" : " · GitHub workflows only")
+        )
+        .font(theme.typography.small)
       }
       HStack(spacing: 14) {
         printer.frame(width: 130, height: 76)
@@ -83,8 +108,8 @@ private struct PrintMonitorView: View {
         LazyVStack(alignment: .leading, spacing: 10) {
           ForEach(model.selectedProjects) { project in
             VStack(alignment: .leading, spacing: 3) {
-              Text(project.service.rawValue + " · " + project.path)
-                .font(theme.typography.title).lineLimit(1).help(project.path)
+              Text(project.label)
+                .font(theme.typography.title).lineLimit(1).help(project.label)
               let snapshot = model.snapshots[project.id]
               if let updated = snapshot?.updated {
                 Text("Updated " + updated.formatted(date: .abbreviated, time: .shortened))
@@ -105,8 +130,8 @@ private struct PrintMonitorView: View {
             HStack {
               VStack(alignment: .leading, spacing: 3) {
                 if model.selection == nil {
-                  Text(build.project.service.rawValue + " · " + build.project.path)
-                    .font(theme.typography.small).lineLimit(1).help(build.project.path)
+                  Text(build.project.label)
+                    .font(theme.typography.small).lineLimit(1).help(build.project.label)
                 }
                 Text(build.run.title).font(theme.typography.title).lineLimit(2).help(
                   build.run.title)
@@ -128,7 +153,9 @@ private struct PrintMonitorView: View {
               model.busy ? "Checking the queues…" : "An exceptionally tidy print queue.",
               message: model.projects.isEmpty
                 ? "Choose Projects… to add GitHub or GitLab projects. Public projects usually need no token."
-                : "No builds to show. Each project's refresh status appears above.")
+                : model.filters.isActive
+                  ? "No recent builds match. Clear the filters to see all loaded builds."
+                  : "No builds to show. Each project's refresh status appears above.")
           }
         }
       }
@@ -165,6 +192,22 @@ private struct PrintMonitorView: View {
         ProjectManager(model: model) { if model.paused { refreshManually() } }
           .environment(\.miniTheme, theme)
       }
+  }
+  private func setFilter(branch: String?) {
+    var value = model.filters
+    value.branch = branch
+    updateFilters(value)
+  }
+  private func setFilter(workflow: String?) {
+    var value = model.filters
+    value.workflow = workflow
+    updateFilters(value)
+  }
+  private func updateFilters(_ value: QueueFilters) {
+    do {
+      try model.setFilters(value)
+      error = nil
+    } catch { self.error = error.localizedDescription }
   }
   private func refreshManually() {
     guard !model.busy else { return }

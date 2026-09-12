@@ -9,15 +9,18 @@ extension GitHubProvider {
     try BuildJobPage.validate(runID: runID, page: page)
     let url = URL(
       string:
-        "https://api.github.com/repos/\(project)/actions/runs/\(runID)/jobs?filter=latest&per_page=100&page=\(page)"
+        "\(server.githubAPI)/repos/\(project)/actions/runs/\(runID)/jobs?filter=latest&per_page=100&page=\(page)"
     )!
     var headers = ["Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"]
     if let token, !token.isEmpty { headers["Authorization"] = "Bearer " + token }
     return try Self.decodeJobs(
-      await BuildHTTP.data(url: url, headers: headers), project: project, runID: runID, page: page)
+      await fetchData(url, headers), project: project, runID: runID, page: page,
+      server: server)
   }
 
-  public static func decodeJobs(_ data: Data, project: String, runID: Int, page: Int = 1) throws
+  public static func decodeJobs(
+    _ data: Data, project: String, runID: Int, page: Int = 1, server: BuildServer = .github
+  ) throws
     -> BuildJobPage
   {
     let project = try BuildHTTP.validateProject(project, github: true)
@@ -57,7 +60,7 @@ extension GitHubProvider {
           : "Failed steps: " + failedSteps.joined(separator: ", ")) : nil
       return BuildJob(
         id: job.id, name: job.name, state: result,
-        url: URL(string: "https://github.com/\(project)/actions/runs/\(runID)/job/\(job.id)")!,
+        url: URL(string: "\(server.website)/\(project)/actions/runs/\(runID)/job/\(job.id)")!,
         startedAt: BuildHTTP.date(job.startedAt), finishedAt: BuildHTTP.date(job.completedAt),
         failure: failure, steps: steps)
     }

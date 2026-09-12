@@ -8,6 +8,8 @@ struct ProjectManager: View {
   let added: () -> Void
   @State private var service = CIService.github
   @State private var path = ""
+  @State private var customServer = false
+  @State private var serverAddress = ""
   @State private var error: String?
   @State private var tokenProject: CIProject?
   @State private var removing: CIProject?
@@ -23,13 +25,24 @@ struct ProjectManager: View {
           .onSubmit(add)
         Button("Add", action: add).disabled(model.busy || model.storageError != nil)
       }
+      Toggle("Self-hosted server", isOn: $customServer).font(theme.typography.small)
+      if customServer {
+        TextField("https://ci.example.com", text: $serverAddress)
+          .accessibilityLabel("CI server website address")
+        Text(
+          "HTTPS website address; omit API paths. GitHub Enterprise Server or GitLab Self-Managed."
+        )
+        .font(theme.typography.small)
+      }
       ScrollView {
         VStack(alignment: .leading, spacing: 12) {
           ForEach(model.projects) { project in
             HStack {
               VStack(alignment: .leading, spacing: 3) {
                 Text(project.path).font(theme.typography.title).lineLimit(1).help(project.path)
-                Text(project.service.rawValue).font(theme.typography.small)
+                Text(project.service.rawValue + " · " + project.serverAddress).font(
+                  theme.typography.small
+                ).lineLimit(1).help(project.serverAddress)
               }
               Spacer()
               Button("Token…") { tokenProject = project }.disabled(model.busy)
@@ -77,7 +90,7 @@ struct ProjectManager: View {
   }
   private func add() {
     do {
-      try model.add(service: service, path: path)
+      try model.add(service: service, path: path, server: customServer ? serverAddress : nil)
       path = ""
       error = nil
       added()
@@ -93,7 +106,9 @@ private struct ProjectTokenEditor: View {
   @State private var error: String?
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
-      Text("Token for \(project.account)").font(theme.typography.title)
+      Text("Token for \(project.path)").font(theme.typography.title)
+      Text("Server: " + project.serverAddress).font(theme.typography.small).textSelection(
+        .enabled)
       Text(
         "Optional for public projects. Use Actions read access on GitHub or read_api access on GitLab. Stored in this Mac's Keychain."
       )

@@ -37,7 +37,7 @@ private func run(_ id: Int, _ state: BuildState, date: TimeInterval = 0) -> Buil
   let defaults = try #require(UserDefaults(suiteName: suite))
   defer { defaults.removePersistentDomain(forName: suite) }
   for source in [
-    "bad json", #"{"version":2,"projects":[]}"#,
+    "bad json", #"{"version":3,"projects":[]}"#,
     #"{"version":1,"projects":[{"service":"GitHub","path":"https://example.com"}]}"#,
     #"{"version":1,"projects":[{"service":"GitHub","path":"a/b"},{"service":"GitHub","path":"A/B"}]}"#,
   ] {

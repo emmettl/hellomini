@@ -20,7 +20,7 @@ All nine belong on the roadmap. Each should work as a small, coherent applicatio
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-Print Monitor now reads GitHub Actions and GitLab.com pipelines through separate provider modules, with up to 12 saved projects, combined and individual queues, independent refresh errors and completion histories, optional Keychain tokens, on-demand job sheets with failed-step or failure-reason information, and links to job logs and build artifacts. More providers, self-hosted service URLs, and artifact downloads inside the app remain future work. Successful builds can now feed Aquarium through an optional completion callback.
+Print Monitor now reads GitHub Actions and GitLab pipelines on public or configured self-hosted servers through separate provider modules, with up to 12 saved projects, combined and individual queues, saved branch/workflow filters, independent refresh errors and completion histories, optional Keychain tokens, on-demand job sheets with failed-step or failure-reason information, and links to job logs and build artifacts. More providers, server-side history searches, subpath installations, and artifact downloads inside the app remain future work. Successful builds can now feed Aquarium through an optional completion callback.
 
 Chooser discovers advertised SSH, Screen Sharing, HTTP, and HTTPS services using Bonjour, with manual host entry and explicit connection opening. Wastebasket reviews known Xcode/SwiftPM caches and chosen projects' `.build` contents, then moves only reviewed selections to macOS Trash. Disk First Aid lists mounted volumes and reads available SMART information; it performs no repairs.
 
@@ -47,7 +47,7 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 ## Next priorities
 
 - Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
-- Deepen Print Monitor with branch/workflow filters and self-hosted GitHub/GitLab endpoints. Saved projects, the combined queue, and job/failure details are implemented.
+- Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
 - System 7 is implemented as its own theme module. Early Aqua is the next distinct-era theme.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.

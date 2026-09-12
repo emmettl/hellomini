@@ -23,8 +23,7 @@ import SwiftUI
     fetch: @escaping @Sendable (CIProject, Int, Int) async throws -> BuildJobPage = {
       project, runID, page in
       let token = try CIToken.read(project.account)
-      let provider: any BuildProvider =
-        project.service == .github ? GitHubProvider() : GitLabProvider()
+      let provider = try project.provider()
       return try await provider.jobs(project: project.path, runID: runID, page: page, token: token)
     }
   ) {
@@ -65,8 +64,8 @@ struct JobDetailsView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("Inspect print job").font(theme.typography.display(22))
-      Text(model.build.project.service.rawValue + " · " + model.build.project.path)
-        .font(theme.typography.small).lineLimit(1).help(model.build.project.path)
+      Text(model.build.project.label)
+        .font(theme.typography.small).lineLimit(1).help(model.build.project.label)
       Text(model.build.run.title).font(theme.typography.title).lineLimit(2).help(
         model.build.run.title)
       Text("#\(String(model.build.run.id)) · \(model.build.run.branch)")
