@@ -105,6 +105,10 @@ public struct MiniThemeDefinition: Identifiable, Sendable {
   public var selection: ThemeSurface = .solid(.black)
   public var accent: Color = .black
   public var typography = ThemeTypography()
+  /// Optional desktop-only text treatment; nil preserves the paper labels of classic themes.
+  public var desktopInk: Color?
+  public var desktopLabelSurface: ThemeSurface?
+  public var desktopTextShadow: Color = .clear
   public var desktop: ThemeSurface = .dots(background: .white, foreground: .black, spacing: 4)
   public var window = ThemeFrameStyle(surface: .solid(.white), border: .black, shadow: .black)
   public var inactiveWindow = ThemeFrameStyle(

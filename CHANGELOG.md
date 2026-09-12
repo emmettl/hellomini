@@ -5,7 +5,7 @@
 The first complete little desktop. This candidate is being prepared; no signed public binary release has been published yet.
 
 - A Macintosh startup homage, themed desktop menus, pixel icons, and saved, resizable windows.
-- Finder, Activity Monitor, Clock, and Control Panel with Classic, Paper, Midnight, and System 7 themes.
+- Finder, Activity Monitor, Clock, and Control Panel with Classic, Paper, Midnight, System 7, and Aqua themes. Aqua adds pinstripes, gel controls, smooth colour icons, and blue wave wallpaper.
 - Aquarium, Utah Teapot, and a decorative World Clock globe rendered with Metal in the selected theme's palette.
 - Scrapbook for local notes, commands, links, and image snapshots.
 - Desk Calculator with expressions, exact programmer arithmetic, units, timestamps, plots, and unreasonable mathematics.
@@ -16,4 +16,4 @@ The first complete little desktop. This candidate is being prepared; no signed p
 - Optional spectacle switches, Reduce Motion support, and pausing for fully covered graphics windows.
 - Independent SwiftPM application modules and shared theme and CI-provider contracts.
 
-Requires Apple silicon, macOS 26, and a 960 × 600 or larger desktop; designed around 1280 × 720. Source builds require Swift 6.3. Public binary signing and notarization are pending. In-app artifact downloads, standalone macOS screensaver packaging, the Aqua theme, and external plugin loading remain future work.
+Requires Apple silicon, macOS 26, and a 960 × 600 or larger desktop; designed around 1280 × 720. Source builds require Swift 6.3. Public binary signing and notarization are pending. In-app artifact downloads, standalone macOS screensaver packaging, and external plugin loading remain future work.

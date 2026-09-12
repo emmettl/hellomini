@@ -110,8 +110,12 @@ public struct DesktopView: View {
                 VStack(spacing: 8) {
                   PixelIcon(symbol: symbol(for: app.icon), scale: 3)
                   Text(app.name).font(theme.typography.small)
+                    .foregroundStyle(theme.desktopInk ?? theme.ink)
+                    .shadow(color: theme.desktopTextShadow, radius: 1, x: 0, y: 1)
                     .padding(.horizontal, 4).padding(.vertical, 2)
-                    .background { Rectangle().fill(theme.paper) }
+                    .background {
+                      ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper))
+                    }
                 }
                 .frame(width: 134)
                 .contentShape(Rectangle())
@@ -129,8 +133,10 @@ public struct DesktopView: View {
           Text("hello, again.").font(theme.typography.display(28))
           Text("A little desktop. A lot of possibility.").font(theme.typography.small)
         }
+        .foregroundStyle(theme.desktopInk ?? theme.ink)
+        .shadow(color: theme.desktopTextShadow, radius: 1, x: 0, y: 1)
         .padding(10)
-        .background(theme.paper)
+        .background { ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper)) }
         .offset(x: 28, y: geometry.size.height - 90)
 
         ForEach(model.applications.filter { model.openIDs.contains($0.id) }, id: \.id) { app in

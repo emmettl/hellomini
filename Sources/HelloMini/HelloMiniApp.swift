@@ -1,6 +1,7 @@
 import AppKit
 import MiniAbout
 import MiniActivityMonitor
+import MiniAquaTheme
 import MiniAquarium
 import MiniCalculator
 import MiniChooser
@@ -96,7 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// Owns shared app instances so Aquarium's desk and screensaver views use the same fish and meals.
 @MainActor private final class MiniSystem {
   static let themes = MiniThemeRegistry(
-    MiniThemeRegistry.builtIns.themes + [System7Theme.definition])
+    MiniThemeRegistry.builtIns.themes + [System7Theme.definition, AquaTheme.definition])
   let settings = AppearanceSettings(themes: MiniSystem.themes.metadata)
   let picture = DesktopPicture()
   let playfulness = PlayfulnessSettings(

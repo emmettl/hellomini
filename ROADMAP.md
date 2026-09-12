@@ -33,7 +33,7 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 ## Shared design commitments
 
 - Keep applications in their own SwiftPM modules using `MiniCore` and shared themed controls. External plugins containing compiled code and assets remain a possible distribution model; the exact model is undecided.
-- Express modern graphics through the selected theme's visual language, including the shipped System 7 theme and future early Aqua designs.
+- Express modern graphics through the selected theme's visual language, including the shipped System 7 and early Aqua themes.
 - Put optional spectacle in **Control Panel → Playfulness**, with individual switches and the existing Extra silliness master switch. Keep useful information available when effects are disabled.
 - Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or inactive. Elaborate effects must not compromise solid window interaction.
 - Preserve the distinction between real status and decorative storytelling: a printer jam may represent a failed build, but the actual failure details must remain accessible.
@@ -48,7 +48,7 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 
 - Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
-- System 7 is implemented as its own theme module. Early Aqua is the next distinct-era theme.
+- System 7 and early Aqua are implemented as independent theme modules. Refine era-specific controls as the shared framework grows.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.
 
@@ -56,7 +56,7 @@ The first screensaver pass is now implemented: shared host, Aquarium, original M
 
 ## Other continuing directions
 
-- **Themes:** System 7 is available. Mac OS X 10.0–era Aqua, including its pinstripes, remains planned.
+- **Themes:** System 7 and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, and original smooth icons. More era-specific controls can follow without duplicating application behavior.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** MIT is selected; local signing/notarization tooling and release documentation are ready. Supply a Developer ID Application identity and notarization profile, validate the downloadable candidate, then publish the first GitHub release and evaluate Homebrew. Explicit installation on the Mini remains separate from its working private build pipeline.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
