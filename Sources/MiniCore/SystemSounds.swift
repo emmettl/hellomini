@@ -66,6 +66,9 @@ import AppKit
 }
 
 public enum DesktopEffects {
+  public static let dockLaunchBounce = MiniPlayfulEffect(
+    id: "desktop.dockLaunchBounce", name: "Dock launch bounce",
+    description: "Give newly opened Aqua applications two little hops in the dock.")
   public static let menuBlink = MiniPlayfulEffect(
     id: "desktop.menuBlink", name: "Menu command blink",
     description: "Flash chosen System 7 commands three times before closing the menu.")

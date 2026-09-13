@@ -1,3 +1,4 @@
+import AppKit
 import MiniCore
 import MiniUI
 import SwiftUI
@@ -29,6 +30,8 @@ struct DesktopDockLayout {
 struct DesktopDock: View {
   @Environment(\.miniTheme) private var theme
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.miniDesktopSuspended) private var suspended
+  @State private var appActive = NSApp.isActive
   let model: DesktopModel
   let desktopWidth: CGFloat
   let style: ThemeFrameStyle
@@ -89,6 +92,8 @@ struct DesktopDock: View {
           }.padding(.horizontal, 8).frame(height: 72)
         }
         .scrollIndicators(.hidden)
+        .scrollClipDisabled()
+        .mask { Rectangle().padding(.vertical, -32) }
         .frame(width: layout.scrollWidth, height: 72)
         if layout.overflows {
           scrollButton(
@@ -129,6 +134,10 @@ struct DesktopDock: View {
     .padding(.bottom, 8)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Dock")
+    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
+    { _ in appActive = true }
+    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
+    { _ in appActive = false }
   }
 
   private func dockButton(_ entry: Entry, iconSize: CGFloat) -> some View {
@@ -177,7 +186,13 @@ struct DesktopDock: View {
         .shadow(color: .black.opacity(0.25), radius: 1, x: 0, y: 2)
         .offset(
           y: highlighted && !reduceMotion
-            && playfulness?.allows(DesktopEffects.dockMagnification.id) == true ? -3 : 0)
+            && playfulness?.allows(DesktopEffects.dockMagnification.id) == true ? -3 : 0
+        )
+        .modifier(
+          DockLaunchBounce(
+            running: running && !entry.minimised,
+            enabled: !reduceMotion && !suspended && appActive
+              && playfulness?.allows(DesktopEffects.dockLaunchBounce.id) == true))
         Path { path in
           path.move(to: CGPoint(x: 4, y: 0))
           path.addLine(to: CGPoint(x: 8, y: 5))

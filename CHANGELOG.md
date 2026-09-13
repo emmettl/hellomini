@@ -11,7 +11,7 @@
 - **Alarm Clock** with saved timers, 25-minute focus sessions, 5-minute breaks, and a menu bar alarm that survives closed accessory windows. Overdue timers fire on wake or next launch; sessions advance explicitly.
 - **Find File** with Spotlight file-name search, a tiny dog, folder scope, and Open/Reveal actions; Finder supplies a search button and Command-F.
 - A saved **8 × 8 desktop pattern editor** in Control Panel, and Finder colour labels that update named macOS tags while preserving unrelated tags.
-- Optional Aqua dock magnification and System 7 **Balloon Help**, with native help and accessibility hints retained.
+- Optional Aqua dock magnification, a brief two-hop launch bounce, and System 7 **Balloon Help**, with native help and accessibility hints retained.
 
 Genie minimisation remains on the roadmap. This is a local development build, not a signed public release. Live CI writes and extended sleep/wake testing remain release-validation work.
 
