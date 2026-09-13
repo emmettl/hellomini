@@ -1,6 +1,6 @@
-# Preparing a public release
+# Releasing Hello Mini
 
-Hello Mini uses the MIT license. The current candidate is **0.1.0 (build 1)**. Build CI remains separate from distribution: public checks and the private Mini runner use ad-hoc signing and have no distribution credentials.
+Hello Mini uses the MIT license. The first public release is [0.1.0 (build 1)](https://github.com/emmettl/hellomini/releases/tag/v0.1.0), published on 13 September 2026. It is Developer ID-signed, notarized, and has been tested from a browser download on the physical Mini. The steps below apply to subsequent releases. Build CI remains separate from distribution: public checks and the private Mini runner use ad-hoc signing and have no distribution credentials.
 
 ## One-time signing setup
 
@@ -12,8 +12,6 @@ xcrun notarytool store-credentials "HelloMini-notary"
 ```
 
 Apple documents [Developer ID distribution](https://help.apple.com/xcode/mac/current/en.lproj/dev033e997ca.html) and [custom notarization workflows](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow). This project's script enables the hardened runtime, submits a ZIP, staples the accepted ticket to the app, and checks Gatekeeper before making the final ZIP. It adds no entitlement exceptions.
-
-The local setup inspected on 12 September 2026 had an Apple Development identity but no Developer ID Application identity. No signing private keys have been exported or uploaded, and no notarization submission has been made for this candidate.
 
 ## Build a candidate
 
@@ -30,7 +28,7 @@ make release
 
 `release-check` performs local preflight checks; the profile's credentials are verified only during submission. `release` requires a clean checkout, runs the checks, builds the app, verifies arm64 metadata, signs it with a timestamp and hardened runtime, submits it to Apple, validates the stapled ticket and signature, and checks Gatekeeper acceptance. It stops on errors and will not overwrite a versioned archive. No GitHub tag, upload, or publication happens automatically.
 
-Successful output for this candidate is:
+Output uses the version from `Support/Info.plist`. For example, 0.1.0 produced:
 
 ```text
 dist/Hello-Mini-0.1.0-macos-arm64.zip
@@ -46,6 +44,8 @@ If notarization rejects the app, inspect `dist/notarization.json` and retrieve t
 
 Extract the final ZIP to a fresh location and test that copy. Before publication, validate a browser-downloaded candidate on a Gatekeeper-enabled Mac, including first launch, Metal rendering, Control Panel, file dialogs, and saved data across upgrades. Use screenshots containing only demonstration content; avoid publishing personal Finder paths, private CI projects, or Scrapbook contents.
 
-Create a GitHub draft release targeting the manifest's exact source commit. Attach the ZIP, checksum, and manifest, and use the changelog as the release notes. Review the draft before publishing the version tag. Nothing in this repository publishes on pushes or PRs. Distribution on the user's Mini remains a separate installation decision.
+Create a GitHub draft release targeting the manifest's exact source commit. Attach the ZIP, checksum, and manifest, and use the changelog as the release notes. Review the draft before publishing the version tag. Public app releases are never published automatically by pushes or PRs. Installing an app build on the Mini is separate from running its build CI.
 
-Homebrew comes after a stable notarized download exists: a cask needs the published version, URL, SHA-256, app name, Apple-silicon requirement, and macOS 26 minimum. No placeholder cask or Homebrew installation command is advertised before those artifacts exist.
+After publication, verify the release is public, the ZIP is downloadable, and [hellomini.app](https://hellomini.app) offers the expected version. The website reads GitHub’s latest stable release endpoint and updates its download link automatically. Check the changelog, installation guide, and roadmap for stale release status.
+
+A stable notarized download is now available; a Homebrew cask remains future work. A cask will need the published version, URL, SHA-256, app name, Apple-silicon requirement, and macOS 26 minimum. Add a Homebrew installation command to the public docs only once that distribution channel exists.
