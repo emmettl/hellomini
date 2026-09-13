@@ -13,3 +13,11 @@ No analytics, cookies, third-party fonts, or account system. The only browser-si
 ## Updating
 
 Edit index.html, style.css, and site.js directly; assets live in assets/. No dependencies or build step. Keep release availability accurate and avoid private paths, account details, and personal content in screenshots. The private design preview is maintained separately from the production Cloudflare Pages deployment.
+
+## Social sharing and mobile validation
+
+Open Graph and Twitter/X large-image tags are included directly in the HTML, with canonical https://hellomini.app/ URLs, descriptions, image alt text, PNG MIME type, and actual pixel dimensions. No unverified social account handle is claimed. The public domain must serve this page and /og.png before external social crawlers can fetch it; the owner-only preview is not a crawler validation environment.
+
+The social image is 1733 × 908 and was created with built-in image generation. Prompt: “Polished flat monochrome brand graphic inspired by a retro 1984 Macintosh desktop. Light gray dither background, black borders, a striped window, smiling pixel Macintosh, and restrained teapot, fish, and folder motifs. Exact text: Hello Mini; A little desktop. A lot of possibility.; hellomini.app. Landscape 1.91:1, generous margins, thumbnail-readable text, no Apple logo, no additional text.”
+
+Browser checks covered widths 320, 375, 390, 430, 768, 1024, and 1280 CSS pixels, navigation and installation anchor links, and 200% Chrome zoom down to a 320 CSS-pixel viewport. No horizontal content overflow was found. Header links have 44-pixel minimum touch targets; phone app icons use two columns. Font sizes use relative units and title bars expand with their labels. These are responsive Chromium checks, not tests on physical iOS or Android devices.
