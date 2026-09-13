@@ -269,8 +269,11 @@ import Testing
     return color.redComponent > color.greenComponent + 0.2
       && color.redComponent > color.blueComponent + 0.2
   }
-  #expect(red(384, 168))
-  #expect(red(895, 551))
+  #expect(red(400, 168))
+  #expect(red(879, 551))
+  // The screen retains its rounded corners and inset bevel in a larger/full-screen viewport.
+  #expect(!red(384, 168))
+  #expect(!red(895, 551))
   #expect(!red(383, 168))
   #expect(!red(384, 167))
   #expect(!red(896, 551))

@@ -30,12 +30,14 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
 @MainActor @Observable public final class AppearanceSettings {
   public private(set) var theme: MiniTheme
   public private(set) var puristMode: Bool
+  public private(set) var tinyScreenMode: Bool
   public private(set) var balloonHelp: Bool
   public private(set) var customPattern: DesktopPattern?
   public let availableThemes: [MiniTheme]
   @ObservationIgnored private let defaults: UserDefaults
   static let themeKey = "appearance.theme"
   static let puristKey = "appearance.puristMode"
+  static let tinyScreenKey = "appearance.tinyScreenMode"
 
   public init(defaults: UserDefaults = .standard, themes: [MiniTheme] = MiniTheme.builtIns) {
     precondition(!themes.isEmpty, "At least one theme is required")
@@ -46,6 +48,9 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
       DesktopPattern(rows: Array($0))
     }
     puristMode = defaults.object(forKey: Self.puristKey) as? Bool ?? false
+    // Older installations only have Purist mode. It wins if conflicting preferences are imported.
+    tinyScreenMode =
+      !defaults.bool(forKey: Self.puristKey) && defaults.bool(forKey: Self.tinyScreenKey)
     availableThemes = themes
     let savedID = defaults.string(forKey: Self.themeKey)
     theme =
@@ -64,8 +69,15 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
   }
 
   public func setPuristMode(_ enabled: Bool) {
+    if enabled { setTinyScreenMode(false) }
     puristMode = enabled
     defaults.set(enabled, forKey: Self.puristKey)
+  }
+
+  public func setTinyScreenMode(_ enabled: Bool) {
+    if enabled { setPuristMode(false) }
+    tinyScreenMode = enabled
+    defaults.set(enabled, forKey: Self.tinyScreenKey)
   }
 
   /// Unknown IDs cannot leave settings pointing at a renderer that isn't installed.

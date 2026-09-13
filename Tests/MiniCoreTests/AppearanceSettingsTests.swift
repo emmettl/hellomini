@@ -58,3 +58,39 @@ import Testing
   #expect(!AppearanceSettings(defaults: defaults).puristMode)
   #expect(AppearanceSettings(defaults: defaults).theme == .midnight)
 }
+
+@Test @MainActor func tinyScreenModePersistsAndDisplayModesAreMutuallyExclusive() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let settings = AppearanceSettings(defaults: defaults)
+  #expect(!settings.tinyScreenMode && !settings.puristMode)
+  settings.setPuristMode(true)
+  settings.setTinyScreenMode(true)
+  settings.selectTheme(id: MiniTheme.midnight.id)
+  let restored = AppearanceSettings(defaults: defaults)
+  #expect(restored.tinyScreenMode && !restored.puristMode)
+  #expect(restored.theme == .midnight)
+  restored.setPuristMode(true)
+  #expect(!AppearanceSettings(defaults: defaults).tinyScreenMode)
+  #expect(AppearanceSettings(defaults: defaults).puristMode)
+  restored.setTinyScreenMode(true)
+  restored.setTinyScreenMode(false)
+  #expect(!AppearanceSettings(defaults: defaults).tinyScreenMode)
+  #expect(!AppearanceSettings(defaults: defaults).puristMode)
+}
+
+@Test @MainActor func olderPuristPreferencesAndConflictingImportsResolveDeterministically() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  defaults.set(true, forKey: AppearanceSettings.puristKey)
+  #expect(AppearanceSettings(defaults: defaults).puristMode)
+  #expect(!AppearanceSettings(defaults: defaults).tinyScreenMode)
+  defaults.set(true, forKey: AppearanceSettings.tinyScreenKey)
+  let settings = AppearanceSettings(defaults: defaults)
+  #expect(settings.puristMode && !settings.tinyScreenMode)
+  settings.setTinyScreenMode(true)
+  #expect(AppearanceSettings(defaults: defaults).tinyScreenMode)
+  #expect(!AppearanceSettings(defaults: defaults).puristMode)
+}

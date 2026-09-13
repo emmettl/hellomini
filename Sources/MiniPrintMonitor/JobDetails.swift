@@ -56,6 +56,7 @@ import SwiftUI
 
 struct JobDetailsView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniDisplay) private var display
   @Environment(\.dismiss) private var dismiss
   @State private var model: JobDetails
   @State private var request: Task<Void, Never>?
@@ -123,7 +124,7 @@ struct JobDetailsView: View {
               theme.typography.small)
           }
         }.frame(maxWidth: .infinity, alignment: .leading)
-      }.frame(height: 250)
+      }.frame(height: display.tinyScreen ? min(250, display.logicalSize.height * 0.4) : 250)
       if let error = model.error {
         Text(error + (model.updated == nil ? "" : " Previously loaded jobs are still shown."))
           .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)

@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) adds the desktop accessories and polish listed below to the signed, notarized release line. The [website](https://hellomini.app) is live. All nine original roadmap applications have working first versions. Next priorities and Other continuing directions describe future work; there are no dated commitments.
+Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) adds **tiny-screen mode**, with 2× interface sizing across themes and bevelled edges preserved in full screen. Physical Wokyis testing is deferred until the device arrives. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
@@ -20,7 +20,7 @@ Each application should work as a small, coherent application while contributing
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, Scrapbook OCR, and cloud sync are not included in 0.2.0.
+The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, Scrapbook OCR, and cloud sync are not included in 0.3.0.
 
 ## Shared design commitments
 
@@ -29,6 +29,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - Put optional spectacle in **Control Panel → Playfulness**, with individual switches and the existing Extra silliness master switch. Keep useful information available when effects are disabled.
 - Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or inactive. Elaborate effects must not compromise solid window interaction.
 - Preserve the distinction between real status and decorative storytelling: a printer jam may represent a failed build, but the actual failure details must remain accessible.
+- Treat legibility as a shared display concern across every theme. Enlarge text, controls, icons, and interaction targets together; adapt crowded layouts without shrinking essential information again.
 
 ## Shipped in 0.1.0
 
@@ -36,7 +37,17 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - Keyboard launcher access, arrow-key Puzzle play, compact CI rows, and helpful empty states are implemented and checked at 720p.
 - Successful CI builds feed Aquarium through an independent, toggleable connection. The first refresh establishes history; repeat polls do not produce repeat meals.
 
-## Next priorities
+## Shipped in 0.3.0 — Tiny-screen mode
+
+- **One setting, every theme:** A saved 2× Tiny-screen mode control in Control Panel → Appearance and both View menus. It enlarges text, chrome, controls, icons, and application content while retaining a smaller logical workspace.
+- **Responsive primary apps:** Finder offers a Places toggle and compact rows. Print Monitor collapses filters and stacks build rows. Control Panel prioritises display settings. Other oversized app content retains scrolling.
+- **Shared presentation:** Themes retain their existing visual definitions; the host owns scale and coordinates. Custom sheets and screensavers apply the same presentation policy in their separate native windows.
+- **Bevelled edges:** Rounded screen corners and the inset bevel remain visible in full screen.
+- **State and recovery:** Tiny-screen and Purist modes are mutually exclusive. Changes retain running apps and saved window placements; disabling the active mode returns to Standard.
+
+The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. **Physical Wokyis reading tests are deferred until device arrival**, including comparison with a possible 1.5× preset. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
+
+## Other next priorities
 
 - Continue longer-session, sleep/wake, display-change, and saved-state upgrade testing for subsequent releases. The signed 0.1.0 download has been tested on the physical Mini.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.

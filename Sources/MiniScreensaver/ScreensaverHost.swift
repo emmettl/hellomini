@@ -6,6 +6,7 @@ import SwiftUI
 /// Covers only the desktop's screen while this app is active. Does not inhibit macOS sleep or lock.
 public struct ScreensaverHost<Content: View>: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.miniDisplay) private var display
   private let settings: ScreensaverSettings
   private let playfulness: PlayfulnessSettings
   private let definitions: [MiniScreensaverDefinition]
@@ -33,6 +34,7 @@ public struct ScreensaverHost<Content: View>: View {
       .background {
         ScreensaverProbe(
           settings: settings, definitions: definitions, theme: theme, displaySize: displaySize,
+          displayScale: display.scale,
           allowed: playfulness.enabled, reduceMotion: reduceMotion,
           previewRevision: settings.previewRevision, idleMinutes: settings.idleMinutes)
       }
@@ -44,6 +46,7 @@ private struct ScreensaverProbe: NSViewRepresentable {
   let definitions: [MiniScreensaverDefinition]
   let theme: MiniThemeDefinition
   let displaySize: CGSize?
+  let displayScale: CGFloat
   let allowed: Bool
   let reduceMotion: Bool
   let previewRevision: Int
@@ -65,7 +68,7 @@ private struct ScreensaverProbe: NSViewRepresentable {
     }
     // Defer changes to observable presentation state until after this SwiftUI update.
     if !allowed || old.theme.id != theme.id || old.reduceMotion != reduceMotion
-      || old.displaySize != displaySize
+      || old.displaySize != displaySize || old.displayScale != displayScale
     {
       Task { @MainActor [weak coordinator] in coordinator?.close() }
     }
@@ -189,20 +192,29 @@ private struct ScreensaverProbe: NSViewRepresentable {
       window.collectionBehavior = [.fullScreenAuxiliary]
       window.dismiss = { [weak self] in self?.close() }
       let theme = configuration.theme
+      let scale = configuration.displayScale
+      let logicalSize =
+        configuration.displaySize
+        ?? CGSize(
+          width: screen.frame.width / scale, height: screen.frame.height / scale)
       window.contentView = NSHostingView(
         rootView: definition.content()
-          .frame(width: configuration.displaySize?.width, height: configuration.displaySize?.height)
+          .frame(width: logicalSize.width, height: logicalSize.height)
           .background(theme.paper)
           .overlay(alignment: .bottom) {
             Text("Move the mouse or press any key to return")
               .font(theme.typography.small).padding(8).background(theme.paper).padding(16)
               .allowsHitTesting(false)
           }
+          .environment(\.miniDisplay, MiniDisplayContext(scale: scale, logicalSize: logicalSize))
+          .scaleEffect(scale)
+          .frame(width: logicalSize.width * scale, height: logicalSize.height * scale)
+          .miniScreenEdges()
           .environment(\.miniTheme, theme)
           .environment(\.colorScheme, theme.colorScheme)
           .foregroundStyle(theme.ink)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
-          .background(configuration.displaySize == nil ? theme.paper : .black))
+          .background(.black))
       self.window = window
       definition.presenting(true)
       configuration.settings.setPresenting(true)

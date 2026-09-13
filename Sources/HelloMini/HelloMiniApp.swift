@@ -36,7 +36,8 @@ struct HelloMiniApp: App {
   var body: some Scene {
     Window("Hello Mini", id: "desktop") {
       MiniDisplayViewport(
-        puristMode: settings.puristMode, windowChromeChanged: { displayWindowChromeHeight = $0 }
+        puristMode: settings.puristMode, tinyScreenMode: settings.tinyScreenMode,
+        windowChromeChanged: { displayWindowChromeHeight = $0 }
       ) {
         StartupView(
           playfulness: playfulness, theme: Self.themes.definition(for: settings.theme.id)!
@@ -83,6 +84,16 @@ struct HelloMiniApp: App {
     .windowResizability(.contentMinSize)
     .commands {
       CommandGroup(replacing: .newItem) {}
+      CommandGroup(after: .toolbar) {
+        Toggle(
+          "Tiny-screen Mode",
+          isOn: Binding(
+            get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) }))
+        Toggle(
+          "Purist Mode — 512 × 384",
+          isOn: Binding(
+            get: { settings.puristMode }, set: { settings.setPuristMode($0) }))
+      }
       CommandGroup(after: .windowArrangement) {
         Button("Enter / Exit Full Screen") {
           MiniDesktopWindowActions.toggleFullScreen()

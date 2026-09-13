@@ -14,7 +14,7 @@ A tiny Macintosh desktop with a deeply unreasonable amount of modern capability.
 
 Download the signed and Apple-notarized ZIP from [GitHub Releases](https://github.com/emmettl/hellomini/releases/latest), expand it, move **Hello Mini.app** to Applications, and open it. No Xcode or developer account is needed.
 
-The desktop is designed around 1280 × 720, including small displays such as the Wokyis M5 retro docking station. Optional **Purist mode** runs at a fixed 512 × 384 logical resolution. See [installation and updates](docs/INSTALL.md) for requirements, source builds, and saved data. Homebrew distribution remains planned.
+The desktop is designed around 1280 × 720, including small displays such as the Wokyis M5 retro docking station. **Tiny-screen mode** enlarges the interface to 2× across all themes; physical Wokyis legibility testing is pending device arrival. Optional **Purist mode** runs at a fixed 512 × 384 logical resolution. See [installation and updates](docs/INSTALL.md) for requirements, source builds, and saved data. Homebrew distribution remains planned.
 
 ## A little look inside
 

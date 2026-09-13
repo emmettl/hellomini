@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) — 2026-09-13
+
+- **Tiny-screen mode**: a saved 2× presentation setting across themes, available in Control Panel and both View menus. Enlarges the desktop, startup, screensavers, and custom sheet content; mutually exclusive with Purist mode.
+- Responsive Finder, Print Monitor, and Control Panel layouts for the smaller logical workspace. Other oversized app content remains accessible through scrolling. Physical Wokyis legibility testing is deferred until the device arrives; the broader workflow audit remains follow-up work.
+- Rounded screen corners and an inset bevel are rendered inside the app so the edge treatment survives full-screen presentation.
+
 ## [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) — 2026-09-13
 
 - Original synthesised startup, paper-jam, feeding, Wastebasket, and alarm sounds, controlled by one Playfulness switch and normal system volume/mute.

@@ -2,6 +2,8 @@
 
 Hello Mini uses the MIT license. The first public release is [0.1.0 (build 1)](https://github.com/emmettl/hellomini/releases/tag/v0.1.0), published on 13 September 2026. It is Developer ID-signed, notarized, and has been tested from a browser download on the physical Mini. The steps below apply to subsequent releases. Build CI remains separate from distribution: public checks and the private Mini runner use ad-hoc signing and have no distribution credentials.
 
+For **0.3.0**, physical Wokyis validation is explicitly deferred until the device arrives. Release notes must preserve that limitation; development-Mac testing and automated checks do not establish legibility on the device.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.
