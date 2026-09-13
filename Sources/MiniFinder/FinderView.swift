@@ -5,39 +5,46 @@ struct FinderView: View {
   @Environment(\.miniTheme) private var theme
   @Bindable var model: FinderModel
   let findFile: () -> Void
+  @State private var showingPlaces = false
   private let labelNames = ["None", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"]
   private let labelColors: [Color] = [
     .clear, .gray, .green, .purple, .blue, .yellow, .red, .orange,
   ]
 
   var body: some View {
+    GeometryReader { geometry in
+      layout(compact: geometry.size.width < 650)
+    }
+  }
+
+  private func layout(compact: Bool) -> some View {
     VStack(spacing: 0) {
       HStack(spacing: 8) {
+        if compact {
+          Button(showingPlaces ? "Hide Places" : "Places") { showingPlaces.toggle() }
+        }
         Button("Find…", action: findFile)
         Button("Back", action: model.goBack).disabled(!model.history.canGoBack)
         Button("Up", action: model.goUp).disabled(!model.history.canGoUp)
-        Text(model.location.path)
-          .font(theme.typography.small)
-          .lineLimit(1)
-          .truncationMode(.head)
-          .textSelection(.enabled)
-          .padding(.leading, 4)
-          .miniHelp(model.location.path)
+        if !compact { location }
         Spacer(minLength: 0)
         Button(model.listView ? "Icons" : "List") { model.listView.toggle() }
           .accessibilityLabel(model.listView ? "Show as icons" : "Show as list")
       }
       .buttonStyle(RetroButtonStyle())
       .padding(10)
+      if compact { location.padding(.horizontal, 10).padding(.bottom, 6) }
       Rectangle().frame(height: 1)
       HStack(spacing: 0) {
-        GeometryReader { geometry in
-          ScrollView {
-            sidebar.frame(minHeight: geometry.size.height)
+        if !compact || showingPlaces {
+          GeometryReader { geometry in
+            ScrollView {
+              sidebar.frame(minHeight: geometry.size.height)
+            }
           }
+          .frame(width: 144)
+          Rectangle().frame(width: 1)
         }
-        .frame(width: 144)
-        Rectangle().frame(width: 1)
         VStack(spacing: 0) {
           if let error = model.error {
             VStack(alignment: .leading, spacing: 8) {
@@ -61,7 +68,7 @@ struct FinderView: View {
             ScrollView {
               if model.listView {
                 LazyVStack(spacing: 0) {
-                  ForEach(model.entries) { entry in fileRow(entry) }
+                  ForEach(model.entries) { entry in fileRow(entry, compact: compact) }
                 }
                 .padding(8)
               } else {
@@ -96,6 +103,13 @@ struct FinderView: View {
     .onChange(of: model.showHidden) { model.reload() }
   }
 
+  private var location: some View {
+    Text(model.location.path)
+      .font(theme.typography.small).lineLimit(1).truncationMode(.head)
+      .textSelection(.enabled).miniHelp(model.location.path)
+      .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
   private var sidebar: some View {
     VStack(alignment: .leading, spacing: 4) {
       Text("PLACES").font(theme.typography.small).padding(.horizontal, 12).padding(.bottom, 10)
@@ -123,6 +137,7 @@ struct FinderView: View {
   private func place(_ name: String, url: URL, symbol: PixelSymbol = .folder) -> some View {
     Button {
       model.navigate(to: url)
+      showingPlaces = false
     } label: {
       HStack(spacing: 8) {
         PixelIcon(symbol: symbol, scale: 1, selected: model.location == url)
@@ -168,7 +183,7 @@ struct FinderView: View {
     .miniHelp(entry.name)
   }
 
-  private func fileRow(_ entry: FileEntry) -> some View {
+  private func fileRow(_ entry: FileEntry, compact: Bool) -> some View {
     HStack(spacing: 10) {
       PixelIcon(
         symbol: entry.isBrowsable ? .folder : .document, scale: 1,
@@ -176,11 +191,14 @@ struct FinderView: View {
       labelDot(entry)
       Text(entry.name).lineLimit(1)
       Spacer()
-      Text(
-        entry.isBrowsable
-          ? "Folder" : ByteCountFormatter.string(fromByteCount: entry.byteCount, countStyle: .file)
-      )
-      .font(theme.typography.small)
+      if !compact {
+        Text(
+          entry.isBrowsable
+            ? "Folder"
+            : ByteCountFormatter.string(fromByteCount: entry.byteCount, countStyle: .file)
+        )
+        .font(theme.typography.small)
+      }
     }
     .padding(.horizontal, 8)
     .frame(height: 30)

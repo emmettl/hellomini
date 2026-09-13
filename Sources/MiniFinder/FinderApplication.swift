@@ -6,7 +6,7 @@ import SwiftUI
   public let name = "Finder"
   public let icon = MiniApplicationIcon.folder
   public let defaultSize = CGSize(width: 800, height: 472)
-  public let minimumSize = CGSize(width: 640, height: 400)
+  public let minimumSize = CGSize(width: 440, height: 230)
   private let model: FinderModel
   private let findFile: @MainActor () -> Void
   public init(defaults: UserDefaults = .standard, findFile: @escaping @MainActor () -> Void = {}) {

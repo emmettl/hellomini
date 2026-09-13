@@ -66,6 +66,7 @@ struct ScrapbookView: View {
     .sheet(item: $model.draft) { scrap in
       ScrapEditor(model: model, scrap: scrap)
         .environment(\.miniTheme, theme).environment(\.colorScheme, theme.colorScheme)
+        .miniSheet(width: 570)
     }
   }
 

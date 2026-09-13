@@ -379,6 +379,10 @@ public struct DesktopView: View {
     if let index = appMenus.firstIndex(where: { $0.id == "view" }) {
       appMenus[index].items.append(
         RetroMenuItem(
+          id: "tiny-screen", title: "Tiny-screen Mode — 2×", checked: settings.tinyScreenMode
+        ) { settings.setTinyScreenMode(!settings.tinyScreenMode) })
+      appMenus[index].items.append(
+        RetroMenuItem(
           id: "purist", title: "Purist Mode — 512 × 384", checked: settings.puristMode
         ) { settings.setPuristMode(!settings.puristMode) })
     }

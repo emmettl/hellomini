@@ -15,6 +15,7 @@ private struct MenuAnchors: PreferenceKey {
 
 struct RetroMenuBar: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniDisplay) private var display
   let menus: [RetroMenu]
   let applicationName: String
   let desktopSize: CGSize
@@ -55,7 +56,8 @@ struct RetroMenuBar: View {
             } else {
               Text(context.date, format: .dateTime.weekday(.abbreviated).hour().minute())
             }
-          }.font(compact ? theme.typography.small : theme.typography.body).fixedSize()
+          }.font(compact && !display.tinyScreen ? theme.typography.small : theme.typography.body)
+            .fixedSize()
         }
         .padding(.horizontal, compact ? 6 : 20)
       }
@@ -109,7 +111,8 @@ struct RetroMenuBar: View {
         if menu.id == "mini" {
           PixelIcon(symbol: .computer, scale: 1, selected: openMenuID == menu.id)
         } else {
-          Text(menu.title).font(compact ? theme.typography.small : theme.typography.title)
+          Text(menu.title).font(
+            compact && !display.tinyScreen ? theme.typography.small : theme.typography.title)
         }
       }
       .padding(.horizontal, compact ? 6 : 12)

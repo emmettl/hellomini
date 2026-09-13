@@ -1,30 +1,38 @@
 import AppKit
+import MiniUI
 import SwiftUI
 
-/// The complete system, including startup and screensavers, shares this fixed logical display.
+/// The complete system, including startup and screensavers, shares one logical display.
 public struct MiniDisplayViewport<Content: View>: View {
   @State private var nativeChromeHeight: CGFloat = 0
   let puristMode: Bool
+  let tinyScreenMode: Bool
   let windowChromeChanged: @MainActor (CGFloat) -> Void
   @ViewBuilder let content: () -> Content
 
   public init(
-    puristMode: Bool, windowChromeChanged: @escaping @MainActor (CGFloat) -> Void = { _ in },
+    puristMode: Bool, tinyScreenMode: Bool = false,
+    windowChromeChanged: @escaping @MainActor (CGFloat) -> Void = { _ in },
     @ViewBuilder content: @escaping () -> Content
   ) {
     self.puristMode = puristMode
+    self.tinyScreenMode = tinyScreenMode
     self.windowChromeChanged = windowChromeChanged
     self.content = content
   }
 
   public var body: some View {
     GeometryReader { geometry in
+      let layout = DisplayViewportLayout(
+        available: geometry.size, puristMode: puristMode, tinyScreenMode: tinyScreenMode)
       content()
-        .frame(
-          width: puristMode ? 512 : geometry.size.width,
-          height: puristMode ? 384 : geometry.size.height
+        .environment(
+          \.miniDisplay, MiniDisplayContext(scale: layout.scale, logicalSize: layout.logical)
         )
-        .clipped()
+        .frame(width: layout.logical.width, height: layout.logical.height)
+        .scaleEffect(layout.scale)
+        .frame(width: layout.presented.width, height: layout.presented.height)
+        .miniScreenEdges()
         .position(
           x: geometry.size.width / 2,
           y: geometry.size.height / 2 + (puristMode ? nativeChromeHeight / 2 : 0))
@@ -39,6 +47,18 @@ public struct MiniDisplayViewport<Content: View>: View {
         })
     )
     .ignoresSafeArea()
+  }
+}
+
+struct DisplayViewportLayout {
+  let scale: CGFloat
+  let logical: CGSize
+  let presented: CGSize
+
+  init(available: CGSize, puristMode: Bool, tinyScreenMode: Bool) {
+    scale = tinyScreenMode && !puristMode ? 2 : 1
+    presented = puristMode ? CGSize(width: 512, height: 384) : available
+    logical = CGSize(width: presented.width / scale, height: presented.height / scale)
   }
 }
 

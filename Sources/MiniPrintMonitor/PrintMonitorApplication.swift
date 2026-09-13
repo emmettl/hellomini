@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "Print Monitor"
   public let icon = MiniApplicationIcon.printer
   public let defaultSize = CGSize(width: 740, height: 500)
-  public let minimumSize = CGSize(width: 640, height: 420)
+  public let minimumSize = CGSize(width: 440, height: 210)
   public static let effect = MiniPlayfulEffect(
     id: "printer.paper", name: "Print Monitor paper",
     description: "Feed imaginary paper through the printer while CI runs.")
@@ -54,154 +54,186 @@ private struct PrintMonitorView: View {
   private var printing: Bool { model.builds.contains { $0.run.state == .running } }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Picker(
-          "Queue",
-          selection: Binding(
-            get: { model.selection ?? "" },
-            set: { value in
-              do { try model.select(value.isEmpty ? nil : value) } catch {
-                self.error = error.localizedDescription
-              }
-            })
-        ) {
-          Text("All projects").tag("")
-          ForEach(model.projects) { project in
-            Text(project.label).tag(project.id)
+    GeometryReader { geometry in
+      layout(compact: geometry.size.width < 680 || geometry.size.height < 380)
+    }
+  }
+
+  private func layout(compact: Bool) -> some View {
+    QueueScrollView(enabled: compact) {
+      VStack(alignment: .leading, spacing: 12) {
+        HStack {
+          Picker(
+            "Queue",
+            selection: Binding(
+              get: { model.selection ?? "" },
+              set: { value in
+                do { try model.select(value.isEmpty ? nil : value) } catch {
+                  self.error = error.localizedDescription
+                }
+              })
+          ) {
+            Text("All projects").tag("")
+            ForEach(model.projects) { project in
+              Text(project.label).tag(project.id)
+            }
+          }.accessibilityLabel("Build queue")
+          Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
+        }
+        if compact {
+          DisclosureGroup(model.filters.isActive ? "Filters (active)" : "Filters") {
+            filters(compact: true)
           }
-        }.accessibilityLabel("Build queue")
-        Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
-      }
-      HStack {
-        Picker(
-          "Branch",
-          selection: Binding(get: { model.filters.branch }, set: { setFilter(branch: $0) })
-        ) {
-          Text("All branches").tag(String?.none)
-          ForEach(model.branchChoices, id: \.self) { Text($0).tag(Optional($0)) }
-        }.accessibilityLabel("Filter by branch")
-        Picker(
-          "Workflow",
-          selection: Binding(get: { model.filters.workflow }, set: { setFilter(workflow: $0) })
-        ) {
-          Text("All workflows").tag(String?.none)
-          ForEach(model.workflowChoices, id: \.self) { Text($0).tag(Optional($0)) }
-        }.accessibilityLabel("Filter by GitHub workflow")
-        Button("Clear") { updateFilters(QueueFilters()) }.buttonStyle(RetroButtonStyle())
-          .disabled(!model.filters.isActive)
-      }
-      if model.filters.isActive {
-        Text(
-          "Filtering the latest 20 builds per project"
-            + (model.filters.workflow == nil ? "" : " · GitHub workflows only")
-        )
-        .font(theme.typography.small)
-      }
-      HStack(spacing: 14) {
-        printer.frame(width: 130, height: 76)
-        VStack(alignment: .leading, spacing: 4) {
-          Text(model.jammed ? "Paper jam." : printing ? "Printing software…" : "Printer ready.")
-            .font(theme.typography.display(23))
+          .font(theme.typography.body)
+        } else {
+          filters(compact: false)
+        }
+        if model.filters.isActive {
           Text(
-            model.projects.isEmpty
-              ? "Add a project to load its build queue."
-              : "\(model.selectedProjects.count) \(model.selectedProjects.count == 1 ? "project" : "projects") · \(model.builds.filter { $0.active }.count) active builds"
+            "Filtering the latest 20 builds per project"
+              + (model.filters.workflow == nil ? "" : " · GitHub workflows only")
           )
           .font(theme.typography.small)
         }
-        Spacer(minLength: 0)
-        Button(model.paused ? "Resume" : "Pause") { model.paused.toggle() }
-          .buttonStyle(RetroButtonStyle())
-        Button("Refresh all", action: refreshManually).buttonStyle(RetroButtonStyle())
-          .disabled(model.projects.isEmpty || model.busy)
-      }
-      ScrollView {
-        LazyVStack(alignment: .leading, spacing: 10) {
-          ForEach(model.selectedProjects) { project in
-            VStack(alignment: .leading, spacing: 3) {
-              Text(project.label)
-                .font(theme.typography.title).lineLimit(1).miniHelp(project.label)
-              let snapshot = model.snapshots[project.id]
-              if let updated = snapshot?.updated {
-                Text("Updated " + updated.formatted(date: .abbreviated, time: .shortened))
-                  .font(theme.typography.small)
-              } else {
-                Text("Awaiting first successful refresh").font(theme.typography.small)
-              }
-              if let error = snapshot?.error {
-                Text(
-                  error + (snapshot?.updated == nil ? "" : " Showing the last successful refresh.")
-                )
-                .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
-              }
-            }.frame(maxWidth: .infinity, alignment: .leading)
-            Rectangle().frame(height: 1)
+        HStack(spacing: compact ? 8 : 14) {
+          if !compact { printer.frame(width: 130, height: 76) }
+          VStack(alignment: .leading, spacing: 4) {
+            Text(model.jammed ? "Paper jam." : printing ? "Printing software…" : "Printer ready.")
+              .font(compact ? theme.typography.title : theme.typography.display(23))
+            Text(
+              model.projects.isEmpty
+                ? "Add a project to load its build queue."
+                : "\(model.selectedProjects.count) \(model.selectedProjects.count == 1 ? "project" : "projects") · \(model.builds.filter { $0.active }.count) active builds"
+            )
+            .font(theme.typography.small)
           }
-          ForEach(model.builds) { build in
-            HStack {
-              VStack(alignment: .leading, spacing: 3) {
-                if model.selection == nil {
-                  Text(build.project.label)
-                    .font(theme.typography.small).lineLimit(1).miniHelp(build.project.label)
-                }
-                Text(build.run.title).font(theme.typography.title).lineLimit(2).miniHelp(
-                  build.run.title)
-                Text("#\(String(build.run.id)) · \(build.run.branch)")
-                  .font(theme.typography.small).lineLimit(1).miniHelp(build.run.branch)
-              }
-              Spacer()
-              Text(build.run.state.rawValue.uppercased()).font(theme.typography.small)
-              if build.run.state == .failed {
-                Button("Clear jam…") { clearing = build }.buttonStyle(RetroButtonStyle())
-                  .disabled(retry.busy).accessibilityLabel(
-                    "Retry failed jobs for " + build.run.title)
-              }
-              Button("Jobs…") { inspecting = build }
-                .accessibilityLabel(
-                  "Inspect jobs for " + build.run.title + " #" + String(build.run.id)
-                )
-                .buttonStyle(RetroButtonStyle())
-            }
-            Rectangle().frame(height: 1)
-          }
-          if model.builds.isEmpty {
-            MiniEmptyState(
-              model.busy ? "Checking the queues…" : "An exceptionally tidy print queue.",
-              message: model.projects.isEmpty
-                ? "Choose Projects… to add GitHub or GitLab projects. Public projects usually need no token."
-                : model.filters.isActive
-                  ? "No recent builds match. Clear the filters to see all loaded builds."
-                  : "No builds to show. Each project's refresh status appears above.")
+          Spacer(minLength: 0)
+          HStack {
+            Button(model.paused ? "Resume" : "Pause") { model.paused.toggle() }
+              .buttonStyle(RetroButtonStyle())
+            Button("Refresh all", action: refreshManually).buttonStyle(RetroButtonStyle())
+              .disabled(model.projects.isEmpty || model.busy)
           }
         }
-      }
-      if let error = model.storageError ?? error { Text(error).font(theme.typography.small) }
-      Text(
-        model.busy
-          ? "Checking all projects…"
-          : "20 builds/project · refresh every \(Int(model.refreshInterval))s while Hello Mini is running · active builds first"
-      )
-      .font(theme.typography.small)
-    }.padding(16)
-      .onDisappear { manualRefreshTask?.cancel() }
-      .onReceive(
-        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
-      ) { _ in active = true }
-      .onReceive(
-        NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
-      ) { _ in active = false }
-      .sheet(item: $clearing) { build in
-        ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme)
-      }
-      .sheet(item: $inspecting) { build in
-        JobDetailsView(build: build).id(build.id).environment(\.miniTheme, theme)
-      }
-      .sheet(isPresented: $managing) {
-        ProjectManager(model: model) { if model.paused { refreshManually() } }
-          .environment(\.miniTheme, theme)
-      }
+        QueueScrollView(enabled: !compact) {
+          LazyVStack(alignment: .leading, spacing: 10) {
+            ForEach(model.selectedProjects) { project in
+              VStack(alignment: .leading, spacing: 3) {
+                Text(project.label)
+                  .font(theme.typography.title).lineLimit(1).miniHelp(project.label)
+                let snapshot = model.snapshots[project.id]
+                if let updated = snapshot?.updated {
+                  Text("Updated " + updated.formatted(date: .abbreviated, time: .shortened))
+                    .font(theme.typography.small)
+                } else {
+                  Text("Awaiting first successful refresh").font(theme.typography.small)
+                }
+                if let error = snapshot?.error {
+                  Text(
+                    error
+                      + (snapshot?.updated == nil ? "" : " Showing the last successful refresh.")
+                  )
+                  .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
+                }
+              }.frame(maxWidth: .infinity, alignment: .leading)
+              Rectangle().frame(height: 1)
+            }
+            ForEach(model.builds) { build in
+              let rowLayout =
+                compact
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6))
+                : AnyLayout(HStackLayout())
+              rowLayout {
+                VStack(alignment: .leading, spacing: 3) {
+                  if model.selection == nil {
+                    Text(build.project.label)
+                      .font(theme.typography.small).lineLimit(1).miniHelp(build.project.label)
+                  }
+                  Text(build.run.title).font(theme.typography.title).lineLimit(2).miniHelp(
+                    build.run.title)
+                  Text("#\(String(build.run.id)) · \(build.run.branch)")
+                    .font(theme.typography.small).lineLimit(1).miniHelp(build.run.branch)
+                }
+                if !compact { Spacer() }
+                HStack {
+                  Text(build.run.state.rawValue.uppercased()).font(theme.typography.small)
+                  if build.run.state == .failed {
+                    Button("Clear jam…") { clearing = build }.buttonStyle(RetroButtonStyle())
+                      .disabled(retry.busy).accessibilityLabel(
+                        "Retry failed jobs for " + build.run.title)
+                  }
+                  Button("Jobs…") { inspecting = build }
+                    .accessibilityLabel(
+                      "Inspect jobs for " + build.run.title + " #" + String(build.run.id)
+                    )
+                    .buttonStyle(RetroButtonStyle())
+                }
+              }
+              Rectangle().frame(height: 1)
+            }
+            if model.builds.isEmpty {
+              MiniEmptyState(
+                model.busy ? "Checking the queues…" : "An exceptionally tidy print queue.",
+                message: model.projects.isEmpty
+                  ? "Choose Projects… to add GitHub or GitLab projects. Public projects usually need no token."
+                  : model.filters.isActive
+                    ? "No recent builds match. Clear the filters to see all loaded builds."
+                    : "No builds to show. Each project's refresh status appears above.")
+            }
+          }
+        }
+        if let error = model.storageError ?? error { Text(error).font(theme.typography.small) }
+        Text(
+          model.busy
+            ? "Checking all projects…"
+            : "20 builds/project · refresh every \(Int(model.refreshInterval))s while Hello Mini is running · active builds first"
+        )
+        .font(theme.typography.small)
+      }.padding(compact ? 10 : 16)
+    }
+    .onDisappear { manualRefreshTask?.cancel() }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
+    ) { _ in active = true }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
+    ) { _ in active = false }
+    .sheet(item: $clearing) { build in
+      ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme).miniSheet(
+        width: 520)
+    }
+    .sheet(item: $inspecting) { build in
+      JobDetailsView(build: build).id(build.id).environment(\.miniTheme, theme).miniSheet(
+        width: 580)
+    }
+    .sheet(isPresented: $managing) {
+      ProjectManager(model: model) { if model.paused { refreshManually() } }
+        .environment(\.miniTheme, theme).miniSheet(width: 550)
+    }
   }
+  private func filters(compact: Bool) -> some View {
+    let layout =
+      compact ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8)) : AnyLayout(HStackLayout())
+    return layout {
+      Picker(
+        "Branch",
+        selection: Binding(get: { model.filters.branch }, set: { setFilter(branch: $0) })
+      ) {
+        Text("All branches").tag(String?.none)
+        ForEach(model.branchChoices, id: \.self) { Text($0).tag(Optional($0)) }
+      }.accessibilityLabel("Filter by branch")
+      Picker(
+        "Workflow",
+        selection: Binding(get: { model.filters.workflow }, set: { setFilter(workflow: $0) })
+      ) {
+        Text("All workflows").tag(String?.none)
+        ForEach(model.workflowChoices, id: \.self) { Text($0).tag(Optional($0)) }
+      }.accessibilityLabel("Filter by GitHub workflow")
+      Button("Clear") { updateFilters(QueueFilters()) }.buttonStyle(RetroButtonStyle())
+        .disabled(!model.filters.isActive)
+    }
+  }
+
   private func setFilter(branch: String?) {
     var value = model.filters
     value.branch = branch
@@ -244,5 +276,14 @@ private struct PrintMonitorView: View {
         graphics.fill(Path(CGRect(x: 98, y: 40, width: 5, height: 5)), with: .color(theme.ink))
       }
     }.accessibilityLabel("An imaginary printer for software builds")
+  }
+}
+
+/// Compact windows scroll the whole queue; roomy windows keep the toolbar and status in place.
+private struct QueueScrollView<Content: View>: View {
+  let enabled: Bool
+  @ViewBuilder let content: () -> Content
+  var body: some View {
+    if enabled { ScrollView { content() } } else { content() }
   }
 }

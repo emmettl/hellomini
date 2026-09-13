@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ProjectManager: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniDisplay) private var display
   @Environment(\.dismiss) private var dismiss
   let model: ProjectQueue
   let added: () -> Void
@@ -54,7 +55,7 @@ struct ProjectManager: View {
           }
           if model.projects.isEmpty { Text("No projects saved yet.").font(theme.typography.small) }
         }
-      }.frame(height: 190)
+      }.frame(height: display.tinyScreen ? min(190, display.logicalSize.height * 0.3) : 190)
       Text(
         "Up to 12 projects. Removing a project keeps its Keychain token; use Token… to forget it first."
       )
@@ -71,7 +72,7 @@ struct ProjectManager: View {
     .buttonStyle(RetroButtonStyle()).padding(20).frame(width: 550)
     .foregroundStyle(theme.ink).background(theme.paper)
     .sheet(item: $tokenProject) { project in
-      ProjectTokenEditor(project: project).environment(\.miniTheme, theme)
+      ProjectTokenEditor(project: project).environment(\.miniTheme, theme).miniSheet(width: 470)
     }
     .confirmationDialog(
       "Remove \(removing?.account ?? "project") from Print Monitor?",

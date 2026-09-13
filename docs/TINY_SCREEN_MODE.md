@@ -1,8 +1,18 @@
 # Tiny-screen mode — 0.3.0 scope and design
 
-Status: planned; no runtime implementation yet. This proposal defines the focus of 0.3.0. Scale values and layout choices require a prototype and physical-display validation before release.
+Status: first implementation in source, unreleased. This document defines the focus of 0.3.0. The 2× prototype requires physical-display validation before choosing the release default.
 
 [Roadmap](../ROADMAP.md) · [Current architecture](ARCHITECTURE.md) · [Current user guide](USER_GUIDE.md)
+
+## Implementation progress
+
+The first implementation includes a saved 2× setting in Control Panel, the desktop View menu, and the native View menu; mutually exclusive Purist mode; a shared `miniDisplay` environment; and logical layout plus presentation scaling at the host boundary. Desktop, startup, screensavers, and custom sheets use that policy. An inset bevel and rounded screen corners are drawn inside the app, including in full screen.
+
+Finder now moves its path onto a separate line in narrow windows and provides a Places toggle. Compact list rows prioritise filenames. Print Monitor collapses filters and stacks build rows in compact windows, with the whole queue scrollable; roomy windows retain their fixed toolbar. Control Panel brings the display toggles to the top in tiny-screen mode. Other oversized app content retains the shell's minimum-content scrolling fallback. This is an initial implementation, not completion of the full app/workflow audit below.
+
+Validation completed on the development Mac: `make check` (105 debug tests, 13 release tests, lint, build/release tooling checks, and build); a local app build; visual checks of all five themes at 2×; native-sheet text entry and overflow; full-screen transitions; relaunch persistence; and a 512 × 384 Purist-mode transition. Automated checks cover conflicting/legacy preferences, logical display sizing, actual rendered enlargement/corners, and reachable window chrome with both launcher styles at 1280 × 720 and 960 × 600 host sizes.
+
+Still required before 0.3.0: physical Wokyis reading tests and the 1.5× comparison, the full bundled-app and keyboard/graphics workflow matrix, minimum-size visual checks, and longer display-change/sleep/wake testing. The native View-menu items were inspected, but their activation could not be verified through the UI automation tool, which returned stale element IDs; Control Panel and desktop-menu activation were verified. Native OS menus, alerts, and file panels remain OS-sized. Screenshots from a development monitor do not establish physical legibility on the Wokyis.
 
 ## Goal
 

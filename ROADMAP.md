@@ -39,7 +39,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 
 ## Planned for 0.3.0 — Tiny-screen mode
 
-A layout fitting 1280 × 720 does not establish that it is readable on the Wokyis at normal desk distance. Tiny-screen mode is the next release's primary feature. The [scope and design](docs/TINY_SCREEN_MODE.md) define the proposed architecture, tradeoffs, and release checks; implementation has not started.
+A layout fitting 1280 × 720 does not establish that it is readable on the Wokyis at normal desk distance. Tiny-screen mode is the next release's primary feature. The [scope and design](docs/TINY_SCREEN_MODE.md) track architecture, tradeoffs, implementation progress, and remaining release checks. The first 2× implementation is available in source; physical-display validation remains outstanding.
 
 - **One setting, every theme:** Add a saved Tiny-screen mode control in Control Panel → Appearance and the View menu. Start with 2× enlargement for evaluation, with 1.5× as a secondary candidate. Choose the shipping default through physical-display testing.
 - **Enlarge the complete interface:** Cover text, window chrome, buttons, icons, menus, status indicators, help, and application content. Keep the display filled while giving applications a smaller logical workspace.

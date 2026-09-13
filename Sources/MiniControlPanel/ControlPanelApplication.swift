@@ -7,7 +7,7 @@ import SwiftUI
   public let name = "Control Panel"
   public let icon = MiniApplicationIcon.settings
   public let defaultSize = CGSize(width: 556, height: 490)
-  public let minimumSize = CGSize(width: 556, height: 382)
+  public let minimumSize = CGSize(width: 440, height: 200)
   private let settings: AppearanceSettings
   private let playfulness: PlayfulnessSettings
   private let themes: MiniThemeRegistry
@@ -45,6 +45,11 @@ import SwiftUI
           } + [
             .separator("display-mode"),
             RetroMenuItem(
+              id: "tiny-screen", title: "Tiny-screen Mode — 2×", checked: settings.tinyScreenMode
+            ) {
+              self.settings.setTinyScreenMode(!self.settings.tinyScreenMode)
+            },
+            RetroMenuItem(
               id: "purist", title: "Purist Mode — 512 × 384", checked: settings.puristMode
             ) {
               self.settings.setPuristMode(!self.settings.puristMode)
@@ -75,6 +80,7 @@ import SwiftUI
 
 private struct ControlPanelView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniDisplay) private var display
   let settings: AppearanceSettings
   let playfulness: PlayfulnessSettings
   let themes: MiniThemeRegistry
@@ -89,7 +95,7 @@ private struct ControlPanelView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      HStack(spacing: 10) {
+      HStack(spacing: 6) {
         ForEach(Pane.allCases, id: \.self) { choice in
           Button(pane == choice ? "✓ " + choice.rawValue : choice.rawValue) { pane = choice }
             .accessibilityLabel(choice.rawValue + " settings")
@@ -98,7 +104,7 @@ private struct ControlPanelView: View {
         Spacer()
       }
       .buttonStyle(RetroButtonStyle())
-      .padding(14)
+      .padding(10)
       Rectangle().frame(height: 1)
       ScrollView {
         if pane == .appearance {
@@ -113,19 +119,30 @@ private struct ControlPanelView: View {
       Text("Changes apply immediately and are saved.")
         .font(theme.typography.small)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(display.tinyScreen ? 8 : 14)
     }
   }
 
   private var appearance: some View {
-    VStack(alignment: .leading, spacing: 18) {
-      HStack(spacing: 14) {
-        PixelIcon(symbol: .settings, scale: 2)
-        VStack(alignment: .leading, spacing: 5) {
-          Text("Appearance").font(theme.typography.display(21))
-          Text("Choose a look for your desktop.").font(theme.typography.small)
+    VStack(alignment: .leading, spacing: display.tinyScreen ? 12 : 18) {
+      if !display.tinyScreen {
+        HStack(spacing: 14) {
+          PixelIcon(symbol: .settings, scale: 2)
+          VStack(alignment: .leading, spacing: 5) {
+            Text("Appearance").font(theme.typography.display(21))
+            Text("Choose a look for your desktop.").font(theme.typography.small)
+          }
         }
       }
+      Toggle(
+        "Tiny-screen mode — 2×",
+        isOn: Binding(
+          get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) })
+      )
+      .toggleStyle(.checkbox)
+      .miniHelp("Make the whole interface twice as large. Turn it off here or in the View menu.")
+      Text("Larger text and controls, with less on screen at once.")
+        .font(theme.typography.small)
       Toggle(
         "Purist mode — 512 × 384",
         isOn: Binding(
@@ -175,6 +192,6 @@ private struct ControlPanelView: View {
         .font(theme.typography.body)
         .frame(maxWidth: .infinity, minHeight: 36, alignment: .topLeading)
     }
-    .padding(22)
+    .padding(display.tinyScreen ? 12 : 22)
   }
 }

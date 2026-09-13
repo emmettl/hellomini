@@ -170,7 +170,9 @@ private struct WorldClockView: View {
           }
           Button("Done") { adding = false }.buttonStyle(RetroButtonStyle())
         }.padding(20).frame(width: 450, height: 380).foregroundStyle(theme.ink).background(
-          theme.paper)
+          theme.paper
+        )
+        .miniSheet(width: 450)
       }
   }
 }
