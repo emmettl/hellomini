@@ -4,14 +4,33 @@ import MiniBuildCore
 public struct GitHubProvider: BuildProvider {
   public let server: BuildServer
   let fetchData: @Sendable (URL, [String: String]) async throws -> Data
+  private let post: @Sendable (URL, [String: String]) async throws -> Void
   public init(
     server: BuildServer = .github,
     fetchData: @escaping @Sendable (URL, [String: String]) async throws -> Data = {
       try await BuildHTTP.data(url: $0, headers: $1)
+    },
+    post: @escaping @Sendable (URL, [String: String]) async throws -> Void = {
+      try await BuildRetryHTTP.post(url: $0, headers: $1)
     }
   ) {
     self.server = server
+    self.post = post
     self.fetchData = fetchData
+  }
+  public func retryFailed(project: String, runID: Int, token: String) async throws {
+    guard runID > 0, !token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+      throw BuildServiceError("A valid run and a token with write access are required.")
+    }
+    let project = try BuildHTTP.validateProject(project, github: true)
+    let url = URL(
+      string: "\(server.githubAPI)/repos/\(project)/actions/runs/\(runID)/rerun-failed-jobs")!
+    try await post(
+      url,
+      [
+        "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28",
+        "Authorization": "Bearer " + token,
+      ])
   }
   public func runs(project: String, token: String?) async throws -> [BuildRun] {
     let project = try BuildHTTP.validateProject(project, github: true)

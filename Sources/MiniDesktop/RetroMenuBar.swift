@@ -18,6 +18,11 @@ struct RetroMenuBar: View {
   let menus: [RetroMenu]
   let applicationName: String
   let desktopSize: CGSize
+  let model: DesktopModel
+  let playfulness: PlayfulnessSettings?
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var blinkTask: Task<Void, Never>?
+  @State private var blinking = false
   private var compact: Bool { desktopSize.width < 800 }
   @State private var openMenuID: String?
   @State private var highlightedID: String?
@@ -42,6 +47,7 @@ struct RetroMenuBar: View {
           menuHeadings
           Spacer(minLength: 0)
         }
+        DesktopStatusStrip(model: model, playfulness: playfulness)
         TimelineView(.periodic(from: .now, by: 1)) { context in
           Group {
             if compact {
@@ -76,6 +82,7 @@ struct RetroMenuBar: View {
       }
     }
     .background(DesktopMenuEvents(handle: handleKey).allowsHitTesting(false))
+    .onDisappear { dismiss() }
     .onChange(of: applicationName) { dismiss() }
     .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
     { _ in
@@ -176,7 +183,7 @@ struct RetroMenuBar: View {
     .disabled(!item.enabled)
     .padding(.horizontal, 2)
     .onHover { inside in
-      if inside { highlightedID = item.enabled ? item.id : nil }
+      if inside && !blinking { highlightedID = item.enabled ? item.id : nil }
     }
     .accessibilityLabel(item.title)
     .accessibilityValue(item.checked ? "Checked" : "")
@@ -185,19 +192,41 @@ struct RetroMenuBar: View {
   }
 
   private func open(_ menu: RetroMenu, selectFirst: Bool = false) {
+    guard !blinking else { return }
     openMenuID = menu.id
     highlightedID = selectFirst ? menu.items.first { $0.enabled && !$0.isSeparator }?.id : nil
   }
 
   private func dismiss() {
+    blinkTask?.cancel()
+    blinkTask = nil
+    blinking = false
     openMenuID = nil
     highlightedID = nil
   }
 
   private func perform(_ item: RetroMenuItem) {
-    guard item.enabled, let action = item.action else { return }
-    dismiss()
-    action()
+    guard !blinking, item.enabled, let action = item.action else { return }
+    guard theme.id == "system7", !reduceMotion,
+      playfulness?.allows(DesktopEffects.menuBlink.id) == true, openMenuID != nil
+    else {
+      dismiss()
+      action()
+      return
+    }
+    blinking = true
+    blinkTask = Task { @MainActor in
+      for _ in 0..<3 {
+        highlightedID = item.id
+        do { try await Task.sleep(for: .milliseconds(65)) } catch { return }
+        highlightedID = nil
+        do { try await Task.sleep(for: .milliseconds(65)) } catch { return }
+      }
+      guard !Task.isCancelled else { return }
+      blinkTask = nil
+      dismiss()
+      action()
+    }
   }
 
   private func moveSelection(_ direction: Int) {
@@ -212,6 +241,10 @@ struct RetroMenuBar: View {
   }
 
   private func handleKey(_ event: NSEvent) -> Bool {
+    if blinking {
+      if event.keyCode == 53 { dismiss() }
+      return true
+    }
     if event.charactersIgnoringModifiers?.lowercased() == "m",
       event.modifierFlags.intersection([.command, .option, .control, .shift]) == [
         .command, .option,

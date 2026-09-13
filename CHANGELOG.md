@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) — 2026-09-13
+
+- Original synthesised startup, paper-jam, feeding, Wastebasket, and alarm sounds, controlled by one Playfulness switch and normal system volume/mute.
+- Background CI polling while Hello Mini runs, a menu bar printer/thermal strip, and Aqua dock attention badges. Historical and duplicate build completions stay quiet.
+- **Clear jam…** for GitHub Actions and GitLab, with one to three sequential retry copies, token permission guidance, stop controls, and conservative handling of uncertain responses.
+- **Edit → Show Clipboard**, and **File → Capture Desktop to Scrapbook** with a Command-Shift-3 shortcut when macOS delivers it to the app. The macOS screenshot shortcut may take precedence; the menu command is always available.
+- **Special** menu with reviewed Wastebasket cleanup, Hello Mini relaunch, and quit; optional three-flash System 7 menu feedback.
+- **Key Caps** with a US keyboard, shifted characters, a Unicode/emoji palette, click-to-copy, and access to the macOS character viewer.
+- **Alarm Clock** with saved timers, 25-minute focus sessions, 5-minute breaks, and a menu bar alarm that survives closed accessory windows. Overdue timers fire on wake or next launch; sessions advance explicitly.
+- **Find File** with Spotlight file-name search, a tiny dog, folder scope, and Open/Reveal actions; Finder supplies a search button and Command-F.
+- A saved **8 × 8 desktop pattern editor** in Control Panel, and Finder colour labels that update named macOS tags while preserving unrelated tags.
+- Optional Aqua dock magnification, a brief two-hop launch bounce, and System 7 **Balloon Help**, with native help and accessibility hints retained.
+
+Requires Apple silicon and macOS 26 or later. Genie minimisation and additional keyboard layouts remain on the roadmap.
+
 ## [0.1.0](https://github.com/emmettl/hellomini/releases/tag/v0.1.0) — 2026-09-13
 
 The first complete little desktop, available as a Developer ID-signed and Apple-notarized ZIP from [GitHub Releases](https://github.com/emmettl/hellomini/releases/tag/v0.1.0).

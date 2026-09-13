@@ -10,6 +10,7 @@ import SwiftUI
   var minimumSize: CGSize { get }
   var title: String { get }
   var menus: [RetroMenu] { get }
+  var status: MiniApplicationStatus? { get }
   func content() -> AnyView
 }
 
@@ -17,6 +18,7 @@ extension MiniApplication {
   public var minimumSize: CGSize { defaultSize }
   public var title: String { name }
   public var menus: [RetroMenu] { [] }
+  public var status: MiniApplicationStatus? { nil }
 }
 
 public enum MiniApplicationIcon {
@@ -76,5 +78,16 @@ public struct RetroMenu: Identifiable {
     self.title = title
     self.width = width
     self.items = items
+  }
+}
+
+public struct MiniApplicationStatus {
+  public let symbol: String
+  public let message: String
+  public let attention: Bool
+  public init(symbol: String, message: String, attention: Bool) {
+    self.symbol = symbol
+    self.message = message
+    self.attention = attention
   }
 }

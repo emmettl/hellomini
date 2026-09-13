@@ -67,6 +67,14 @@ final class FinderModel {
     }
   }
 
+  func setLabel(_ number: Int, entry: FileEntry) {
+    Task {
+      do {
+        try await reader.setLabel(number, at: entry.url)
+        reload()
+      } catch { self.error = "Could not change the Finder label: " + error.localizedDescription }
+    }
+  }
   func open(_ entry: FileEntry) {
     if entry.isBrowsable {
       navigate(to: entry.url)

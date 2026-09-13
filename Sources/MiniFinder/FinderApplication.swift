@@ -8,15 +8,22 @@ import SwiftUI
   public let defaultSize = CGSize(width: 800, height: 472)
   public let minimumSize = CGSize(width: 640, height: 400)
   private let model: FinderModel
-  public init(defaults: UserDefaults = .standard) { model = FinderModel(defaults: defaults) }
+  private let findFile: @MainActor () -> Void
+  public init(defaults: UserDefaults = .standard, findFile: @escaping @MainActor () -> Void = {}) {
+    model = FinderModel(defaults: defaults)
+    self.findFile = findFile
+  }
   public var title: String { model.title }
-  public func content() -> AnyView { AnyView(FinderView(model: model)) }
+  public func content() -> AnyView { AnyView(FinderView(model: model, findFile: findFile)) }
 
   public var menus: [RetroMenu] {
     [
       RetroMenu(
         id: "file", title: "File", width: 304,
         items: [
+          RetroMenuItem(
+            id: "find-file", title: "Find File…", shortcut: RetroShortcut(key: "f", label: "⌘F"),
+            action: findFile),
           RetroMenuItem(
             id: "open", title: "Open Selected", shortcut: RetroShortcut(key: "o", label: "⌘O"),
             enabled: model.selectedEntry != nil

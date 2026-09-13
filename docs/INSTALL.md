@@ -11,7 +11,7 @@ Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop
 The release also includes a SHA-256 checksum and build manifest. To verify a download, put the ZIP and its `.sha256` file in the same directory and run, for example:
 
 ```sh
-shasum -a 256 -c Hello-Mini-0.1.0-macos-arm64.zip.sha256
+shasum -a 256 -c Hello-Mini-0.2.0-macos-arm64.zip.sha256
 ```
 
 There is no Homebrew cask or automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.

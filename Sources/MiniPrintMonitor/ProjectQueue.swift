@@ -146,6 +146,21 @@ struct ProjectBuild: Identifiable {
       return lhs.run.id > rhs.run.id
     }
   }
+  var statusSummary: String {
+    if projects.isEmpty { return "No CI projects configured" }
+    if projects.contains(where: { snapshots[$0.id]?.error != nil }) {
+      return allProjectsJammed
+        ? "Paper jam · refresh error; showing last known builds"
+        : "CI refresh error; showing last known builds"
+    }
+    if projects.contains(where: { snapshots[$0.id]?.updated == nil }) {
+      return "Checking CI projects…"
+    }
+    return allProjectsJammed ? "Paper jam · a project’s latest build failed" : "No paper jams"
+  }
+  var allProjectsJammed: Bool {
+    projects.contains { snapshots[$0.id]?.runs.first?.state == .failed }
+  }
   var jammed: Bool {
     selectedProjects.contains {
       snapshots[$0.id]?.runs.first(where: filters.matches)?.state == .failed
@@ -270,17 +285,33 @@ struct ProjectBuild: Identifiable {
 
 @MainActor final class CompletionObserver {
   private var trackers: [String: BuildCompletionTracker] = [:]
+  private var failures: [String: BuildCompletionTracker] = [:]
   let notify: @MainActor (Int) -> Void
-  init(notify: @escaping @MainActor (Int) -> Void) { self.notify = notify }
+  let failed: @MainActor (Int) -> Void
+  init(
+    notify: @escaping @MainActor (Int) -> Void,
+    failed: @escaping @MainActor (Int) -> Void = { _ in }
+  ) {
+    self.notify = notify
+    self.failed = failed
+  }
   func observe(_ runs: [BuildRun], source: String) { observeBatch([(source, runs)]) }
   func observeBatch(_ snapshots: [(String, [BuildRun])]) {
     var count = 0
+    var failureCount = 0
     for (source, runs) in snapshots {
       var tracker = trackers[source] ?? BuildCompletionTracker()
       count += tracker.observe(runs, source: source)
       trackers[source] = tracker
+      var failure = failures[source] ?? BuildCompletionTracker(terminalState: .failed)
+      failureCount += failure.observe(runs, source: source)
+      failures[source] = failure
     }
+    if failureCount > 0 { failed(failureCount) }
     if count > 0 { notify(count) }
   }
-  func forget(_ source: String) { trackers[source] = nil }
+  func forget(_ source: String) {
+    trackers[source] = nil
+    failures[source] = nil
+  }
 }

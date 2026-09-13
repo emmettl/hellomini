@@ -18,10 +18,10 @@ The desktop is designed around 1280 × 720, including small displays such as the
 
 ## A little look inside
 
-- **Useful:** Finder, Activity Monitor, Clock, World Clock, Scrapbook, Desk Calculator, Chooser, Disk First Aid, and Wastebasket.
+- **Useful:** Finder, Find File, Activity Monitor, Clock, Alarm Clock, World Clock, Key Caps, Clipboard, Scrapbook, Desk Calculator, Chooser, Disk First Aid, and Wastebasket.
 - **Questionably useful:** Print Monitor turns GitHub Actions and GitLab builds into imaginary print jobs. Failures jam the printer; successful builds can feed the fish.
 - **Gloriously unnecessary:** a Metal Utah Teapot, Aquarium, a sliding Puzzle made from the live desktop, and original Flying Toasters screensavers.
-- **Five appearances:** Classic, Paper, Midnight, System 7, and early Aqua, complete with pinstripes, gel controls, traffic lights, and a dock.
+- **Five appearances:** Classic, Paper, Midnight, System 7, and early Aqua, complete with pinstripes, gel controls, traffic lights, and a dock with magnification and launch bounce.
 
 Windows move, resize, minimise, and remember their layout. Control Panel selects the theme, screensaver, and optional silliness. Effects respect Reduce Motion and pause when hidden. The [user guide](docs/USER_GUIDE.md) covers controls, keyboard shortcuts, application behaviour, and limitations.
 

@@ -39,10 +39,10 @@ struct ProjectManager: View {
           ForEach(model.projects) { project in
             HStack {
               VStack(alignment: .leading, spacing: 3) {
-                Text(project.path).font(theme.typography.title).lineLimit(1).help(project.path)
+                Text(project.path).font(theme.typography.title).lineLimit(1).miniHelp(project.path)
                 Text(project.service.rawValue + " · " + project.serverAddress).font(
                   theme.typography.small
-                ).lineLimit(1).help(project.serverAddress)
+                ).lineLimit(1).miniHelp(project.serverAddress)
               }
               Spacer()
               Button("Token…") { tokenProject = project }.disabled(model.busy)
@@ -110,7 +110,7 @@ private struct ProjectTokenEditor: View {
       Text("Server: " + project.serverAddress).font(theme.typography.small).textSelection(
         .enabled)
       Text(
-        "Optional for public projects. Use Actions read access on GitHub or read_api access on GitLab. Stored in this Mac's Keychain."
+        "Optional for public projects. Reading needs Actions read access on GitHub or read_api on GitLab. Clear jam needs Actions write access on GitHub, or api scope and pipeline retry permission on GitLab. Stored in this Mac's Keychain."
       )
       .font(theme.typography.small)
       SecureField("Token", text: $token)

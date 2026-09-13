@@ -135,7 +135,7 @@ private struct AquaTitleBar: View {
     )
     .disabled(action == nil)
     .accessibilityLabel("\(label) \(state.title)")
-    .help("\(label) \(state.title)")
+    .miniHelp("\(label) \(state.title)")
   }
 }
 

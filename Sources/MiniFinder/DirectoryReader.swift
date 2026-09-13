@@ -7,6 +7,7 @@ public struct FileEntry: Identifiable, Sendable, Equatable {
   public let isDirectory: Bool
   public let isPackage: Bool
   public let byteCount: Int64
+  public var labelNumber: Int = 0
 
   public var isBrowsable: Bool { isDirectory && !isPackage }
 }
@@ -15,9 +16,23 @@ public struct FileEntry: Identifiable, Sendable, Equatable {
 public actor DirectoryReader {
   public init() {}
 
+  public func setLabel(_ number: Int, at location: URL) throws {
+    guard (0...7).contains(number), location.isFileURL else {
+      throw CocoaError(.validationMissingMandatoryProperty)
+    }
+    var url = location
+    let names = ["", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"]
+    let existing = try location.resourceValues(forKeys: [.tagNamesKey]).tagNames ?? []
+    var values = URLResourceValues()
+    values.tagNames =
+      existing.filter { !names.dropFirst().contains($0) } + (number == 0 ? [] : [names[number]])
+    values.labelNumber = number
+    try url.setResourceValues(values)
+  }
+
   public func entries(at directory: URL, showHidden: Bool = false) throws -> [FileEntry] {
     let keys: Set<URLResourceKey> = [
-      .isDirectoryKey, .isPackageKey, .fileSizeKey, .localizedNameKey,
+      .isDirectoryKey, .isPackageKey, .fileSizeKey, .localizedNameKey, .labelNumberKey,
     ]
     let urls = try FileManager.default.contentsOfDirectory(
       at: directory,
@@ -31,7 +46,7 @@ public actor DirectoryReader {
         name: values.localizedName ?? url.lastPathComponent,
         isDirectory: values.isDirectory ?? false,
         isPackage: values.isPackage ?? false,
-        byteCount: Int64(values.fileSize ?? 0)
+        byteCount: Int64(values.fileSize ?? 0), labelNumber: values.labelNumber ?? 0
       )
     }.sorted { lhs, rhs in
       if lhs.isBrowsable != rhs.isBrowsable { return lhs.isBrowsable }

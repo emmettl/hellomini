@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.1.0](https://github.com/emmettl/hellomini/releases/tag/v0.1.0) is published, signed, and notarized. The [website](https://hellomini.app) is live. All nine original roadmap applications have working first versions. Everything under Next priorities and the proposal sections below is future work, not a claim about the released app; there are no dated commitments.
+Version [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) adds the desktop accessories and polish listed below to the signed, notarized release line. The [website](https://hellomini.app) is live. All nine original roadmap applications have working first versions. Next priorities and Other continuing directions describe future work; there are no dated commitments.
 
 ## Applications
 
@@ -20,7 +20,7 @@ Each application should work as a small, coherent application while contributing
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, Scrapbook OCR, and cloud sync are not included in 0.1.0.
+The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, Scrapbook OCR, and cloud sync are not included in 0.2.0.
 
 ## Shared design commitments
 
@@ -40,40 +40,32 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 
 - Continue longer-session, sleep/wake, display-change, and saved-state upgrade testing for subsequent releases. The signed 0.1.0 download has been tested on the physical Mini.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
-- Start the next desktop pass with shared system sounds and a menu bar status strip, then connect Alarm Clock and CI retry feedback to that plumbing. Clipboard viewing, desktop capture into Scrapbook, and the Special menu are useful companion additions.
+- Continue live CI retry validation across providers and self-hosted installations, including token permissions and long-running pipelines.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.
 
-## Cheap wins that fit existing plumbing
+## Shipped in 0.2.0
 
-These are proposed additions, not shipped features or fixed effort estimates.
-
-- **System sounds:** Original synthesised alerts for a paper jam, fish being fed, and Wastebasket emptying, plus a startup chime under the boot homage. Use one System sounds switch in Control Panel → Playfulness, governed by Extra silliness and respecting system mute. A newly observed CI failure should be audible while Hello Mini is running even when Print Monitor is closed; initial history and repeat polls must not replay alerts. Reuse completion tracking and the Aquarium feeding connection.
-- **Menu bar status strip:** A tiny printer glyph beside the clock jams when any saved project's latest build fails. Add a thermometer driven by system thermal state, with a readable state description rather than an invented temperature. The Aqua Print Monitor dock tile can show the same jam badge. Keep status understandable without sound or animation, and fit the strip into compact and Purist layouts.
-- **Clear the paper jam:** Add an explicit retry action for failed GitHub Actions jobs and GitLab pipeline jobs, presented in a themed dialog with a **Copies** field meaning retry count. Keep this Print Monitor's only planned write action. Extend the currently read-only provider interface, verify each provider's retry semantics and required token permissions, and define bounded, sequential retry behaviour with a default of one. Show the actual project, failed run, and retry result beneath the stationery joke.
-- **Show Clipboard and desktop snapshots:** Add **Edit → Show Clipboard** as an on-demand viewer, and capture Hello Mini's desktop directly into Scrapbook through the `DesktopPicture` capture already used by Puzzle. Target **Command-Shift-3** while Hello Mini is active; check interaction with the macOS screenshot shortcut and provide a discoverable menu command. Capture Hello Mini's own desktop and reuse Scrapbook's existing image storage.
-- **Special menu:** Add **Empty Wastebasket**, **Restart**, and **Shut Down**. Empty Wastebasket should reuse the existing review and move-to-macOS-Trash flow for selected caches. Restart relaunches Hello Mini with saved state; Shut Down quits Hello Mini.
-- **Menu item blink:** Flash the chosen System 7 menu command three times before closing the menu, executing its action once. Skip the effect with Reduce Motion or Playfulness disabled, and preserve keyboard interaction.
-
-## Small new desk accessories
-
-- **Key Caps:** A period keyboard viewer that doubles as a Unicode and emoji picker, with click-to-copy. A useful character palette in a vintage keyboard costume.
-- **Alarm Clock:** Add timers and a pomodoro to the existing Clock module. When an alarm fires, flash an alarm icon in the menu bar and use the shared system sounds. Preserve a visible alarm when sound is muted, and use a steady indicator with Reduce Motion or Playfulness disabled. Define sleep/wake and relaunch behaviour as part of the timer design.
-- **Find File:** A Sherlock-style search window backed by Spotlight metadata queries, with the little dog. Give Finder a search entry point and let results open or reveal real files; communicate indexing or access limitations in the window.
-- **Desktop pattern editor:** Recreate the classic 8 × 8 pixel editor from the General control panel, feeding the theme's dotted desktop surface. Save the pattern, preview changes, and offer a reset to the theme default.
-- **Finder labels:** Offer System 7's seven colour labels backed by real macOS Finder tags. Read existing labels and change the chosen colour without discarding unrelated tags.
-
-## Theme fidelity and discoverability
-
-- **Aqua dock and windows:** Add dock magnification on hover and a genie-style minimise animation to the existing dock and window restoration behaviour. Gate both through Playfulness and Reduce Motion, preserving reliable focus, window interaction, and restoration when effects are skipped.
-- **System 7 Balloon Help:** Add hover explanations in period speech balloons as a shared discoverability layer for desktop controls and applications. Provide an explicit help toggle and equivalent explanations for keyboard and accessibility users.
+- **System sounds:** Original synthesised startup, jam, feeding, Wastebasket, and alarm cues share one Playfulness switch and normal system output. CI monitoring now belongs to the host and continues with Print Monitor closed. Initial history and repeat polls do not replay alerts.
+- **Menu bar status strip:** A printer glyph reflects all saved projects independently of the visible queue filters; a thermometer reports thermal state. Aqua dock tiles share attention badges. Status remains readable with effects disabled and in Purist mode.
+- **Clear the paper jam:** A themed dialog retries GitHub failed jobs and their dependents, or GitLab failed/cancelled pipeline jobs. **Copies** defaults to one and is capped at three. Subsequent copies require observing the previous attempt become active and fail; uncertainty stops the sequence. This is Print Monitor's only write action.
+- **Clipboard and desktop snapshots:** **Edit → Show Clipboard** reads text or images on demand. **File → Capture Desktop to Scrapbook** saves Hello Mini's own desktop through `DesktopPicture`, without changing the clipboard. Command-Shift-3 is wired locally, but the macOS screenshot shortcut may take precedence.
+- **Special menu:** Empty Wastebasket opens the existing reviewed cache-cleanup flow; Restart relaunches Hello Mini; Shut Down quits it.
+- **Menu item blink:** System 7 commands flash three times before activation, with Playfulness and Reduce Motion gates.
+- **Key Caps:** A US keyboard with shifted characters, a curated Unicode/emoji palette, click-to-copy, and the native macOS character viewer for the wider character set. Live physical-key highlighting and other keyboard layouts remain future depth.
+- **Alarm Clock:** Saved timers, explicit 25-minute focus sessions and 5-minute breaks, sound, and a flashing menu bar alarm. Sleep counts toward the deadline; overdue timers fire on wake or relaunch, and already-ringing alarms restore without replaying sound. Reduced motion uses a steady indicator.
+- **Find File:** Spotlight file-name search with a little dog, selectable folder scope, the first 200 results, and Open/Reveal actions. Finder supplies a search button and Command-F. Indexing and access limitations are explained in the window.
+- **Desktop pattern editor:** Saved 8 × 8 ink/paper patterns in Control Panel → Appearance, applied immediately with clear/reset controls.
+- **Finder labels:** Seven colour labels update the matching named macOS tags and legacy label colour, retaining unrelated tags. Broader file operations remain future work.
+- **Aqua dock magnification and launch bounce:** Hover enlargement and a finite two-hop cue for newly opened apps respect Playfulness and Reduce Motion. **Genie minimisation remains future work**, with focus, geometry, and restoration reliability as prerequisites.
+- **System 7 Balloon Help:** A saved Help-menu toggle enables shared hover explanations above the desktop; native help and accessibility hints remain available.
 
 ## Other continuing directions
 
 - **Themes:** System 7 and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
-- **Distribution:** The MIT-licensed 0.1.0 release is available as a signed, notarized GitHub download, linked from hellomini.app. Evaluate a Homebrew cask next; App Store distribution remains undecided. CI continues to produce development artifacts separately from public releases.
+- **Distribution:** The MIT-licensed release is available as a signed, notarized GitHub download, linked from hellomini.app. Evaluate a Homebrew cask next; App Store distribution remains undecided. CI continues to produce development artifacts separately from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
 See the [user guide](docs/USER_GUIDE.md) for what works today and [CI documentation](docs/CI.md) for the existing build pipelines.

@@ -26,9 +26,13 @@ import SwiftUI
   let model = AquariumModel()
   private let playfulness: PlayfulnessSettings
 
-  public init(playfulness: PlayfulnessSettings, preview: (() -> Void)? = nil) {
+  public init(
+    playfulness: PlayfulnessSettings, preview: (() -> Void)? = nil,
+    onFeed: @escaping () -> Void = {}
+  ) {
     self.playfulness = playfulness
     model.preview = preview
+    model.onFeed = onFeed
   }
   public static let screensaver = MiniScreensaver(
     id: "aquarium", name: "Aquarium",
@@ -80,11 +84,14 @@ import SwiftUI
   @ObservationIgnored var simulation = AquariumSimulation()
   @ObservationIgnored var preview: (() -> Void)?
 
+  @ObservationIgnored var onFeed: () -> Void = {}
   func feed() {
+    onFeed()
     feedRevision += 1
     feedingNote = nil
   }
   func feedFromBuilds(_ count: Int) {
+    onFeed()
     feedRevision += 1
     feedingNote =
       count == 1 ? "A build passed. Lunch is served." : "\(count) builds passed. Lunch is served."
@@ -140,7 +147,7 @@ struct AquariumView: View {
       Rectangle().frame(height: 1)
       HStack {
         Text(model.feedingNote ?? "NINE FISH. NO RESPONSIBILITIES.").lineLimit(1)
-          .help(model.feedingNote ?? "Nine fish. No responsibilities.")
+          .miniHelp(model.feedingNote ?? "Nine fish. No responsibilities.")
         Spacer(minLength: 8)
         Text(playfulness.allows(AquariumApplication.activity.id) ? "System currents" : "Decorative")
       }.font(theme.typography.small).padding(.horizontal, 10).frame(height: 28)

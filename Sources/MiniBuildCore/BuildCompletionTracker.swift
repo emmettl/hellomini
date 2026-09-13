@@ -6,22 +6,25 @@ public struct BuildCompletionTracker {
   private var highestID = 0
   private var states: [Int: BuildState] = [:]
   private var rewarded = Set<Int>()
-  public init() {}
+  private let terminalState: BuildState
+  public init(terminalState: BuildState = .passed) { self.terminalState = terminalState }
 
   public mutating func observe(_ runs: [BuildRun], source: String) -> Int {
     if self.source != source {
       self.source = source
       highestID = runs.map(\.id).max() ?? 0
       states = [:]
-      rewarded = Set(runs.filter { $0.state == .passed }.map(\.id))
+      rewarded = Set(runs.filter { $0.state == terminalState }.map(\.id))
       for run in runs { states[run.id] = run.state }
       return 0
     }
     var completions = 0
     for run in runs {
-      let changedToSuccess = states[run.id].map { $0 != .passed } ?? false
+      let changedToSuccess = states[run.id].map { $0 != terminalState } ?? false
       // Provider run IDs increase over time. Older runs resurfacing in the list aren't new builds.
-      if run.state == .passed, !rewarded.contains(run.id), changedToSuccess || run.id > highestID {
+      if run.state == terminalState, !rewarded.contains(run.id),
+        changedToSuccess || run.id > highestID
+      {
         completions += 1
         rewarded.insert(run.id)
       }

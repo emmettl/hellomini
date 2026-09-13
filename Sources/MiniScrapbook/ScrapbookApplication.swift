@@ -1,3 +1,4 @@
+import AppKit
 import MiniCore
 import SwiftUI
 
@@ -9,6 +10,7 @@ import SwiftUI
   public let minimumSize = CGSize(width: 660, height: 400)
   private let model = ScrapbookModel()
   public init() {}
+  public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
   public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }
 
   public var menus: [RetroMenu] {
