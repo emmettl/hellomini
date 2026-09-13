@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) adds the desktop accessories and polish listed below to the signed, notarized release line. The [website](https://hellomini.app) is live. All nine original roadmap applications have working first versions. Next priorities and Other continuing directions describe future work; there are no dated commitments.
+Version [0.2.0](https://github.com/emmettl/hellomini/releases/tag/v0.2.0) adds the desktop accessories and polish listed below to the signed, notarized release line. The [website](https://hellomini.app) is live. All nine original roadmap applications have working first versions. **0.3.0 will focus on tiny-screen mode:** making the whole interface readable on a physically small 720p display at normal desk distance. This is planned work, with no dated commitment.
 
 ## Applications
 
@@ -29,6 +29,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - Put optional spectacle in **Control Panel → Playfulness**, with individual switches and the existing Extra silliness master switch. Keep useful information available when effects are disabled.
 - Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or inactive. Elaborate effects must not compromise solid window interaction.
 - Preserve the distinction between real status and decorative storytelling: a printer jam may represent a failed build, but the actual failure details must remain accessible.
+- Treat legibility as a shared display concern across every theme. Enlarge text, controls, icons, and interaction targets together; adapt crowded layouts without shrinking essential information again.
 
 ## Shipped in 0.1.0
 
@@ -36,7 +37,21 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - Keyboard launcher access, arrow-key Puzzle play, compact CI rows, and helpful empty states are implemented and checked at 720p.
 - Successful CI builds feed Aquarium through an independent, toggleable connection. The first refresh establishes history; repeat polls do not produce repeat meals.
 
-## Next priorities
+## Planned for 0.3.0 — Tiny-screen mode
+
+A layout fitting 1280 × 720 does not establish that it is readable on the Wokyis at normal desk distance. Tiny-screen mode is the next release's primary feature. The [scope and design](docs/TINY_SCREEN_MODE.md) define the proposed architecture, tradeoffs, and release checks; implementation has not started.
+
+- **One setting, every theme:** Add a saved Tiny-screen mode control in Control Panel → Appearance and the View menu. Start with 2× enlargement for evaluation, with 1.5× as a secondary candidate. Choose the shipping default through physical-display testing.
+- **Enlarge the complete interface:** Cover text, window chrome, buttons, icons, menus, status indicators, help, and application content. Keep the display filled while giving applications a smaller logical workspace.
+- **Preserve bevelled edges in full screen:** Retain the desktop's bevelled edge treatment when entering full screen, including in tiny-screen mode.
+- **Make that workspace usable:** Reflow dense toolbars and lists, provide reachable menu/launcher overflow, and keep all essential actions accessible. Prioritise Control Panel, Print Monitor, and Finder, then audit every bundled app and both launcher styles.
+- **Keep theme and display responsibilities clear:** The host owns presentation scale and coordinates; the shared UI framework exposes layout context and semantic metrics where needed. Themes retain their visual identity and must honour that shared contract.
+- **Preserve state and recovery:** Switching modes keeps open apps, drafts, focus, and saved window placements. Purist mode retains its fixed 512 × 384 behaviour; the two modes are mutually exclusive. Turning tiny-screen mode off must remain easy.
+- **Validate on the hardware:** Verify reading and interaction on the physical Wokyis at a recorded normal viewing distance, alongside automated geometry/state checks and visual checks across all five themes. A 720p screenshot alone is insufficient.
+
+Other new feature directions remain secondary to completing this usability work.
+
+## Other next priorities
 
 - Continue longer-session, sleep/wake, display-change, and saved-state upgrade testing for subsequent releases. The signed 0.1.0 download has been tested on the physical Mini.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
