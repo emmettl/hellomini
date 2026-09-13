@@ -22,7 +22,7 @@ private struct AboutView: View {
         PixelIcon(symbol: .computer, scale: 3)
         VStack(alignment: .leading, spacing: 4) {
           Text("Hello Mini").font(theme.typography.display(23))
-          Text("Version 0.1 · Hello, world.").font(theme.typography.small)
+          Text(version).font(theme.typography.small)
         }
       }
       Text("Inspired by 1984. Built for today.").font(theme.typography.small)
@@ -31,5 +31,15 @@ private struct AboutView: View {
         "\(ProcessInfo.processInfo.processorCount) cores · \(ByteCountFormatter.string(fromByteCount: Int64(ProcessInfo.processInfo.physicalMemory), countStyle: .memory)) memory"
       ).font(theme.typography.small)
     }.padding(18)
+  }
+  private var version: String {
+    guard
+      let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString")
+        as? String
+    else {
+      return "Development build"
+    }
+    let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+    return "Version \(version) (\(build))"
   }
 }

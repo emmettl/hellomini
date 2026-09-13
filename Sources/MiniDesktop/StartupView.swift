@@ -50,49 +50,51 @@ private struct StartupScreen: View {
   private let symbols: [PixelSymbol] = [.disk, .folder, .activity, .clock, .settings, .teapot]
 
   var body: some View {
-    ZStack {
-      ThemeSurfaceView(sequence.phase == .happyMac ? .solid(theme.paper) : theme.desktop)
-      if sequence.phase == .happyMac {
-        VStack(spacing: 24) {
-          PixelIcon(symbol: .computer, scale: 4)
-          Text("hello.").font(theme.typography.title)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Happy Macintosh. Starting Hello Mini.")
-      } else {
-        VStack(spacing: 24) {
-          VStack(spacing: 22) {
-            PixelIcon(symbol: .computer, scale: 3)
-            Text("Welcome to Macintosh.").font(theme.typography.display(22))
-            Text("Hello Mini").font(theme.typography.title)
-            progressBar
-            Text("A little desktop is waking up.").font(theme.typography.small)
+    GeometryReader { geometry in
+      let compact = geometry.size.height < 450
+      ZStack {
+        ThemeSurfaceView(sequence.phase == .happyMac ? .solid(theme.paper) : theme.desktop)
+        if sequence.phase == .happyMac {
+          VStack(spacing: compact ? 12 : 24) {
+            PixelIcon(symbol: .computer, scale: 4)
+            Text("hello.").font(theme.typography.title)
           }
-          .padding(32)
-          .frame(width: 460)
-          .themeFrame(theme.window)
-
-          HStack(spacing: 16) {
-            ForEach(symbols.indices, id: \.self) { index in
-              PixelIcon(symbol: symbols[index], scale: 2)
-                .opacity(index < sequence.progress ? 1 : 0)
+          .accessibilityElement(children: .ignore)
+          .accessibilityLabel("Happy Macintosh. Starting Hello Mini.")
+        } else {
+          VStack(spacing: compact ? 12 : 24) {
+            VStack(spacing: compact ? 12 : 22) {
+              PixelIcon(symbol: .computer, scale: 3)
+              Text("Welcome to Macintosh.").font(theme.typography.display(22))
+              Text("Hello Mini").font(theme.typography.title)
+              progressBar
+              Text("A little desktop is waking up.").font(theme.typography.small)
             }
+            .padding(compact ? 20 : 32)
+            .frame(width: 460)
+            .themeFrame(theme.window)
+
+            HStack(spacing: 16) {
+              ForEach(symbols.indices, id: \.self) { index in
+                PixelIcon(symbol: symbols[index], scale: 2)
+                  .opacity(index < sequence.progress ? 1 : 0)
+              }
+            }
+            .frame(height: 32)
+            .accessibilityHidden(true)
           }
-          .frame(height: 32)
-          .accessibilityHidden(true)
+        }
+        VStack {
+          Spacer()
+          Button("Skip startup", action: sequence.skip)
+            .buttonStyle(RetroButtonStyle())
+            .keyboardShortcut(.cancelAction)
+            .help("Press Escape to open the desktop immediately.")
+            .padding(.bottom, compact ? 8 : 30)
         }
       }
-      VStack {
-        Spacer()
-        Button("Skip startup", action: sequence.skip)
-          .buttonStyle(RetroButtonStyle())
-          .keyboardShortcut(.cancelAction)
-          .help("Press Escape to open the desktop immediately.")
-          .padding(.bottom, 30)
-      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .ignoresSafeArea()
   }
 
   private var progressBar: some View {

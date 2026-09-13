@@ -87,6 +87,22 @@ public struct ThemeWindowState {
   public let title: String
   public let active: Bool
   public let close: @MainActor () -> Void
+  public let minimise: (@MainActor () -> Void)?
+  public let zoom: (@MainActor () -> Void)?
+  public let zoomed: Bool
+
+  public init(
+    title: String, active: Bool, close: @escaping @MainActor () -> Void,
+    minimise: (@MainActor () -> Void)? = nil, zoom: (@MainActor () -> Void)? = nil,
+    zoomed: Bool = false
+  ) {
+    self.title = title
+    self.active = active
+    self.close = close
+    self.minimise = minimise
+    self.zoom = zoom
+    self.zoomed = zoomed
+  }
 }
 
 public struct ThemeControlState {
@@ -105,11 +121,17 @@ public struct MiniThemeDefinition: Identifiable, Sendable {
   public var selection: ThemeSurface = .solid(.black)
   public var accent: Color = .black
   public var typography = ThemeTypography()
+  /// Optional desktop-only text treatment; nil preserves the paper labels of classic themes.
+  public var desktopInk: Color?
+  public var desktopLabelSurface: ThemeSurface?
+  public var desktopTextShadow: Color = .clear
   public var desktop: ThemeSurface = .dots(background: .white, foreground: .black, spacing: 4)
   public var window = ThemeFrameStyle(surface: .solid(.white), border: .black, shadow: .black)
   public var inactiveWindow = ThemeFrameStyle(
     surface: .solid(.white), border: .black, shadow: .black)
   public var menu = ThemeFrameStyle(surface: .solid(.white), border: .black, shadow: .black)
+  /// A dock replaces the desktop application rail when a theme supplies its shelf styling.
+  public var dock: ThemeFrameStyle?
   public var menuBar: ThemeSurface = .solid(.white)
   public var titleBarHeight: CGFloat = 30
   public var titleBarDivider: CGFloat = 1

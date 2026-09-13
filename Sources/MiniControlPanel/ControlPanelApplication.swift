@@ -11,10 +11,11 @@ import SwiftUI
   private let settings: AppearanceSettings
   private let playfulness: PlayfulnessSettings
   private let themes: MiniThemeRegistry
+  private let screensavers: ScreensaverSettings?
 
   public init(
     settings: AppearanceSettings, playfulness: PlayfulnessSettings,
-    themes: MiniThemeRegistry = .builtIns
+    themes: MiniThemeRegistry = .builtIns, screensavers: ScreensaverSettings? = nil
   ) {
     precondition(
       settings.availableThemes == themes.metadata,
@@ -22,9 +23,12 @@ import SwiftUI
     self.settings = settings
     self.playfulness = playfulness
     self.themes = themes
+    self.screensavers = screensavers
   }
   public func content() -> AnyView {
-    AnyView(ControlPanelView(settings: settings, playfulness: playfulness, themes: themes))
+    AnyView(
+      ControlPanelView(
+        settings: settings, playfulness: playfulness, themes: themes, screensavers: screensavers))
   }
 
   public var menus: [RetroMenu] {
@@ -38,7 +42,14 @@ import SwiftUI
             ) {
               self.settings.selectTheme(id: theme.id)
             }
-          }
+          } + [
+            .separator("display-mode"),
+            RetroMenuItem(
+              id: "purist", title: "Purist Mode — 512 × 384", checked: settings.puristMode
+            ) {
+              self.settings.setPuristMode(!self.settings.puristMode)
+            },
+          ]
       ),
       RetroMenu(
         id: "playfulness", title: "Playfulness", width: 280,
@@ -67,11 +78,13 @@ private struct ControlPanelView: View {
   let settings: AppearanceSettings
   let playfulness: PlayfulnessSettings
   let themes: MiniThemeRegistry
+  let screensavers: ScreensaverSettings?
   @State private var pane = Pane.appearance
 
   private enum Pane: String, CaseIterable {
     case appearance = "Appearance"
     case playfulness = "Playfulness"
+    case screensavers = "Screensavers"
   }
 
   var body: some View {
@@ -90,6 +103,8 @@ private struct ControlPanelView: View {
       ScrollView {
         if pane == .appearance {
           appearance
+        } else if pane == .screensavers, let screensavers {
+          ScreensaverSettingsView(settings: screensavers, playfulness: playfulness).padding(22)
         } else {
           PlayfulnessView(settings: playfulness).padding(22)
         }
@@ -111,8 +126,15 @@ private struct ControlPanelView: View {
           Text("Choose a look for your desktop.").font(theme.typography.small)
         }
       }
+      Toggle(
+        "Purist mode — 512 × 384",
+        isOn: Binding(
+          get: { settings.puristMode }, set: { settings.setPuristMode($0) })
+      )
+      .toggleStyle(.checkbox)
+      .help("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
       Rectangle().frame(height: 1)
-      ScrollView(.horizontal) {
+      AppearanceScrollView {
         HStack(alignment: .top, spacing: 14) {
           ForEach(themes.themes) { definition in
             Button {
@@ -144,6 +166,9 @@ private struct ControlPanelView: View {
             .accessibilityAddTraits(settings.theme.id == definition.id ? .isSelected : [])
           }
         }
+        .padding(.bottom, 8)
+        .environment(\.miniTheme, theme)
+        .environment(\.colorScheme, theme.colorScheme)
       }
       Text(settings.theme.description)
         .font(theme.typography.body)

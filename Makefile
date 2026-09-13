@@ -1,4 +1,4 @@
-.PHONY: build app run test lint format check icons ci-test
+.PHONY: build app run test test-release lint format check icons ci-test release-check release
 
 CONFIGURATION ?= debug
 
@@ -22,6 +22,9 @@ run: app
 test:
 	swift test
 
+test-release:
+	swift test -c release --filter MiniPrintMonitorTests
+
 lint:
 	swift format lint --strict --recursive Package.swift Sources Tests scripts
 
@@ -30,5 +33,12 @@ format:
 
 ci-test:
 	python3 scripts/test-ci.py
+	python3 scripts/test-release.py
 
-check: lint test ci-test build
+release-check:
+	python3 scripts/release.py check
+
+release:
+	python3 scripts/release.py prepare
+
+check: lint test test-release ci-test build

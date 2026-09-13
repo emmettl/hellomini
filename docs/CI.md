@@ -6,7 +6,7 @@ The public source repository is `emmettl/hellomini`. The private runner reposito
 
 `.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub-hosted `macos-26` ARM runners with Xcode 26.6 explicitly selected. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
 
-The workflow runs `make check`, builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Metal integration test to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require the Metal test.
+The workflow runs `make check` (including Print Monitor tests in both debug and release configurations), builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
 
 ## Private Mini builds
 
@@ -32,6 +32,6 @@ Use GitHub's **Settings → Actions → Runners → New self-hosted runner** in 
 
 The runner's normal automatic updates remain enabled. Existing runners for other projects are independent. Before retiring this runner, stop and uninstall its service and remove its registration from the private repository. No signing identity, Apple account, or deployment credentials are needed for these builds.
 
-Artifacts currently carry an ad-hoc signature. Developer ID signing, notarization, GitHub releases, Homebrew distribution, and an explicit local deployment job remain later work. A source license should also be chosen before advertising an open-source release.
+Artifacts carry an ad-hoc signature and are development builds. The source is MIT licensed. The separate local `make release` path prepares a Developer ID-signed and notarized archive once the release machine has the required identity and Keychain profile. It never publishes automatically. See [Releasing](RELEASING.md); neither CI repository receives signing credentials through this change.
 
 References: [GitHub runner security](https://docs.github.com/en/actions/reference/security/secure-use), [macOS runner images](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md), and [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners).

@@ -20,7 +20,8 @@ extension MiniApplication {
 }
 
 public enum MiniApplicationIcon {
-  case folder, computer, activity, clock, settings, teapot
+  case folder, computer, activity, clock, settings, teapot, aquarium, scrapbook, calculator, puzzle,
+    disk, chooser, wastebasket, printer
 }
 
 public struct RetroShortcut {

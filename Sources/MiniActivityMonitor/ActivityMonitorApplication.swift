@@ -108,9 +108,9 @@ private struct ActivityView: View {
           }.frame(width: 190, alignment: .leading)
           VStack(alignment: .leading, spacing: 5) {
             Text("MEMORY · \(bytes(sample.totalMemory))").font(theme.typography.small)
-            Text("Wired       \(bytes(sample.wiredMemory))")
-            Text("Compressed  \(bytes(sample.compressedMemory))")
-            Text("Free        \(bytes(sample.freeMemory))")
+            memoryRow("Wired", value: sample.wiredMemory)
+            memoryRow("Compressed", value: sample.compressedMemory)
+            memoryRow("Free", value: sample.freeMemory)
           }.font(theme.typography.small).frame(maxWidth: .infinity, alignment: .leading)
           VStack(alignment: .leading, spacing: 5) {
             Text("SYSTEM").font(theme.typography.small)
@@ -199,6 +199,14 @@ private struct ActivityView: View {
     .help(
       "1: ps reports recent CPU usage; a multithreaded process can exceed 100%. 2: Resident memory (RSS); shared pages may appear in multiple processes. These columns do not sum to system totals."
     )
+  }
+
+  private func memoryRow(_ title: String, value: UInt64) -> some View {
+    HStack {
+      Text(title)
+      Spacer(minLength: 6)
+      Text(bytes(value)).monospacedDigit()
+    }
   }
 
   private func bytes(_ value: UInt64) -> String {

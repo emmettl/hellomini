@@ -18,7 +18,16 @@ struct DesktopWindowConfiguration: NSViewRepresentable {
       window.standardWindowButton(.closeButton)?.isHidden = true
       window.standardWindowButton(.miniaturizeButton)?.isHidden = true
       window.standardWindowButton(.zoomButton)?.isHidden = true
-      window.backgroundColor = .white
+      window.backgroundColor = .black
     }
+  }
+}
+
+/// Fixed-size display modes still allow a native full-screen presentation.
+@MainActor public enum MiniDesktopWindowActions {
+  public static func toggleFullScreen() {
+    guard let window = NSApp.keyWindow else { return }
+    window.styleMask.insert(.resizable)
+    window.toggleFullScreen(nil)
   }
 }

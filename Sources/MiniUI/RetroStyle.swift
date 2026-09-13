@@ -71,8 +71,13 @@ public struct RetroButtonStyle: ButtonStyle {
 public struct ThemeWindowTitleBar: View {
   @Environment(\.miniTheme) private var theme
   let state: ThemeWindowState
-  public init(title: String, active: Bool, close: @escaping @MainActor () -> Void) {
-    state = ThemeWindowState(title: title, active: active, close: close)
+  public init(
+    title: String, active: Bool, close: @escaping @MainActor () -> Void,
+    minimise: (@MainActor () -> Void)? = nil, zoom: (@MainActor () -> Void)? = nil,
+    zoomed: Bool = false
+  ) {
+    state = ThemeWindowState(
+      title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed)
   }
 
   public var body: some View {
@@ -152,7 +157,7 @@ struct ThemePreviewScene: View {
         .frame(height: definition.menuBarHeight)
         .background { ThemeSurfaceView(definition.menuBar) }
         VStack(spacing: 0) {
-          ThemeWindowTitleBar(title: "Hello Mini", active: true, close: {})
+          ThemeWindowTitleBar(title: "Hello Mini", active: true, close: {}, minimise: {}, zoom: {})
           HStack {
             PixelIcon(symbol: .folder)
             Button("OK") {}.buttonStyle(RetroButtonStyle())

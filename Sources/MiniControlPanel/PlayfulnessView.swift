@@ -44,8 +44,6 @@ struct PlayfulnessView: View {
         planned("Impossible instruments", "CPU activity made visible as swarms of particles.")
         planned("Physical windows", "Windows that fold away like little sheets of paper.")
         planned("Depth behind glass", "Tiny 3D worlds rendered in ink and stipple.")
-        planned("Aquarium", "An After Dark–inspired fish tank, with bubbles and wandering fish.")
-        planned("Flying toasters", "Winged toasters and toast on a very important journey.")
       }
       Text("Each will get its own switch when it arrives. The selected theme will supply its look.")
         .font(theme.typography.small)
