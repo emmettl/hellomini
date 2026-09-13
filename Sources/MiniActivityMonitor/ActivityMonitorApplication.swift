@@ -175,7 +175,7 @@ private struct ActivityView: View {
       Rectangle().frame(height: 1)
       HStack {
         Text(model.error ?? (model.paused ? "Paused" : "Live · every 2 seconds"))
-          .lineLimit(1).help(model.error ?? "Sampling stops when this window is closed.")
+          .lineLimit(1).miniHelp(model.error ?? "Sampling stops when this window is closed.")
         Spacer()
         if let date = model.latest?.date {
           Text("Updated \(date.formatted(.dateTime.hour().minute().second()))")
@@ -196,7 +196,7 @@ private struct ActivityView: View {
     }
     .font(theme.typography.small).padding(.horizontal, 16).frame(height: 24)
     .foregroundStyle(theme.selectionInk).background { ThemeSurfaceView(theme.selection) }
-    .help(
+    .miniHelp(
       "1: ps reports recent CPU usage; a multithreaded process can exceed 100%. 2: Resident memory (RSS); shared pages may appear in multiple processes. These columns do not sum to system totals."
     )
   }

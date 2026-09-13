@@ -10,11 +10,13 @@ import SwiftUI
   public let icon = MiniApplicationIcon.wastebasket
   public let defaultSize = CGSize(width: 750, height: 490)
   public let minimumSize = CGSize(width: 640, height: 410)
-  public init() {}
-  public func content() -> AnyView { AnyView(WastebasketView()) }
+  private let onEmpty: () -> Void
+  public init(onEmpty: @escaping () -> Void = {}) { self.onEmpty = onEmpty }
+  public func content() -> AnyView { AnyView(WastebasketView(onEmpty: onEmpty)) }
 }
 
 private struct WastebasketView: View {
+  let onEmpty: () -> Void
   @Environment(\.miniTheme) private var theme
   @State private var roots = [
     "Library/Developer/Xcode/DerivedData", "Library/Caches/org.swift.swiftpm",
@@ -128,6 +130,7 @@ private struct WastebasketView: View {
           moved.insert(item.id)
         } catch { failed.append(item.id.lastPathComponent) }
       }
+      if !moved.isEmpty { onEmpty() }
       items.removeAll { moved.contains($0.id) }
       selected.subtract(moved)
       message =

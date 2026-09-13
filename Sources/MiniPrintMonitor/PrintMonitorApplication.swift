@@ -17,10 +17,21 @@ import SwiftUI
   private let model: ProjectQueue
   public init(
     playfulness: PlayfulnessSettings,
-    onSuccessfulBuilds: @escaping @MainActor (Int) -> Void = { _ in }
+    onSuccessfulBuilds: @escaping @MainActor (Int) -> Void = { _ in },
+    onFailedBuilds: @escaping @MainActor (Int) -> Void = { _ in }
   ) {
     self.playfulness = playfulness
-    model = ProjectQueue(observer: CompletionObserver(notify: onSuccessfulBuilds))
+    model = ProjectQueue(
+      observer: CompletionObserver(notify: onSuccessfulBuilds, failed: onFailedBuilds))
+  }
+  public var status: MiniApplicationStatus? {
+    MiniApplicationStatus(
+      symbol: model.allProjectsJammed ? "printer.fill" : "printer",
+      message: model.statusSummary + (model.paused ? " · paused" : ""),
+      attention: model.allProjectsJammed)
+  }
+  public func refreshInBackground() async {
+    if !model.paused { await model.refresh(onlyDue: true) }
   }
   public func content() -> AnyView {
     AnyView(PrintMonitorView(playfulness: playfulness, model: model))
@@ -35,11 +46,12 @@ private struct PrintMonitorView: View {
   let model: ProjectQueue
   @State private var managing = false
   @State private var inspecting: ProjectBuild?
+  @State private var clearing: ProjectBuild?
+  @State private var retry = PaperJamRetry()
   @State private var error: String?
   @State private var active = NSApp.isActive
   @State private var manualRefreshTask: Task<Void, Never>?
   private var printing: Bool { model.builds.contains { $0.run.state == .running } }
-  private var taskID: String { "\(model.configurationID)|\(active)|\(model.paused)" }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -109,7 +121,7 @@ private struct PrintMonitorView: View {
           ForEach(model.selectedProjects) { project in
             VStack(alignment: .leading, spacing: 3) {
               Text(project.label)
-                .font(theme.typography.title).lineLimit(1).help(project.label)
+                .font(theme.typography.title).lineLimit(1).miniHelp(project.label)
               let snapshot = model.snapshots[project.id]
               if let updated = snapshot?.updated {
                 Text("Updated " + updated.formatted(date: .abbreviated, time: .shortened))
@@ -131,15 +143,20 @@ private struct PrintMonitorView: View {
               VStack(alignment: .leading, spacing: 3) {
                 if model.selection == nil {
                   Text(build.project.label)
-                    .font(theme.typography.small).lineLimit(1).help(build.project.label)
+                    .font(theme.typography.small).lineLimit(1).miniHelp(build.project.label)
                 }
-                Text(build.run.title).font(theme.typography.title).lineLimit(2).help(
+                Text(build.run.title).font(theme.typography.title).lineLimit(2).miniHelp(
                   build.run.title)
                 Text("#\(String(build.run.id)) · \(build.run.branch)")
-                  .font(theme.typography.small).lineLimit(1).help(build.run.branch)
+                  .font(theme.typography.small).lineLimit(1).miniHelp(build.run.branch)
               }
               Spacer()
               Text(build.run.state.rawValue.uppercased()).font(theme.typography.small)
+              if build.run.state == .failed {
+                Button("Clear jam…") { clearing = build }.buttonStyle(RetroButtonStyle())
+                  .disabled(retry.busy).accessibilityLabel(
+                    "Retry failed jobs for " + build.run.title)
+              }
               Button("Jobs…") { inspecting = build }
                 .accessibilityLabel(
                   "Inspect jobs for " + build.run.title + " #" + String(build.run.id)
@@ -163,7 +180,7 @@ private struct PrintMonitorView: View {
       Text(
         model.busy
           ? "Checking all projects…"
-          : "20 builds/project · refresh every \(Int(model.refreshInterval))s while active · active builds first"
+          : "20 builds/project · refresh every \(Int(model.refreshInterval))s while Hello Mini is running · active builds first"
       )
       .font(theme.typography.small)
     }.padding(16)
@@ -174,16 +191,8 @@ private struct PrintMonitorView: View {
       .onReceive(
         NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
       ) { _ in active = false }
-      .task(id: taskID) {
-        guard active && !model.paused && !model.projects.isEmpty else { return }
-        while !Task.isCancelled {
-          while model.busy {
-            do { try await Task.sleep(for: .milliseconds(50)) } catch { return }
-          }
-          guard !Task.isCancelled else { return }
-          await model.refresh(onlyDue: true)
-          do { try await Task.sleep(for: .seconds(model.refreshInterval)) } catch { return }
-        }
+      .sheet(item: $clearing) { build in
+        ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme)
       }
       .sheet(item: $inspecting) { build in
         JobDetailsView(build: build).id(build.id).environment(\.miniTheme, theme)

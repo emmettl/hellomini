@@ -25,8 +25,14 @@ public struct BuildRun: Identifiable, Sendable {
   }
 }
 public protocol BuildProvider: Sendable {
+  func retryFailed(project: String, runID: Int, token: String) async throws
   func runs(project: String, token: String?) async throws -> [BuildRun]
   func jobs(project: String, runID: Int, page: Int, token: String?) async throws -> BuildJobPage
+}
+extension BuildProvider {
+  public func retryFailed(project: String, runID: Int, token: String) async throws {
+    throw BuildServiceError("This provider does not support retrying failed jobs.")
+  }
 }
 public struct BuildServiceError: LocalizedError, Sendable {
   public let message: String

@@ -33,6 +33,7 @@ struct DesktopDock: View {
   let desktopWidth: CGFloat
   let style: ThemeFrameStyle
   let focusRequest: Int
+  let playfulness: PlayfulnessSettings?
   @State private var hoveredID: String?
   @FocusState private var focusedID: String?
 
@@ -161,8 +162,22 @@ struct DesktopDock: View {
             PixelIcon(symbol: entry.app.icon.desktopSymbol, scale: iconSize / 16)
           }
         }
+        .overlay(alignment: .topTrailing) {
+          if entry.app.status?.attention == true {
+            Text("!").font(.system(size: 10, weight: .bold)).foregroundStyle(.white)
+              .frame(width: 14, height: 14).background(.red, in: Circle())
+          }
+        }
+        .scaleEffect(
+          hoveredID == entry.id && !reduceMotion
+            && playfulness?.allows(DesktopEffects.dockMagnification.id) == true ? 1.22 : 1,
+          anchor: .bottom
+        )
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: hoveredID)
         .shadow(color: .black.opacity(0.25), radius: 1, x: 0, y: 2)
-        .offset(y: highlighted && !reduceMotion ? -3 : 0)
+        .offset(
+          y: highlighted && !reduceMotion
+            && playfulness?.allows(DesktopEffects.dockMagnification.id) == true ? -3 : 0)
         Path { path in
           path.move(to: CGPoint(x: 4, y: 0))
           path.addLine(to: CGPoint(x: 8, y: 5))
@@ -196,7 +211,7 @@ struct DesktopDock: View {
     .accessibilityValue(
       entry.minimised ? "Minimised window" : (running ? "Running" : "Not running")
     )
-    .help(entry.label)
+    .miniHelp(entry.label)
   }
 
   private func open(_ entry: Entry) {
@@ -211,7 +226,7 @@ struct DesktopDock: View {
     Button(action: action) {
       Image(systemName: symbol).font(.system(size: 11, weight: .bold))
         .frame(width: 26, height: 64).contentShape(Rectangle())
-    }.buttonStyle(.plain).accessibilityLabel(label).help(label)
+    }.buttonStyle(.plain).accessibilityLabel(label).miniHelp(label)
   }
 
   private func moveFocus(_ direction: Int, entries: [Entry]) {

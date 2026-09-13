@@ -4,10 +4,16 @@ import SwiftUI
 struct FinderView: View {
   @Environment(\.miniTheme) private var theme
   @Bindable var model: FinderModel
+  let findFile: () -> Void
+  private let labelNames = ["None", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"]
+  private let labelColors: [Color] = [
+    .clear, .gray, .green, .purple, .blue, .yellow, .red, .orange,
+  ]
 
   var body: some View {
     VStack(spacing: 0) {
       HStack(spacing: 8) {
+        Button("Find…", action: findFile)
         Button("Back", action: model.goBack).disabled(!model.history.canGoBack)
         Button("Up", action: model.goUp).disabled(!model.history.canGoUp)
         Text(model.location.path)
@@ -16,7 +22,7 @@ struct FinderView: View {
           .truncationMode(.head)
           .textSelection(.enabled)
           .padding(.leading, 4)
-          .help(model.location.path)
+          .miniHelp(model.location.path)
         Spacer(minLength: 0)
         Button(model.listView ? "Icons" : "List") { model.listView.toggle() }
           .accessibilityLabel(model.listView ? "Show as icons" : "Show as list")
@@ -136,6 +142,7 @@ struct FinderView: View {
   private func fileIcon(_ entry: FileEntry) -> some View {
     VStack(spacing: 7) {
       PixelIcon(symbol: entry.isBrowsable ? .folder : .document)
+        .overlay(alignment: .bottomTrailing) { labelDot(entry) }
       Text(entry.name)
         .font(theme.typography.small)
         .multilineTextAlignment(.center)
@@ -158,7 +165,7 @@ struct FinderView: View {
     .accessibilityValue(entry.isBrowsable ? "Folder" : "File")
     .accessibilityAddTraits(.isButton)
     .accessibilityAction { model.open(entry) }
-    .help(entry.name)
+    .miniHelp(entry.name)
   }
 
   private func fileRow(_ entry: FileEntry) -> some View {
@@ -166,6 +173,7 @@ struct FinderView: View {
       PixelIcon(
         symbol: entry.isBrowsable ? .folder : .document, scale: 1,
         selected: model.selection == entry.url)
+      labelDot(entry)
       Text(entry.name).lineLimit(1)
       Spacer()
       Text(
@@ -192,9 +200,25 @@ struct FinderView: View {
 
   @ViewBuilder private func entryMenu(_ entry: FileEntry) -> some View {
     Button("Open") { model.open(entry) }
+    Menu("Label") {
+      ForEach(0...7, id: \.self) { index in
+        Button((entry.labelNumber == index ? "✓ " : "") + labelNames[index]) {
+          model.setLabel(index, entry: entry)
+        }
+      }
+    }
     Button("Reveal in macOS Finder") {
       model.selection = entry.url
       model.revealSelection()
+    }
+  }
+
+  @ViewBuilder private func labelDot(_ entry: FileEntry) -> some View {
+    if (1...7).contains(entry.labelNumber) {
+      Circle().fill(labelColors[entry.labelNumber]).frame(width: 10, height: 10)
+        .overlay(Circle().strokeBorder(theme.ink.opacity(0.5), lineWidth: 0.5))
+        .accessibilityLabel(labelNames[entry.labelNumber] + " label")
+        .miniHelp(labelNames[entry.labelNumber] + " Finder label")
     }
   }
 

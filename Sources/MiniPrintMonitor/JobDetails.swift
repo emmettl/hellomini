@@ -65,11 +65,11 @@ struct JobDetailsView: View {
     VStack(alignment: .leading, spacing: 12) {
       Text("Inspect print job").font(theme.typography.display(22))
       Text(model.build.project.label)
-        .font(theme.typography.small).lineLimit(1).help(model.build.project.label)
-      Text(model.build.run.title).font(theme.typography.title).lineLimit(2).help(
+        .font(theme.typography.small).lineLimit(1).miniHelp(model.build.project.label)
+      Text(model.build.run.title).font(theme.typography.title).lineLimit(2).miniHelp(
         model.build.run.title)
       Text("#\(String(model.build.run.id)) · \(model.build.run.branch)")
-        .font(theme.typography.small).lineLimit(1).help(model.build.run.branch)
+        .font(theme.typography.small).lineLimit(1).miniHelp(model.build.run.branch)
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 12) {
           ForEach(model.jobs) { job in

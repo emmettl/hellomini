@@ -132,7 +132,7 @@ private struct ControlPanelView: View {
           get: { settings.puristMode }, set: { settings.setPuristMode($0) })
       )
       .toggleStyle(.checkbox)
-      .help("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
+      .miniHelp("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
       Rectangle().frame(height: 1)
       AppearanceScrollView {
         HStack(alignment: .top, spacing: 14) {
@@ -170,6 +170,7 @@ private struct ControlPanelView: View {
         .environment(\.miniTheme, theme)
         .environment(\.colorScheme, theme.colorScheme)
       }
+      DesktopPatternEditor(settings: settings)
       Text(settings.theme.description)
         .font(theme.typography.body)
         .frame(maxWidth: .infinity, minHeight: 36, alignment: .topLeading)

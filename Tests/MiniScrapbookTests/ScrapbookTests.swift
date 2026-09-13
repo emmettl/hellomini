@@ -162,3 +162,30 @@ private func temporaryLibrary() throws -> URL {
   #expect(model.draft == draft)
   #expect(model.scraps == [existing])
 }
+
+@Test @MainActor func desktopCaptureLoadsLibraryAndPreservesClipboard() async throws {
+  let root = try temporaryLibrary()
+  defer { try? FileManager.default.removeItem(at: root) }
+  let board = NSPasteboard.withUniqueName()
+  defer { board.releaseGlobally() }
+  board.setString("Keep my clipboard", forType: .string)
+  let context = try #require(
+    CGContext(
+      data: nil, width: 32, height: 24, bitsPerComponent: 8,
+      bytesPerRow: 128, space: CGColorSpaceCreateDeviceRGB(),
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+  context.setFillColor(NSColor.white.cgColor)
+  context.fill(CGRect(x: 0, y: 0, width: 32, height: 24))
+  let image = try #require(context.makeImage())
+  let model = ScrapbookModel(directory: root, pasteboard: board)
+  await model.captureDesktop(image)
+  #expect(model.error == nil)
+  #expect(model.selected?.kind == .image)
+  #expect(model.selected?.title.hasPrefix("Desktop — ") == true)
+  #expect(board.string(forType: .string) == "Keep my clipboard")
+  let restored = ScrapbookModel(directory: root, pasteboard: board)
+  await restored.load()
+  #expect(restored.scraps.count == 1)
+  let id = try #require(restored.selected?.id)
+  #expect(try await restored.store.imageData(id).count > 0)
+}

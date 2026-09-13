@@ -127,7 +127,7 @@ struct RetroWindow<Content: View>: View {
       activate()
       commitResize(change)
     }
-    .help("Drag to resize this window.")
+    .miniHelp("Drag to resize this window.")
   }
 
   private func commitResize(_ resize: WindowResize) {

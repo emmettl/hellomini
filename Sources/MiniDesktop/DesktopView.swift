@@ -111,12 +111,17 @@ public struct DesktopView: View {
   private let settings: AppearanceSettings
   private let themes: MiniThemeRegistry
   private let picture: DesktopPicture?
+  private let playfulness: PlayfulnessSettings?
+  private let commands: DesktopCommands?
+  private let captureDesktop: (@MainActor (CGImage) async -> Void)?
+  @State private var actionError: String?
   private var theme: MiniThemeDefinition { themes.definition(for: settings.theme.id)! }
 
   public init(
     applications: [any MiniApplication], initiallyOpen: [String] = [], settings: AppearanceSettings,
     themes: MiniThemeRegistry = .builtIns, defaults: UserDefaults = .standard,
-    picture: DesktopPicture? = nil
+    picture: DesktopPicture? = nil, playfulness: PlayfulnessSettings? = nil,
+    commands: DesktopCommands? = nil, captureDesktop: (@MainActor (CGImage) async -> Void)? = nil
   ) {
     precondition(
       settings.availableThemes == themes.metadata, "Settings and desktop must share a theme catalog"
@@ -124,6 +129,9 @@ public struct DesktopView: View {
     self.settings = settings
     self.themes = themes
     self.picture = picture
+    self.playfulness = playfulness
+    self.captureDesktop = captureDesktop
+    self.commands = commands
     _model = State(
       initialValue: DesktopModel(
         applications: applications, initiallyOpen: initiallyOpen, defaults: defaults))
@@ -135,6 +143,22 @@ public struct DesktopView: View {
         desktop: geometry.size, hasDock: theme.dock != nil)
       ZStack(alignment: .topLeading) {
         ThemeSurfaceView(theme.desktop)
+        if let pattern = settings.customPattern {
+          Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(theme.paper))
+            var dots = Path()
+            for y in stride(from: 0, to: Int(ceil(size.height)), by: 8) {
+              for x in stride(from: 0, to: Int(ceil(size.width)), by: 8) {
+                for py in 0..<8 {
+                  for px in 0..<8 where pattern.contains(x: px, y: py) {
+                    dots.addRect(CGRect(x: x + px, y: y + py, width: 1, height: 1))
+                  }
+                }
+              }
+            }
+            context.fill(dots, with: .color(theme.ink))
+          }.allowsHitTesting(false).accessibilityHidden(true)
+        }
         if theme.dock == nil {
           ScrollView(.vertical) {
             VStack(
@@ -166,7 +190,7 @@ public struct DesktopView: View {
                 .accessibilityLabel(
                   "\(model.minimisedIDs.contains(app.id) ? "Restore" : "Launch") \(app.name)"
                 )
-                .help(
+                .miniHelp(
                   model.minimisedIDs.contains(app.id)
                     ? "Restore minimised \(app.name) window" : "Open \(app.name)")
               }
@@ -218,7 +242,7 @@ public struct DesktopView: View {
         if let style = theme.dock {
           DesktopDock(
             model: model, desktopWidth: geometry.size.width, style: style,
-            focusRequest: dockFocusRequest
+            focusRequest: dockFocusRequest, playfulness: playfulness
           )
           .frame(
             width: geometry.size.width, height: DesktopDockLayout.reservedHeight, alignment: .bottom
@@ -228,7 +252,7 @@ public struct DesktopView: View {
         }
         RetroMenuBar(
           menus: menus, applicationName: model.active?.name ?? "Hello Mini",
-          desktopSize: geometry.size
+          desktopSize: geometry.size, model: model, playfulness: playfulness
         )
         .zIndex(Double(model.applications.count + 2))
       }
@@ -237,6 +261,24 @@ public struct DesktopView: View {
       .font(theme.typography.body)
       .background(DesktopWindowConfiguration())
       .background { if let picture { DesktopPictureCapture(picture: picture) } }
+    }
+    .overlayPreferenceValue(BalloonHelpPreference.self) { entries in
+      BalloonHelpOverlay(entries: entries).environment(\.miniTheme, theme)
+    }
+    .environment(\.miniBalloonHelp, settings.balloonHelp && theme.id == "system7")
+    .onChange(of: commands?.launchID) { _, id in
+      if let id {
+        launch(id)
+        commands?.launchID = nil
+      }
+    }
+    .alert(
+      "Hello Mini",
+      isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })
+    ) {
+      Button("OK") { actionError = nil }
+    } message: {
+      Text(actionError ?? "")
     }
     .environment(\.miniTheme, theme)
     .tint(theme.accent)
@@ -294,6 +336,37 @@ public struct DesktopView: View {
     } else {
       appMenus.insert(RetroMenu(id: "file", title: "File", items: [close]), at: 0)
     }
+    let clipboard = RetroMenuItem(id: "show-clipboard", title: "Show Clipboard") {
+      launch("clipboard")
+    }
+    if let index = appMenus.firstIndex(where: { $0.id == "edit" }) {
+      appMenus[index].items += [.separator("clipboard-divider"), clipboard]
+    } else {
+      appMenus.insert(
+        RetroMenu(id: "edit", title: "Edit", items: [clipboard]), at: min(1, appMenus.count))
+    }
+    if let index = appMenus.firstIndex(where: { $0.id == "file" }), captureDesktop != nil {
+      appMenus[index].items.append(
+        RetroMenuItem(
+          id: "capture-desktop", title: "Capture Desktop to Scrapbook",
+          shortcut: RetroShortcut(key: "3", modifiers: [.command, .shift], label: "⇧⌘3")
+        ) {
+          Task {
+            // Allow the selected menu to disappear before taking the picture.
+            do { try await Task.sleep(for: .milliseconds(80)) } catch { return }
+            guard let image = picture?.capture?() else {
+              actionError =
+                "The desktop could not be captured. Try again once the window is visible."
+              return
+            }
+            await captureDesktop?(image)
+            launch("scrapbook")
+          }
+        })
+      let file = appMenus[index]
+      appMenus[index] = RetroMenu(
+        id: file.id, title: file.title, width: max(370, file.width), items: file.items)
+    }
     let fullScreen = RetroMenuItem(
       id: "fullscreen", title: "Enter / Exit Full Screen",
       shortcut: RetroShortcut(key: "f", modifiers: [.control, .command], label: "⌃⌘F")
@@ -343,7 +416,58 @@ public struct DesktopView: View {
             RetroMenuItem(id: "reset", title: "Reset Window Layout", action: model.resetLayout),
           ]
       ))
+    result.append(
+      RetroMenu(
+        id: "special", title: "Special",
+        items: [
+          RetroMenuItem(id: "empty-wastebasket", title: "Empty Wastebasket…") {
+            launch("wastebasket")
+          },
+          .separator("special-divider"),
+          RetroMenuItem(id: "restart", title: "Restart") { restart() },
+          RetroMenuItem(id: "shutdown", title: "Shut Down") { NSApp.terminate(nil) },
+        ]))
+    if theme.id == "system7" {
+      result.append(
+        RetroMenu(
+          id: "help", title: "Help",
+          items: [
+            RetroMenuItem(
+              id: "balloon-help",
+              title: settings.balloonHelp ? "Hide Balloon Help" : "Show Balloon Help",
+              checked: settings.balloonHelp
+            ) {
+              settings.setBalloonHelp(!settings.balloonHelp)
+            }
+          ]))
+    }
     return result
   }
-
+  private func launch(_ id: String) {
+    if let app = model.applications.first(where: { $0.id == id }) { model.launch(app) }
+  }
+  private func restart() {
+    if Bundle.main.bundleURL.pathExtension == "app" {
+      let configuration = NSWorkspace.OpenConfiguration()
+      configuration.createsNewApplicationInstance = true
+      NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) {
+        app, error in
+        Task { @MainActor in
+          if app != nil {
+            NSApp.terminate(nil)
+          } else {
+            actionError = error?.localizedDescription ?? "Hello Mini could not restart."
+          }
+        }
+      }
+    } else {
+      do {
+        guard let executable = Bundle.main.executableURL else { return }
+        let process = Process()
+        process.executableURL = executable
+        try process.run()
+        NSApp.terminate(nil)
+      } catch { actionError = error.localizedDescription }
+    }
+  }
 }

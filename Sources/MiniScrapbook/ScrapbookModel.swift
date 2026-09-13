@@ -45,6 +45,26 @@ import UniformTypeIdentifiers
     } catch { self.error = error.localizedDescription }
   }
 
+  func captureDesktop(_ image: CGImage) async {
+    if !ready { await load() }
+    guard canChange else {
+      if error == nil { error = "Scrapbook is busy. Try capturing the desktop again." }
+      return
+    }
+    busy = true
+    defer { busy = false }
+    do {
+      guard let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
+      else {
+        throw ScrapbookError.invalidImage
+      }
+      var item = try await store.importImage(data)
+      item.scrap.title = "Desktop — " + Date.now.formatted(date: .abbreviated, time: .standard)
+      try await add(item)
+      error = nil
+    } catch { self.error = error.localizedDescription }
+  }
+
   func newNote() {
     guard canChange else { return }
     error = nil

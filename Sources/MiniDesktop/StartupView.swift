@@ -89,7 +89,7 @@ private struct StartupScreen: View {
           Button("Skip startup", action: sequence.skip)
             .buttonStyle(RetroButtonStyle())
             .keyboardShortcut(.cancelAction)
-            .help("Press Escape to open the desktop immediately.")
+            .miniHelp("Press Escape to open the desktop immediately.")
             .padding(.bottom, compact ? 8 : 30)
         }
       }

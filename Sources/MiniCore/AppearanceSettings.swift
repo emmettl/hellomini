@@ -30,6 +30,8 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
 @MainActor @Observable public final class AppearanceSettings {
   public private(set) var theme: MiniTheme
   public private(set) var puristMode: Bool
+  public private(set) var balloonHelp: Bool
+  public private(set) var customPattern: DesktopPattern?
   public let availableThemes: [MiniTheme]
   @ObservationIgnored private let defaults: UserDefaults
   static let themeKey = "appearance.theme"
@@ -39,12 +41,26 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
     precondition(!themes.isEmpty, "At least one theme is required")
     precondition(Set(themes.map(\.id)).count == themes.count, "Theme IDs must be unique")
     self.defaults = defaults
+    balloonHelp = defaults.bool(forKey: "appearance.balloonHelp")
+    customPattern = defaults.data(forKey: "appearance.desktopPattern").flatMap {
+      DesktopPattern(rows: Array($0))
+    }
     puristMode = defaults.object(forKey: Self.puristKey) as? Bool ?? false
     availableThemes = themes
     let savedID = defaults.string(forKey: Self.themeKey)
     theme =
       themes.first { $0.id == savedID }
       ?? themes.first { $0.id == MiniTheme.classic.id } ?? themes[0]
+  }
+
+  public func setBalloonHelp(_ enabled: Bool) {
+    balloonHelp = enabled
+    defaults.set(enabled, forKey: "appearance.balloonHelp")
+  }
+
+  public func setPattern(_ pattern: DesktopPattern?) {
+    customPattern = pattern
+    defaults.set(pattern.map { Data($0.rows) }, forKey: "appearance.desktopPattern")
   }
 
   public func setPuristMode(_ enabled: Bool) {
