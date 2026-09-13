@@ -32,6 +32,10 @@ Use GitHub's **Settings → Actions → Runners → New self-hosted runner** in 
 
 The runner's normal automatic updates remain enabled. Existing runners for other projects are independent. Before retiring this runner, stop and uninstall its service and remove its registration from the private repository. No signing identity, Apple account, or deployment credentials are needed for these builds.
 
-Artifacts carry an ad-hoc signature and are development builds. The source is MIT licensed. The separate local `make release` path prepares a Developer ID-signed and notarized archive once the release machine has the required identity and Keychain profile. It never publishes automatically. See [Releasing](RELEASING.md); neither CI repository receives signing credentials through this change.
+Artifacts carry an ad-hoc signature and are development builds. The source is MIT licensed. The separate local `make release` path prepares a Developer ID-signed and notarized archive once the release machine has the required identity and Keychain profile. It never publishes automatically. See [Releasing](RELEASING.md); neither CI repository holds distribution signing credentials.
+
+## Website deployment
+
+Cloudflare Pages deploys the repository’s `website/` directory to [hellomini.app](https://hellomini.app) automatically from `main`. It runs no Swift build and does not publish application releases. See [website maintenance](../website/README.md) for configuration and validation.
 
 References: [GitHub runner security](https://docs.github.com/en/actions/reference/security/secure-use), [macOS runner images](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md), and [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners).

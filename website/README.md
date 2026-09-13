@@ -1,23 +1,48 @@
-# hellomini.app
+# Website maintenance
 
-A dependency-free static landing page. Serve this directory with a static web server for local preview. Icons are exported from the app’s original PixelSymbol artwork. The desktop image is an unedited, clean capture of Hello Mini showing Teapot and Aquarium.
+[hellomini.app](https://hellomini.app) is the public landing page. It is a dependency-free static site: edit `index.html`, `style.css`, and `site.js`, with assets in `assets/` and the social card in `og.png`.
 
-## Cloudflare Pages
+## Production deployment
 
-Connect the emmettl/hellomini repository to Pages. Use main as the production branch, no framework, no build command, and website as the build output directory (repository root as the root directory). Add hellomini.app in the Pages project’s Custom domains screen and follow its DNS setup. The app and Swift build do not run as part of the website deployment.
+Cloudflare Pages project **hellomini** connects to `emmettl/hellomini` and deploys automatically from `main`:
 
-The public latest-release endpoint on GitHub controls the download link. Until a release is public, the page says the first release is coming soon and links to the releases page. Network or rate-limit failures retain a usable releases link. Published assets must match the expected Hello-Mini-version-macos-arm64.zip name and the repository’s GitHub download origin.
+| Setting | Value |
+| --- | --- |
+| Framework | None |
+| Build command | Empty |
+| Repository root | Default |
+| Output directory | `website` |
+| Custom domain | `hellomini.app` |
+| Pages hostname | `hellomini.pages.dev` |
 
-No analytics, cookies, third-party fonts, or account system. The only browser-side external request is to GitHub for public release metadata. Reduced-motion preferences disable smooth scrolling. The page includes semantic landmarks, keyboard focus styling, a skip link, and responsive layouts.
+The custom domain and HTTPS are active. Pages manages the apex CNAME to `hellomini.pages.dev`. App compilation and public app releases are separate from website deployment. The private design preview is also separate from production.
 
-## Updating
+## Local preview
 
-Edit index.html, style.css, and site.js directly; assets live in assets/. No dependencies or build step. Keep release availability accurate and avoid private paths, account details, and personal content in screenshots. The private design preview is maintained separately from the production Cloudflare Pages deployment.
+From the repository root:
 
-## Social sharing and mobile validation
+```sh
+python3 -m http.server 8765 --directory website
+```
 
-Open Graph and Twitter/X large-image tags are included directly in the HTML, with canonical https://hellomini.app/ URLs, descriptions, image alt text, PNG MIME type, and actual pixel dimensions. No unverified social account handle is claimed. The public domain must serve this page and /og.png before external social crawlers can fetch it; the owner-only preview is not a crawler validation environment.
+Open `http://localhost:8765`. No package installation or build step is needed.
 
-The social image is 1733 × 908 and was created with built-in image generation. Prompt: “Polished flat monochrome brand graphic inspired by a retro 1984 Macintosh desktop. Light gray dither background, black borders, a striped window, smiling pixel Macintosh, and restrained teapot, fish, and folder motifs. Exact text: Hello Mini; A little desktop. A lot of possibility.; hellomini.app. Landscape 1.91:1, generous margins, thumbnail-readable text, no Apple logo, no additional text.”
+## Download link
 
-Browser checks covered widths 320, 375, 390, 430, 768, 1024, and 1280 CSS pixels, navigation and installation anchor links, and 200% Chrome zoom down to a 320 CSS-pixel viewport. No horizontal content overflow was found. Header links have 44-pixel minimum touch targets; phone app icons use two columns. Font sizes use relative units and title bars expand with their labels. These are responsive Chromium checks, not tests on physical iOS or Android devices.
+`site.js` reads GitHub's public latest stable release endpoint. The published ZIP must match `Hello-Mini-version-macos-arm64.zip`; its URL must belong to this repository’s GitHub release download origin. The button updates automatically after a stable release is published.
+
+If there is no public release, the page says the first release is coming soon. Network or rate-limit failures retain a usable link to the releases page. Drafts and prereleases are not offered as the latest stable download.
+
+## Assets and social sharing
+
+Icons come from the app's original `PixelSymbol` artwork. `assets/desktop.png` is an unedited capture of Hello Mini showing Teapot and Aquarium with demonstration content. Avoid private paths, project names, and Scrapbook contents in replacement screenshots.
+
+Open Graph and Twitter/X large-image tags are in the static HTML. They use canonical `https://hellomini.app/` URLs, descriptions, alt text, PNG MIME type, and actual image dimensions. The original generated social card is **1733 × 908**. When replacing it, update both the asset and its metadata. Verify `/og.png` is publicly accessible over HTTPS; an owner-only preview cannot validate external crawler access.
+
+## Validation
+
+Check navigation and installation links, the current public download, missing images, and horizontal overflow. Responsive Chromium checks have covered widths 320, 375, 390, 430, 768, 1024, and 1280 CSS pixels, plus 200% browser zoom. These checks do not substitute for testing on physical iOS or Android devices.
+
+Keep header touch targets at least 44 pixels high, use relative font sizes, and allow title bars and labels to wrap. The site includes semantic landmarks, keyboard focus styles, and a skip link. Reduced Motion disables smooth scrolling.
+
+There are no analytics, cookies, third-party fonts, or account system in the site code. Its only browser-side external request is to GitHub for public release metadata.
