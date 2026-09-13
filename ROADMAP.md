@@ -2,11 +2,11 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-These are directions, not dated commitments. All nine applications now have working first versions, following desktop persistence and resizing. Further depth is listed below.
+These are directions, not dated commitments. All nine original roadmap applications now have working first versions, following desktop persistence and resizing. Further depth and proposed desk accessories are listed below.
 
 ## Applications
 
-All nine belong on the roadmap. Each should work as a small, coherent application while contributing its own particular idiocy. All nine have initial implementations.
+Each application should work as a small, coherent application while contributing its own particular idiocy. All nine below have initial implementations.
 
 | Application | Useful purpose | Essential idiocy |
 | --- | --- | --- |
@@ -48,11 +48,36 @@ Scrapbook now keeps notes, commands, links, and image snapshots, with explicit p
 
 - Finish release validation, including longer sessions, sleep/wake, display changes, and saved-state upgrades; publish once signing is available.
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
+- Start the next desktop pass with shared system sounds and a menu bar status strip, then connect Alarm Clock and CI retry feedback to that plumbing. Clipboard viewing, desktop capture into Scrapbook, and the Special menu are useful companion additions.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
 - Add deliberate Finder file operations and Scrapbook export/import.
 - Decide the external binary plugin model when contributor needs are clearer.
 
 The first screensaver pass is now implemented: shared host, Aquarium, original Metal flying toasters, opt-in idle activation, and Control Panel settings. Additional effects can register through the same host.
+
+## Cheap wins that fit existing plumbing
+
+These are proposed additions, not shipped features or fixed effort estimates.
+
+- **System sounds:** Original synthesised alerts for a paper jam, fish being fed, and Wastebasket emptying, plus a startup chime under the boot homage. Use one System sounds switch in Control Panel → Playfulness, governed by Extra silliness and respecting system mute. A newly observed CI failure should be audible while Hello Mini is running even when Print Monitor is closed; initial history and repeat polls must not replay alerts. Reuse completion tracking and the Aquarium feeding connection.
+- **Menu bar status strip:** A tiny printer glyph beside the clock jams when any saved project's latest build fails. Add a thermometer driven by system thermal state, with a readable state description rather than an invented temperature. The Aqua Print Monitor dock tile can show the same jam badge. Keep status understandable without sound or animation, and fit the strip into compact and Purist layouts.
+- **Clear the paper jam:** Add an explicit retry action for failed GitHub Actions jobs and GitLab pipeline jobs, presented in a themed dialog with a **Copies** field meaning retry count. Keep this Print Monitor's only planned write action. Extend the currently read-only provider interface, verify each provider's retry semantics and required token permissions, and define bounded, sequential retry behaviour with a default of one. Show the actual project, failed run, and retry result beneath the stationery joke.
+- **Show Clipboard and desktop snapshots:** Add **Edit → Show Clipboard** as an on-demand viewer, and capture Hello Mini's desktop directly into Scrapbook through the `DesktopPicture` capture already used by Puzzle. Target **Command-Shift-3** while Hello Mini is active; check interaction with the macOS screenshot shortcut and provide a discoverable menu command. Capture Hello Mini's own desktop and reuse Scrapbook's existing image storage.
+- **Special menu:** Add **Empty Wastebasket**, **Restart**, and **Shut Down**. Empty Wastebasket should reuse the existing review and move-to-macOS-Trash flow for selected caches. Restart relaunches Hello Mini with saved state; Shut Down quits Hello Mini.
+- **Menu item blink:** Flash the chosen System 7 menu command three times before closing the menu, executing its action once. Skip the effect with Reduce Motion or Playfulness disabled, and preserve keyboard interaction.
+
+## Small new desk accessories
+
+- **Key Caps:** A period keyboard viewer that doubles as a Unicode and emoji picker, with click-to-copy. A useful character palette in a vintage keyboard costume.
+- **Alarm Clock:** Add timers and a pomodoro to the existing Clock module. When an alarm fires, flash an alarm icon in the menu bar and use the shared system sounds. Preserve a visible alarm when sound is muted, and use a steady indicator with Reduce Motion or Playfulness disabled. Define sleep/wake and relaunch behaviour as part of the timer design.
+- **Find File:** A Sherlock-style search window backed by Spotlight metadata queries, with the little dog. Give Finder a search entry point and let results open or reveal real files; communicate indexing or access limitations in the window.
+- **Desktop pattern editor:** Recreate the classic 8 × 8 pixel editor from the General control panel, feeding the theme's dotted desktop surface. Save the pattern, preview changes, and offer a reset to the theme default.
+- **Finder labels:** Offer System 7's seven colour labels backed by real macOS Finder tags. Read existing labels and change the chosen colour without discarding unrelated tags.
+
+## Theme fidelity and discoverability
+
+- **Aqua dock and windows:** Add dock magnification on hover and a genie-style minimise animation to the existing dock and window restoration behaviour. Gate both through Playfulness and Reduce Motion, preserving reliable focus, window interaction, and restoration when effects are skipped.
+- **System 7 Balloon Help:** Add hover explanations in period speech balloons as a shared discoverability layer for desktop controls and applications. Provide an explicit help toggle and equivalent explanations for keyboard and accessibility users.
 
 ## Other continuing directions
 
