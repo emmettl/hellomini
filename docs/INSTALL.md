@@ -1,6 +1,6 @@
 # Installing Hello Mini
 
-Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
+Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
 
 ## Download and install
 
@@ -11,7 +11,7 @@ Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop
 The release also includes a SHA-256 checksum and build manifest. To verify a download, put the ZIP and its `.sha256` file in the same directory and run, for example:
 
 ```sh
-shasum -a 256 -c Hello-Mini-0.2.0-macos-arm64.zip.sha256
+shasum -a 256 -c Hello-Mini-0.3.0-macos-arm64.zip.sha256
 ```
 
 There is no Homebrew cask or automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.

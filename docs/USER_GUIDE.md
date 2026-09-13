@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.2.0** app. Later work are tracked separately in the [roadmap](../ROADMAP.md).
+This guide describes the **0.3.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md).
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -13,6 +13,16 @@ The desktop opens at 1280 × 720. Use View → Enter / Exit Full Screen (or Cont
 The Window menu reopens closed windows and **Reset Window Layout** restores their default positions and sizes. 
 
 Aqua adds working red **Close**, yellow **Minimise**, and green **Zoom** controls, with hover symbols and inactive grey states. Zoom fills the available desktop and toggles back to the previous geometry; dragging or resizing a zoomed window establishes a new normal size. Minimise keeps the application and its view state alive, hides the window, and gives focus to the next visible window. Restore it from the Aqua dock, its desktop icon in other themes, or its labelled entry in Window. **Window → Minimise** (Command-M) and **Zoom / Restore Size** are available in every theme.
+
+### Tiny-screen mode
+
+Enable **Control Panel → Appearance → Tiny-screen mode — 2×**, or **View → Tiny-screen Mode**, to make text, icons, controls, and window chrome twice as large. The setting works across all five themes, applies immediately, and survives relaunch. It is off by default. The native macOS View menu also offers the toggle.
+
+The available desktop stays filled, with half as much logical width and height: a 1280 × 720 content area becomes roughly 640 × 360 before menus and the Aqua dock. Finder offers a **Places** toggle and puts the path on a separate line in narrow windows. Print Monitor collapses filters and stacks build rows; scroll to reach more jobs and details. Control Panel puts display settings first. Other oversized app content remains reachable through scrolling.
+
+Custom sheets, startup, and screensavers share the enlargement. Native macOS menus, alerts, and file panels keep their system sizing. Bevelled screen edges and rounded corners remain visible in full screen. Tiny-screen and Purist modes are mutually exclusive: enabling one disables the other. Turning the active mode off returns to standard sizing. Display-mode changes retain running app state and do not overwrite saved window placements.
+
+Physical Wokyis testing is deferred until the device arrives. The 2× setting has been checked on a development Mac; its comfort at normal desk distance on the Wokyis is not yet established.
 
 ### Purist mode
 

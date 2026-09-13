@@ -1,6 +1,6 @@
 # Tiny-screen mode — 0.3.0 scope and design
 
-Status: first implementation in source, unreleased. This document defines the focus of 0.3.0. The 2× prototype requires physical-display validation before choosing the release default.
+Status: 0.3.0 ships the initial 2× implementation. Release approved on 13 September 2026 with physical Wokyis testing deferred until the device arrives. Standard mode remains the initial default; 2× is the opt-in tiny-screen preset. The original design targets below guide follow-up work.
 
 [Roadmap](../ROADMAP.md) · [Current architecture](ARCHITECTURE.md) · [Current user guide](USER_GUIDE.md)
 
@@ -12,7 +12,7 @@ Finder now moves its path onto a separate line in narrow windows and provides a 
 
 Validation completed on the development Mac: `make check` (105 debug tests, 13 release tests, lint, build/release tooling checks, and build); a local app build; visual checks of all five themes at 2×; native-sheet text entry and overflow; full-screen transitions; relaunch persistence; and a 512 × 384 Purist-mode transition. Automated checks cover conflicting/legacy preferences, logical display sizing, actual rendered enlargement/corners, and reachable window chrome with both launcher styles at 1280 × 720 and 960 × 600 host sizes.
 
-Still required before 0.3.0: physical Wokyis reading tests and the 1.5× comparison, the full bundled-app and keyboard/graphics workflow matrix, minimum-size visual checks, and longer display-change/sleep/wake testing. The native View-menu items were inspected, but their activation could not be verified through the UI automation tool, which returned stale element IDs; Control Panel and desktop-menu activation were verified. Native OS menus, alerts, and file panels remain OS-sized. Screenshots from a development monitor do not establish physical legibility on the Wokyis.
+Follow-up validation after 0.3.0: physical Wokyis reading tests and the 1.5× comparison, the full bundled-app and keyboard/graphics workflow matrix, minimum-size visual checks, and longer display-change/sleep/wake testing. The native View-menu items were inspected, but their activation could not be verified through the UI automation tool, which returned stale element IDs; Control Panel and desktop-menu activation were verified. Native OS menus, alerts, and file panels remain OS-sized. Screenshots from a development monitor do not establish physical legibility on the Wokyis.
 
 ## Goal
 
@@ -74,13 +74,13 @@ At 2×, even the full logical desktop is only 640 × 360. Finder and Print Monit
 
 Native macOS file dialogs, context menus, system tooltips, the system pointer, and the system menu bar remain OS-managed. In-app presentation scaling cannot guarantee their enlargement. Inspect these flows on the device and record any remaining limitation; if an essential workflow is unusable, resolve it before claiming that workflow is supported in tiny-screen mode.
 
-## Delivery and acceptance
+## Original delivery and acceptance targets
 
 1. **Prototype the presentation boundary.** Verify 1.5× and 2× geometry, input, native controls, Metal, and mode transitions. Use Control Panel, Print Monitor, Finder, and Aqua chrome to expose problems early. Reassess the host-scale approach if native integration fails.
 2. **Implement the shared setting and responsive layouts.** Wire persistence, recovery, shell overflow, and theme/layout context; complete the primary workflows and then the full app audit.
 3. **Validate and document the release.** Add meaningful geometry, persistence/migration, and interaction regression checks. Visually inspect all five themes at standard and candidate tiny sizes, windowed and full screen. Check Purist behaviour remains intact.
 
-Release requires the following evidence:
+The original acceptance targets below remain the validation checklist. For 0.3.0, the initial implementation is accepted for release; outstanding checks above remain follow-up work rather than claims of completed validation.
 
 - On the physical Wokyis, record the panel/macOS display setting, chosen scale, ambient conditions, and measured normal viewing distance. Read menus, CI status/failure details, filenames, clocks, and settings comfortably without leaning in. Choose the default from this evaluation, not from screenshots alone.
 - Complete launching/restoring apps, dragging/resizing windows, keyboard menu navigation, scrolling, editing text, changing themes, and turning the mode off. No essential action may be trapped outside the visible area.
