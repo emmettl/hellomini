@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "Aquarium"
   public let icon = MiniApplicationIcon.aquarium
   public let defaultSize = CGSize(width: 660, height: 440)
-  public let minimumSize = CGSize(width: 480, height: 320)
+  public let minimumSize = CGSize(width: 420, height: 220)
   public static let animation = MiniPlayfulEffect(
     id: "aquarium.animation", name: "Aquarium animation",
     description: "Let fish wander, plants sway, and bubbles rise.")
@@ -22,14 +22,20 @@ import SwiftUI
     description:
       "Print Monitor drops food when newly observed CI builds succeed. Old build history is ignored."
   )
-  public static let effects = [animation, activity, buildFeeding]
-  let model = AquariumModel()
+  public static let buildMemory = MiniPlayfulEffect(
+    id: "aquarium.buildMemory", name: "Fish remember builds",
+    description:
+      "Green build streaks grow the fish and bring a tenth resident. A failed build sends them sulking to the gravel."
+  )
+  public static let effects = [animation, activity, buildFeeding, buildMemory]
+  let model: AquariumModel
   private let playfulness: PlayfulnessSettings
 
   public init(
     playfulness: PlayfulnessSettings, preview: (() -> Void)? = nil,
-    onFeed: @escaping () -> Void = {}
+    onFeed: @escaping () -> Void = {}, defaults: UserDefaults = .standard
   ) {
+    model = AquariumModel(defaults: defaults)
     self.playfulness = playfulness
     model.preview = preview
     model.onFeed = onFeed
@@ -45,8 +51,14 @@ import SwiftUI
     model.simulation.previousTime = nil
   }
   public func feedFromSuccessfulBuilds(_ count: Int) {
-    guard count > 0, playfulness.allows(Self.buildFeeding.id) else { return }
+    guard count > 0 else { return }
+    if playfulness.allows(Self.buildMemory.id) { model.rememberSuccess(count) }
+    guard playfulness.allows(Self.buildFeeding.id) else { return }
     model.feedFromBuilds(count)
+  }
+  public func recordFailedBuilds(_ count: Int) {
+    guard count > 0, playfulness.allows(Self.buildMemory.id) else { return }
+    model.rememberFailure()
   }
   public func content() -> AnyView {
     AnyView(AquariumView(model: model, playfulness: playfulness))
@@ -85,6 +97,37 @@ import SwiftUI
   @ObservationIgnored var preview: (() -> Void)?
 
   @ObservationIgnored var onFeed: () -> Void = {}
+  private(set) var streak: Int
+  private(set) var sulking: Bool
+  @ObservationIgnored private let defaults: UserDefaults
+  static let streakKey = "aquarium.buildStreak"
+  static let sulkingKey = "aquarium.sulking"
+  init(defaults: UserDefaults = .standard) {
+    self.defaults = defaults
+    streak = min(999, max(0, defaults.integer(forKey: Self.streakKey)))
+    sulking = defaults.bool(forKey: Self.sulkingKey)
+  }
+  /// Ten green builds in a row reach full size; five bring a tenth fish.
+  var growth: Float { Float(min(streak, 10)) / 10 }
+  var residents: Int { streak >= 5 ? 10 : 9 }
+  var moodNote: String? {
+    if sulking { return "A build failed. The fish are sulking." }
+    return streak >= 2 ? "\(streak) green builds in a row. The fish are thriving." : nil
+  }
+  func rememberSuccess(_ count: Int) {
+    streak = min(999, streak + count)
+    sulking = false
+    saveMemory()
+  }
+  func rememberFailure() {
+    streak = 0
+    sulking = true
+    saveMemory()
+  }
+  private func saveMemory() {
+    defaults.set(streak, forKey: Self.streakKey)
+    defaults.set(sulking, forKey: Self.sulkingKey)
+  }
   func feed() {
     onFeed()
     feedRevision += 1
@@ -106,10 +149,11 @@ struct AquariumSimulation {
   var previousTime: TimeInterval?
   var current: Float = 0
   var bubbles: Float = 0
+  var sulk: Float = 0
 
   mutating func advance(
     now: TimeInterval, animate: Bool, feedRevision: Int,
-    activity: AquariumActivity = AquariumActivity()
+    activity: AquariumActivity = AquariumActivity(), sulking: Bool = false
   ) {
     if lastFeed != feedRevision {
       foodAge = 0
@@ -121,7 +165,9 @@ struct AquariumSimulation {
       foodAge = min(20, foodAge + delta)
       current += (activity.current - current) * min(1, delta * 2)
       bubbles += (activity.bubbles - bubbles) * min(1, delta * 2)
+      sulk += ((sulking ? 1 : 0) - sulk) * min(1, delta * 1.2)
     }
+    if !animate { sulk = sulking ? 1 : 0 }
     previousTime = animate ? now : nil
   }
 }
@@ -133,24 +179,42 @@ struct AquariumView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      HStack {
-        Button(model.paused ? "Resume" : "Pause") { model.paused.toggle() }
-        Button("Feed fish", action: model.feed)
-        Spacer()
-        Button("Screensaver preview") {
-          model.preview?()
-        }.disabled(model.preview == nil || !playfulness.enabled)
+      ViewThatFits(in: .horizontal) {
+        controls(short: false)
+        controls(short: true)
       }
       .buttonStyle(RetroButtonStyle()).padding(10)
       Rectangle().frame(height: 1)
       AquariumTank(model: model, playfulness: playfulness, suspended: model.presenting)
       Rectangle().frame(height: 1)
       HStack {
-        Text(model.feedingNote ?? "NINE FISH. NO RESPONSIBILITIES.").lineLimit(1)
-          .miniHelp(model.feedingNote ?? "Nine fish. No responsibilities.")
+        Text(note).lineLimit(1).miniHelp(note)
         Spacer(minLength: 8)
         Text(playfulness.allows(AquariumApplication.activity.id) ? "System currents" : "Decorative")
       }.font(theme.typography.small).padding(.horizontal, 10).frame(height: 28)
+    }
+  }
+
+  private var note: String {
+    if let feeding = model.feedingNote { return feeding }
+    guard playfulness.allows(AquariumApplication.buildMemory.id) else {
+      return "NINE FISH. NO RESPONSIBILITIES."
+    }
+    return model.moodNote
+      ?? (model.residents == 10
+        ? "TEN FISH. ONE OF THEM IS NEW." : "NINE FISH. NO RESPONSIBILITIES.")
+  }
+
+  private func controls(short: Bool) -> some View {
+    HStack {
+      Button(model.paused ? "Resume" : "Pause") { model.paused.toggle() }
+      Button("Feed fish", action: model.feed)
+      Spacer(minLength: 4)
+      Button(short ? "Preview" : "Screensaver preview") {
+        model.preview?()
+      }
+      .disabled(model.preview == nil || !playfulness.enabled)
+      .accessibilityLabel("Screensaver preview")
     }
   }
 }
@@ -169,6 +233,7 @@ struct AquariumTank: View {
     active && visible && !suspended && !model.paused && !reduceMotion
       && playfulness.allows(AquariumApplication.animation.id)
   }
+  private var remembers: Bool { playfulness.allows(AquariumApplication.buildMemory.id) }
   private var sample: Bool {
     active && visible && !suspended && model.error == nil
       && playfulness.allows(AquariumApplication.activity.id)
@@ -203,7 +268,8 @@ struct AquariumTank: View {
           model: model, ink: rgba(theme.ink), paper: rgba(theme.paper), animate: animate,
           suspended: suspended,
           activity: playfulness.allows(AquariumApplication.activity.id)
-            ? model.activity : AquariumActivity(), feedRevision: model.feedRevision)
+            ? model.activity : AquariumActivity(), feedRevision: model.feedRevision,
+          growth: remembers ? model.growth : 0, sulking: remembers && model.sulking)
       }
       Text(status).font(theme.typography.small)
         .padding(6).background(theme.paper).padding(8).allowsHitTesting(false)

@@ -59,8 +59,9 @@ fragment float4 aquariumFragment(Vertex in [[stage_in]], constant Uniforms &u [[
     if (abs(d - r) < .65f) ink = true;
   }
 
-  // Nine residents, with three silhouettes and independent paths through the tank.
-  for (int i = 0; i < 9; i++) {
+  // Nine residents (ten after a green streak), with three silhouettes and independent paths.
+  for (int i = 0; i < 10; i++) {
+    if (i == 9 && u.activity.z < .5f) break;
     float seed = float(i);
     float speed = 8 + noise(seed + 62) * 9;
     float phase = t * speed + noise(seed + 3) * size.x * 2;
@@ -68,12 +69,14 @@ fragment float4 aquariumFragment(Vertex in [[stage_in]], constant Uniforms &u [[
     float direction = travel < size.x + 70 ? 1 : -1;
     float x = (direction > 0 ? travel : 2 * (size.x + 70) - travel) - 35;
     float y = 48 + noise(seed + 18) * (floorY - 80) + sin(t * .65f + seed * 3) * 9;
+    // Sulking fish mope along the gravel until the next green build.
+    y = mix(y, floorY - 9 - noise(seed + 5) * 8, u.activity.w);
     if (food < 12) {
       float attraction = smoothstep(0.0f, 2.0f, food) * (1 - smoothstep(8.0f, 12.0f, food));
       x = mix(x, size.x * .5f + (seed - 4) * 20, attraction * .8f);
       y = mix(y, 44 + seed * 9 + food * 2, attraction * .8f);
     }
-    float scale = .8f + noise(seed + 32) * .5f;
+    float scale = (.8f + noise(seed + 32) * .5f) * (1 + .35f * u.activity.z);
     float2 q = (p - float2(x, y)) / scale;
     q.x *= direction;
     float ry = i % 3 == 0 ? 14 : (i % 3 == 1 ? 9 : 6);

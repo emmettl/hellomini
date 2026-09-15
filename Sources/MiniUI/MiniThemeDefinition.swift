@@ -90,12 +90,17 @@ public struct ThemeWindowState {
   public let minimise: (@MainActor () -> Void)?
   public let zoom: (@MainActor () -> Void)?
   public let zoomed: Bool
+  /// Window shade: roll the window up to its title bar, as Mac OS 8 did.
+  public let shade: (@MainActor () -> Void)?
+  public let shaded: Bool
 
   public init(
     title: String, active: Bool, close: @escaping @MainActor () -> Void,
     minimise: (@MainActor () -> Void)? = nil, zoom: (@MainActor () -> Void)? = nil,
-    zoomed: Bool = false
+    zoomed: Bool = false, shade: (@MainActor () -> Void)? = nil, shaded: Bool = false
   ) {
+    self.shade = shade
+    self.shaded = shaded
     self.title = title
     self.active = active
     self.close = close
@@ -132,6 +137,8 @@ public struct MiniThemeDefinition: Identifiable, Sendable {
   public var menu = ThemeFrameStyle(surface: .solid(.white), border: .black, shadow: .black)
   /// A dock replaces the desktop application rail when a theme supplies its shelf styling.
   public var dock: ThemeFrameStyle?
+  /// Themes from the window-shade era let a double-clicked title bar roll its window up.
+  public var windowShade = false
   public var menuBar: ThemeSurface = .solid(.white)
   public var titleBarHeight: CGFloat = 30
   public var titleBarDivider: CGFloat = 1

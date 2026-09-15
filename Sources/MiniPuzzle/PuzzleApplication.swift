@@ -44,7 +44,7 @@ struct SlidingBoard {
   public let name = "Puzzle"
   public let icon = MiniApplicationIcon.puzzle
   public let defaultSize = CGSize(width: 660, height: 480)
-  public let minimumSize = CGSize(width: 500, height: 370)
+  public let minimumSize = CGSize(width: 360, height: 240)
   public static let effect = MiniPlayfulEffect(
     id: "puzzle.live", name: "Live puzzle tiles",
     description: "Refresh the sliding puzzle from Hello Mini's own desktop once a second.")
@@ -80,15 +80,9 @@ private struct PuzzleView: View {
   }
   var body: some View {
     VStack(spacing: 12) {
-      HStack {
-        Button("Shuffle") {
-          var generator = SystemRandomNumberGenerator()
-          board.shuffle(using: &generator)
-        }
-        Button(frozen ? "Live tiles" : "Freeze tiles") { frozen.toggle() }
-        Button("Refresh picture") { picture.refresh() }
-        Spacer()
-        Text("\(board.moves) \(board.moves == 1 ? "move" : "moves")").font(theme.typography.small)
+      ViewThatFits(in: .horizontal) {
+        controls(short: false)
+        controls(short: true)
       }.buttonStyle(RetroButtonStyle())
       GeometryReader { geometry in
         let width = geometry.size.width / 4
@@ -126,11 +120,13 @@ private struct PuzzleView: View {
       .onKeyPress(.rightArrow) { moveGap(dx: 1, dy: 0) }
       .onKeyPress(.upArrow) { moveGap(dx: 0, dy: -1) }
       .onKeyPress(.downArrow) { moveGap(dx: 0, dy: 1) }
-      Text(
-        board.solved
-          ? "Order restored. Temporarily."
-          : "Click a neighboring tile, or use arrow keys to move the gap."
-      )
+      ViewThatFits(in: .horizontal) {
+        Text(
+          board.solved
+            ? "Order restored. Temporarily."
+            : "Click a neighboring tile, or use arrow keys to move the gap.")
+        Text(board.solved ? "Order restored." : "Click a tile or use the arrow keys.")
+      }
       .font(theme.typography.small)
     }.padding(14)
       .onAppear { boardFocused = windowActive }
@@ -150,6 +146,23 @@ private struct PuzzleView: View {
         }
       }
   }
+  private func controls(short: Bool) -> some View {
+    HStack {
+      Button("Shuffle") {
+        var generator = SystemRandomNumberGenerator()
+        board.shuffle(using: &generator)
+      }
+      Button(frozen ? (short ? "Live" : "Live tiles") : (short ? "Freeze" : "Freeze tiles")) {
+        frozen.toggle()
+      }
+      .accessibilityLabel(frozen ? "Live tiles" : "Freeze tiles")
+      Button(short ? "Refresh" : "Refresh picture") { picture.refresh() }
+        .accessibilityLabel("Refresh picture")
+      Spacer(minLength: 4)
+      Text("\(board.moves) \(board.moves == 1 ? "move" : "moves")").font(theme.typography.small)
+    }
+  }
+
   private func moveGap(dx: Int, dy: Int) -> KeyPress.Result {
     guard windowActive else { return .ignored }
     board.moveGap(dx: dx, dy: dy)

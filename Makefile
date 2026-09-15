@@ -34,6 +34,7 @@ format:
 ci-test:
 	python3 scripts/test-ci.py
 	python3 scripts/test-release.py
+	python3 scripts/test-bundle-resources.py
 
 release-check:
 	python3 scripts/release.py check

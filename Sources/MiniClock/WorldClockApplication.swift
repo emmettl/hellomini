@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "World Clock"
   public let icon = MiniApplicationIcon.clock
   public let defaultSize = CGSize(width: 730, height: 480)
-  public let minimumSize = CGSize(width: 630, height: 400)
+  public let minimumSize = CGSize(width: 440, height: 250)
   public static let effect = MiniPlayfulEffect(
     id: "clock.globe", name: "World Clock globe",
     description: "Spin a needlessly elaborate globe beside the clocks.")
@@ -64,21 +64,22 @@ private struct WorldClockView: View {
   @State private var offset: Double = 0
   @State private var adding = false
   @State private var query = ""
+  @State private var size = CGSize(width: 730, height: 480)
+  /// The decorative globe and long notes give way in tiny-screen and other small windows.
+  private var roomy: Bool { size.width >= 600 && size.height >= 330 }
   var body: some View {
-    VStack(spacing: 12) {
-      HStack {
-        Button("Add clock…") { adding = true }
-        Spacer()
-        Text("Working hours")
-        Picker("Start hour", selection: $model.startHour) {
-          ForEach(0..<24) { Text(String(format: "%02d:00", $0)).tag($0) }
-        }.labelsHidden().frame(width: 85)
-        Text("to")
-        Picker("End hour", selection: $model.endHour) {
-          ForEach((model.startHour + 1)...24, id: \.self) {
-            Text(String(format: "%02d:00", $0)).tag($0)
-          }
-        }.labelsHidden().frame(width: 85)
+    VStack(spacing: roomy ? 12 : 8) {
+      ViewThatFits(in: .horizontal) {
+        HStack {
+          Button("Add clock…") { adding = true }
+          Spacer()
+          workingHours
+        }
+        HStack {
+          Button("Add…") { adding = true }.accessibilityLabel("Add clock")
+          Spacer(minLength: 4)
+          workingHours
+        }
       }.buttonStyle(RetroButtonStyle())
         .onChange(of: model.startHour) { _, start in
           if model.endHour <= start { model.endHour = start + 1 }
@@ -135,19 +136,28 @@ private struct WorldClockView: View {
             }
           }
         }.frame(maxWidth: .infinity)
-        VStack {
-          MiniMetalScene(.globe, animate: playfulness.allows(WorldClockApplication.effect.id))
-          Text("Decorative globe.\nActual timekeeping above its pay grade.").font(
-            theme.typography.small
-          ).multilineTextAlignment(.center)
-        }.frame(width: 210)
+        if roomy {
+          VStack {
+            MiniMetalScene(.globe, animate: playfulness.allows(WorldClockApplication.effect.id))
+            Text("Decorative globe.\nActual timekeeping above its pay grade.").font(
+              theme.typography.small
+            ).multilineTextAlignment(.center)
+          }.frame(width: 210)
+        }
       }
       TimelineView(.periodic(from: .now, by: 60)) { _ in
-        Text(
-          "Working hours: Monday–Friday in each time zone · Mac uptime: \(Int(ProcessInfo.processInfo.systemUptime / 3600)) hours"
-        ).font(theme.typography.small)
+        let hours = Int(ProcessInfo.processInfo.systemUptime / 3600)
+        ViewThatFits(in: .horizontal) {
+          Text("Working hours: Monday–Friday in each time zone · Mac uptime: \(hours) hours")
+          Text("Mon–Fri working hours · Up \(hours) h")
+        }.font(theme.typography.small)
       }
-    }.padding(16)
+    }.padding(roomy ? 16 : 10)
+      .onGeometryChange(for: CGSize.self) {
+        $0.size
+      } action: {
+        size = $0
+      }
       .sheet(isPresented: $adding) {
         VStack(alignment: .leading, spacing: 12) {
           Text("Somewhere on this ridiculous planet.").font(theme.typography.title)
@@ -174,5 +184,17 @@ private struct WorldClockView: View {
         )
         .miniSheet(width: 450)
       }
+  }
+  @ViewBuilder private var workingHours: some View {
+    Text("Working hours")
+    Picker("Start hour", selection: $model.startHour) {
+      ForEach(0..<24) { Text(String(format: "%02d:00", $0)).tag($0) }
+    }.labelsHidden().frame(width: 85)
+    Text("to")
+    Picker("End hour", selection: $model.endHour) {
+      ForEach((model.startHour + 1)...24, id: \.self) {
+        Text(String(format: "%02d:00", $0)).tag($0)
+      }
+    }.labelsHidden().frame(width: 85)
   }
 }

@@ -123,6 +123,24 @@ private struct ControlPanelView: View {
     }
   }
 
+  private var tinyScreenToggle: some View {
+    Toggle(
+      "Tiny-screen mode — 2×",
+      isOn: Binding(get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) })
+    )
+    .toggleStyle(.checkbox)
+    .miniHelp("Make the whole interface twice as large. Turn it off here or in the View menu.")
+  }
+
+  private var puristToggle: some View {
+    Toggle(
+      "Purist mode — 512 × 384",
+      isOn: Binding(get: { settings.puristMode }, set: { settings.setPuristMode($0) })
+    )
+    .toggleStyle(.checkbox)
+    .miniHelp("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
+  }
+
   private var appearance: some View {
     VStack(alignment: .leading, spacing: display.tinyScreen ? 12 : 18) {
       if !display.tinyScreen {
@@ -134,24 +152,26 @@ private struct ControlPanelView: View {
           }
         }
       }
-      Toggle(
-        "Tiny-screen mode — 2×",
-        isOn: Binding(
-          get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) })
-      )
-      .toggleStyle(.checkbox)
-      .miniHelp("Make the whole interface twice as large. Turn it off here or in the View menu.")
-      Text("Larger text and controls, with less on screen at once.")
-        .font(theme.typography.small)
-      Toggle(
-        "Purist mode — 512 × 384",
-        isOn: Binding(
-          get: { settings.puristMode }, set: { settings.setPuristMode($0) })
-      )
-      .toggleStyle(.checkbox)
-      .miniHelp("Use a fixed 512 × 384 desktop. Turn it off here or in the View menu.")
+      if display.tinyScreen {
+        // One line of toggles leaves room for the theme strip on a tiny desktop.
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 18) {
+            tinyScreenToggle
+            puristToggle
+          }
+          VStack(alignment: .leading, spacing: 8) {
+            tinyScreenToggle
+            puristToggle
+          }
+        }
+      } else {
+        tinyScreenToggle
+        Text("Larger text and controls, with less on screen at once.")
+          .font(theme.typography.small)
+        puristToggle
+      }
       Rectangle().frame(height: 1)
-      AppearanceScrollView {
+      AppearanceScrollView(step: display.tinyScreen ? 126 : 174) {
         HStack(alignment: .top, spacing: 14) {
           ForEach(themes.themes) { definition in
             Button {
@@ -160,7 +180,7 @@ private struct ControlPanelView: View {
               VStack(spacing: 10) {
                 MiniThemePreview(definition)
                   .id(settings.theme.id)
-                  .frame(height: 96)
+                  .frame(height: display.tinyScreen ? 65 : 96)
                   .padding(5)
                   .overlay(
                     Rectangle().strokeBorder(
@@ -171,10 +191,10 @@ private struct ControlPanelView: View {
                       if settings.theme.id == definition.id { Circle().fill(theme.ink).padding(3) }
                     }
                     .frame(width: 13, height: 13)
-                  Text(definition.metadata.name).font(theme.typography.title)
+                  Text(definition.metadata.name).font(theme.typography.title).lineLimit(1)
                 }
               }
-              .frame(width: 160)
+              .frame(width: display.tinyScreen ? 112 : 160)
               .contentShape(Rectangle())
             }
             .buttonStyle(.plain)

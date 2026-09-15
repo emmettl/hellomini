@@ -66,6 +66,9 @@ import AppKit
 }
 
 public enum DesktopEffects {
+  public static let genie = MiniPlayfulEffect(
+    id: "desktop.genie", name: "Genie minimise",
+    description: "Pour Aqua windows into the dock when they are minimised, and back out again.")
   public static let dockLaunchBounce = MiniPlayfulEffect(
     id: "desktop.dockLaunchBounce", name: "Dock launch bounce",
     description: "Give newly opened Aqua applications two little hops in the dock.")

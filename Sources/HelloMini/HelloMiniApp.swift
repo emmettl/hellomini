@@ -12,6 +12,8 @@ import MiniCore
 import MiniDesktop
 import MiniDiskFirstAid
 import MiniFinder
+import MiniMoose
+import MiniPlatinumTheme
 import MiniPrintMonitor
 import MiniPuzzle
 import MiniScrapbook
@@ -54,6 +56,10 @@ struct HelloMiniApp: App {
               commands: system.commands,
               captureDesktop: { image in await system.scrapbook.captureDesktop(image) }
             )
+            .overlay {
+              TalkingMooseOverlay(moose: system.moose)
+                .environment(\.miniTheme, Self.themes.definition(for: settings.theme.id)!)
+            }
           }
         }
       }
@@ -118,7 +124,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// Owns shared app instances so Aquarium's desk and screensaver views use the same fish and meals.
 @MainActor private final class MiniSystem {
   static let themes = MiniThemeRegistry(
-    MiniThemeRegistry.builtIns.themes + [System7Theme.definition, AquaTheme.definition])
+    MiniThemeRegistry.builtIns.themes + [
+      System7Theme.definition, PlatinumTheme.definition, AquaTheme.definition,
+    ])
   let settings = AppearanceSettings(themes: MiniSystem.themes.metadata)
   let picture = DesktopPicture()
   let commands = DesktopCommands()
@@ -127,16 +135,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       MiniStartup.effect, TeapotApplication.rotationEffect, CalculatorApplication.effect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
-      DesktopEffects.dockMagnification, DesktopEffects.dockLaunchBounce,
+      DesktopEffects.dockMagnification, DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
+      TalkingMoose.effect,
     ] + AquariumApplication.effects)
   let screensavers = ScreensaverSettings(savers: [
-    AquariumApplication.screensaver, FlyingToasters.metadata,
+    AquariumApplication.screensaver, FlyingToasters.metadata, ScrapbookApplication.screensaver,
   ])
   let aquarium: AquariumApplication
   let sounds: SystemSounds
   let scrapbook = ScrapbookApplication()
   let alarm: AlarmClockApplication
   let printMonitor: PrintMonitorApplication
+  let moose: TalkingMoose
   private var didChime = false
   func startupSound() {
     guard !didChime else { return }
@@ -167,10 +177,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         screensavers.preview(AquariumApplication.screensaver.id)
       }, onFeed: { sounds.play(.feed) })
     self.aquarium = aquarium
+    let moose = TalkingMoose(settings: playfulness)
+    self.moose = moose
     printMonitor = PrintMonitorApplication(
       playfulness: playfulness,
-      onSuccessfulBuilds: aquarium.feedFromSuccessfulBuilds,
-      onFailedBuilds: { _ in sounds.play(.jam) })
+      onSuccessfulBuilds: { count in
+        aquarium.feedFromSuccessfulBuilds(count)
+        moose.react(to: .passed(count))
+      },
+      onFailedBuilds: { count in
+        sounds.play(.jam)
+        aquarium.recordFailedBuilds(count)
+        moose.react(to: .failed(count))
+      })
   }
   var saverDefinitions: [MiniScreensaverDefinition] {
     [
@@ -178,6 +197,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         metadata: AquariumApplication.screensaver,
         presenting: aquarium.setScreensaverPresented, content: aquarium.screensaverContent),
       FlyingToasters.definition(playfulness: playfulness),
+      MiniScreensaverDefinition(
+        metadata: ScrapbookApplication.screensaver, content: scrapbook.screensaverContent),
     ]
   }
 }

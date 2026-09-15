@@ -2,7 +2,7 @@
 
 Hello Mini welcomes useful little apps and carefully judged nonsense. Read the [roadmap](ROADMAP.md) and [architecture guide](docs/ARCHITECTURE.md) before starting a large change.
 
-Use macOS 26 with Xcode 26.6 / Swift 6.3. Run `make format` and `make check`, then try the app at 1280 × 720, at the affected window's minimum size, and in 512 × 384 Purist mode. For shared controls, check all five themes, keyboard navigation, and Reduce Motion. Describe what changes and how you verified it in the pull request. Include screenshots when appearance changes, using demonstration content.
+Use Xcode 27 / Swift 6.4 on macOS 26.6 or later. Run `make format` and `make check`, then try the app at 1280 × 720, at the affected window's minimum size, and in 512 × 384 Purist mode. For shared controls, check all five themes, keyboard navigation, and Reduce Motion. Describe what changes and how you verified it in the pull request. Include screenshots when appearance changes, using demonstration content.
 
 Application modules depend on `MiniCore` and shared `MiniUI` controls. The desktop owns launching, geometry, focus, and menus. Keep app-to-app connections injected by the host. New effects belong in Control Panel, use the current theme, honor Reduce Motion, and pause when hidden or closed. Keep real status understandable when the spectacle is disabled.
 

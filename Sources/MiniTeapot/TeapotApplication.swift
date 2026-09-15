@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "Teapot"
   public let icon = MiniApplicationIcon.teapot
   public let defaultSize = CGSize(width: 650, height: 480)
-  public let minimumSize = CGSize(width: 650, height: 360)
+  public let minimumSize = CGSize(width: 420, height: 240)
   public static let rotationEffect = MiniPlayfulEffect(
     id: "teapot.rotation", name: "Teapot animation",
     description: "Let the teapot spin by itself. Manual rotation always works.")
@@ -89,20 +89,22 @@ private struct TeapotView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      HStack(spacing: 8) {
-        Button(model.spinning ? "Pause" : "Spin") { model.spinning.toggle() }
-          .accessibilityLabel(model.spinning ? "Pause teapot rotation" : "Resume teapot rotation")
-          .disabled(reduceMotion || !rotationAllowed)
-        ForEach(TeapotMode.allCases, id: \.rawValue) { mode in
-          Button(model.mode == mode ? "✓ " + mode.name : mode.name) { model.mode = mode }
-            .accessibilityLabel(mode.name)
-            .accessibilityValue(model.mode == mode ? "Selected" : "Not selected")
-            .accessibilityAddTraits(model.mode == mode ? .isSelected : [])
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: 8) {
+          spinButton
+          modeButtons
+          Spacer(minLength: 0)
+          orbitButtons
         }
-        Spacer(minLength: 0)
-        Button("←") { model.yaw -= .pi / 8 }.accessibilityLabel("Rotate teapot left")
-        Button("→") { model.yaw += .pi / 8 }.accessibilityLabel("Rotate teapot right")
-        Button("Reset", action: model.reset)
+        // Narrow windows, including tiny-screen mode, put the shading choices above the orbit.
+        VStack(alignment: .leading, spacing: 6) {
+          HStack(spacing: 8) { modeButtons }
+          HStack(spacing: 8) {
+            spinButton
+            Spacer(minLength: 0)
+            orbitButtons
+          }
+        }
       }
       .buttonStyle(RetroButtonStyle())
       .padding(10)
@@ -136,6 +138,27 @@ private struct TeapotView: View {
     { _ in active = true }
     .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
     { _ in active = false }
+  }
+
+  private var spinButton: some View {
+    Button(model.spinning ? "Pause" : "Spin") { model.spinning.toggle() }
+      .accessibilityLabel(model.spinning ? "Pause teapot rotation" : "Resume teapot rotation")
+      .disabled(reduceMotion || !rotationAllowed)
+  }
+
+  private var modeButtons: some View {
+    ForEach(TeapotMode.allCases, id: \.rawValue) { mode in
+      Button(model.mode == mode ? "✓ " + mode.name : mode.name) { model.mode = mode }
+        .accessibilityLabel(mode.name)
+        .accessibilityValue(model.mode == mode ? "Selected" : "Not selected")
+        .accessibilityAddTraits(model.mode == mode ? .isSelected : [])
+    }
+  }
+
+  @ViewBuilder private var orbitButtons: some View {
+    Button("←") { model.yaw -= .pi / 8 }.accessibilityLabel("Rotate teapot left")
+    Button("→") { model.yaw += .pi / 8 }.accessibilityLabel("Rotate teapot right")
+    Button("Reset", action: model.reset)
   }
 
   private func rgba(_ color: Color) -> SIMD4<Float> {

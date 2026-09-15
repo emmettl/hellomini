@@ -123,7 +123,7 @@ final class ChooserModel: NSObject, @preconcurrency NetServiceBrowserDelegate,
   public let name = "Chooser"
   public let icon = MiniApplicationIcon.chooser
   public let defaultSize = CGSize(width: 680, height: 450)
-  public let minimumSize = CGSize(width: 570, height: 370)
+  public let minimumSize = CGSize(width: 420, height: 250)
   private let model = ChooserModel()
   public init() {}
   public func content() -> AnyView { AnyView(ChooserView(model: model)) }
@@ -132,14 +132,15 @@ final class ChooserModel: NSObject, @preconcurrency NetServiceBrowserDelegate,
 private struct ChooserView: View {
   @Environment(\.miniTheme) private var theme
   @Bindable var model: ChooserModel
+  @State private var height: CGFloat = 450
+  private var roomy: Bool { height >= 340 }
+  private static let privacy =
+    "Bonjour advertisements only; no port scanning. Connections open in the appropriate macOS app."
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      HStack {
-        Picker("Service", selection: $model.kind) {
-          ForEach(ServiceKind.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-        }
-        Button(model.browsing ? "Browse again" : "Browse", action: model.start)
-        if model.browsing { Button("Stop", action: model.stop) }
+    VStack(alignment: .leading, spacing: roomy ? 14 : 8) {
+      ViewThatFits(in: .horizontal) {
+        controls(compact: false)
+        controls(compact: true)
       }.buttonStyle(RetroButtonStyle())
         .onChange(of: model.kind) { _, _ in
           model.stop()
@@ -147,7 +148,9 @@ private struct ChooserView: View {
           model.selected = nil
           model.manualHost = ""
         }
-      Text("A beige computer surveys the network.").font(theme.typography.title)
+      if roomy {
+        Text("A beige computer surveys the network.").font(theme.typography.title)
+      }
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 8) {
           if model.services.isEmpty {
@@ -183,11 +186,33 @@ private struct ChooserView: View {
         .onSubmit(model.connect)
         Button("Connect", action: model.connect).buttonStyle(RetroButtonStyle())
       }
-      Text(model.message).font(theme.typography.small)
-      Text(
-        "Bonjour advertisements only; no port scanning. Connections open in the appropriate macOS app."
+      Text(model.message).font(theme.typography.small).lineLimit(roomy ? nil : 2)
+        .miniHelp(Self.privacy)
+      if roomy { Text(Self.privacy).font(theme.typography.small) }
+    }.padding(roomy ? 16 : 10).onDisappear { model.stop() }
+      .onGeometryChange(for: CGFloat.self) {
+        $0.size.height
+      } action: {
+        height = $0
+      }
+  }
+
+  private func controls(compact: Bool) -> some View {
+    HStack {
+      if compact {
+        Picker("Service", selection: $model.kind) { serviceOptions }.labelsHidden()
+      } else {
+        Picker("Service", selection: $model.kind) { serviceOptions }
+      }
+      Button(
+        model.browsing ? (compact ? "Again" : "Browse again") : "Browse", action: model.start
       )
-      .font(theme.typography.small)
-    }.padding(16).onDisappear { model.stop() }
+      .accessibilityLabel(model.browsing ? "Browse again" : "Browse")
+      if model.browsing { Button("Stop", action: model.stop) }
+    }
+  }
+
+  private var serviceOptions: some View {
+    ForEach(ServiceKind.allCases, id: \.self) { Text($0.rawValue).tag($0) }
   }
 }

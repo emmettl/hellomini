@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3
+// swift-tools-version: 6.4
 
 import PackageDescription
 
@@ -11,8 +11,10 @@ let package = Package(
     .target(name: "MiniAccessories", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniAquaTheme", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniSystem7Theme", dependencies: ["MiniCore", "MiniUI"]),
+    .target(name: "MiniPlatinumTheme", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniScreensaver", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniToasters", dependencies: ["MiniCore", "MiniUI", "MiniScreensaver"]),
+    .target(name: "MiniMoose", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniUI", dependencies: ["MiniCore"], resources: [.copy("Resources")]),
     .target(name: "MiniDesktop", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniFinder", dependencies: ["MiniCore", "MiniUI"]),
@@ -45,6 +47,7 @@ let package = Package(
         "MiniControlPanel", "MiniUI", "MiniTeapot", "MiniAquarium", "MiniScrapbook",
         "MiniCalculator", "MiniPuzzle", "MiniChooser", "MiniDiskFirstAid", "MiniWastebasket",
         "MiniPrintMonitor", "MiniScreensaver", "MiniToasters", "MiniSystem7Theme", "MiniAquaTheme",
+        "MiniMoose", "MiniPlatinumTheme",
       ]),
     .testTarget(name: "MiniUITests", dependencies: ["MiniUI"], resources: [.process("Resources")]),
     .testTarget(name: "MiniTeapotTests", dependencies: ["MiniTeapot"]),
@@ -66,5 +69,19 @@ let package = Package(
     .testTarget(name: "MiniDesktopTests", dependencies: ["MiniDesktop"]),
     .testTarget(name: "MiniFinderTests", dependencies: ["MiniFinder"]),
     .testTarget(name: "MiniActivityMonitorTests", dependencies: ["MiniActivityMonitor"]),
+    .testTarget(
+      name: "MiniControlPanelTests", dependencies: ["MiniControlPanel", "MiniUI", "MiniCore"]),
+    .testTarget(name: "MiniMooseTests", dependencies: ["MiniMoose", "MiniCore"]),
+    .testTarget(
+      name: "MiniPlatinumThemeTests",
+      dependencies: ["MiniPlatinumTheme", "MiniSystem7Theme", "MiniUI", "MiniCore"]),
+    .testTarget(
+      name: "MiniDisplayFitTests",
+      dependencies: [
+        "MiniAbout", "MiniAccessories", "MiniActivityMonitor", "MiniAquaTheme", "MiniAquarium",
+        "MiniCalculator", "MiniChooser", "MiniClock", "MiniControlPanel", "MiniCore", "MiniDesktop",
+        "MiniDiskFirstAid", "MiniFinder", "MiniPrintMonitor", "MiniPuzzle", "MiniScrapbook",
+        "MiniSystem7Theme", "MiniTeapot", "MiniUI", "MiniWastebasket", "MiniPlatinumTheme",
+      ]),
   ]
 )

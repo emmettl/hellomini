@@ -8,7 +8,7 @@ import SwiftUI
   public let name = "Key Caps"
   public let icon = MiniApplicationIcon.calculator
   public let defaultSize = CGSize(width: 600, height: 380)
-  public let minimumSize = CGSize(width: 510, height: 330)
+  public let minimumSize = CGSize(width: 490, height: 240)
   public init() {}
   public func content() -> AnyView { AnyView(KeyCapsView()) }
 }
@@ -24,11 +24,9 @@ private struct KeyCapsView: View {
   private let characters = Array("⌘⌥⇧⌃⎋⌫↩⇥←→↑↓±×÷≠≤≥∞πµ°©®™€£¥•…—“”‘’✓✗♥★😀😂🥹😍🤔🙃😎😭👍👋🎉🐟🐠🐕🖨️💾🗑️☕🍅")
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Toggle("Shift", isOn: $shifted)
-        Toggle("Symbols & emoji", isOn: $symbols)
-        Spacer()
-        Button("macOS Characters…") { NSApp.orderFrontCharacterPalette(nil) }
+      ViewThatFits(in: .horizontal) {
+        header(short: false)
+        header(short: true)
       }.buttonStyle(RetroButtonStyle())
       ScrollView {
         if symbols {
@@ -56,6 +54,17 @@ private struct KeyCapsView: View {
       Text(notice).font(theme.typography.small).lineLimit(2)
     }.padding(16)
   }
+  private func header(short: Bool) -> some View {
+    HStack {
+      Toggle("Shift", isOn: $shifted)
+      Toggle(short ? "Symbols" : "Symbols & emoji", isOn: $symbols)
+        .accessibilityLabel("Symbols and emoji")
+      Spacer(minLength: 4)
+      Button(short ? "Characters…" : "macOS Characters…") { NSApp.orderFrontCharacterPalette(nil) }
+        .accessibilityLabel("macOS Characters")
+    }
+  }
+
   private func key(_ value: String) -> some View {
     Button {
       copy(value)

@@ -8,7 +8,7 @@ import SwiftUI
   public let name = "Desk Calculator"
   public let icon = MiniApplicationIcon.calculator
   public let defaultSize = CGSize(width: 700, height: 480)
-  public let minimumSize = CGSize(width: 620, height: 420)
+  public let minimumSize = CGSize(width: 440, height: 250)
   public static let effect = MiniPlayfulEffect(
     id: "calculator.mathematics", name: "Unreasonable mathematics",
     description: "Allow the calculator's animated Mandelbrot excursion.")
@@ -36,24 +36,50 @@ private struct CalculatorView: View {
   @State private var plotExpression = "sin(x)"
   @State private var points: [CGPoint?] = []
   @State private var spectacle = false
+  @State private var height: CGFloat = 480
+  /// Short windows, including tiny-screen mode with a dock, move reference text into help.
+  private var roomy: Bool { height >= 300 }
+
+  private let panes = ["Calculate", "Programmer", "Convert", "Time", "Plot"]
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        ForEach(["Calculate", "Programmer", "Convert", "Time", "Plot"], id: \.self) { name in
-          Button((pane == name ? "✓ " : "") + name) {
-            pane = name
-            error = nil
-            spectacle = false
-          }
+      ViewThatFits(in: .horizontal) {
+        HStack { paneButtons(panes) }
+        // Narrow windows, including tiny-screen mode, split the panes over two rows.
+        VStack(alignment: .leading, spacing: 6) {
+          HStack { paneButtons(Array(panes.prefix(3))) }
+          HStack { paneButtons(Array(panes.suffix(2))) }
         }
       }.buttonStyle(RetroButtonStyle())
       Rectangle().frame(height: 1)
+      ViewThatFits(in: .vertical) {
+        details(scrolling: false)
+        ScrollView { details(scrolling: true).padding(.trailing, 12) }
+      }
+    }.padding(roomy ? 16 : 10)
+      .onGeometryChange(for: CGFloat.self) {
+        $0.size.height
+      } action: {
+        height = $0
+      }
+  }
+  @ViewBuilder private func paneButtons(_ names: [String]) -> some View {
+    ForEach(names, id: \.self) { name in
+      Button((pane == name ? "✓ " : "") + name) {
+        pane = name
+        error = nil
+        spectacle = false
+      }
+    }
+  }
+  private func details(scrolling: Bool) -> some View {
+    VStack(alignment: .leading, spacing: 12) {
       switch pane {
       case "Programmer": programmer
       case "Convert": conversions
       case "Time": timeConversions
-      case "Plot": plot
+      case "Plot": plot(minimumHeight: scrolling ? 160 : 0)
       default: arithmetic
       }
       if pane != "Plot" {
@@ -72,9 +98,9 @@ private struct CalculatorView: View {
         .buttonStyle(RetroButtonStyle())
       }
       if let error { Text(error).font(theme.typography.small) }
-      Spacer(minLength: 0)
-      Text("More digits than strictly necessary.").font(theme.typography.small)
-    }.padding(16)
+      if !scrolling { Spacer(minLength: 0) }
+      if roomy { Text("More digits than strictly necessary.").font(theme.typography.small) }
+    }
   }
   private func perform(_ action: () throws -> String) {
     do {
@@ -85,6 +111,9 @@ private struct CalculatorView: View {
   private var arithmetic: some View {
     VStack(alignment: .leading, spacing: 10) {
       TextField("Expression", text: $expression).accessibilityLabel("Calculator expression")
+        .miniHelp(
+          "+ − * / % ^ · parentheses · pi, e · sin, cos, tan, sqrt, abs, log, ln. Angles use radians."
+        )
         .onSubmit(calculate)
       HStack {
         Button("Calculate", action: calculate)
@@ -94,10 +123,12 @@ private struct CalculatorView: View {
           error = nil
         }
       }.buttonStyle(RetroButtonStyle())
-      Text(
-        "+ − * / % ^ · parentheses · pi, e · sin, cos, tan, sqrt, abs, log, ln\nAngles use radians. General calculations use floating-point numbers."
-      )
-      .font(theme.typography.small)
+      if roomy {
+        Text(
+          "+ − * / % ^ · parentheses · pi, e · sin, cos, tan, sqrt, abs, log, ln\nAngles use radians. General calculations use floating-point numbers."
+        )
+        .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
+      }
       ScrollView {
         VStack(alignment: .leading) {
           ForEach(Array(history.enumerated()), id: \.offset) { _, line in
@@ -201,7 +232,7 @@ private struct CalculatorView: View {
       }.buttonStyle(RetroButtonStyle())
     }
   }
-  private var plot: some View {
+  private func plot(minimumHeight: CGFloat) -> some View {
     VStack(spacing: 10) {
       HStack {
         TextField("f(x)", text: $plotExpression).accessibilityLabel("Function to plot")
@@ -220,7 +251,7 @@ private struct CalculatorView: View {
           .disabled(!playfulness.allows(CalculatorApplication.effect.id))
       }.buttonStyle(RetroButtonStyle())
       if spectacle && playfulness.allows(CalculatorApplication.effect.id) {
-        MiniMetalScene(.mathematics, animate: true)
+        MiniMetalScene(.mathematics, animate: true).frame(minHeight: minimumHeight)
         Text("Mandelbrot excursion · unrelated to the calculated result").font(
           theme.typography.small)
       } else {
@@ -249,6 +280,7 @@ private struct CalculatorView: View {
           context.stroke(path, with: .color(theme.ink), lineWidth: 2)
         }.background(theme.paper).overlay(Rectangle().strokeBorder(theme.ink, lineWidth: 1))
           .accessibilityLabel("Function plot, x and y from minus ten to ten")
+          .frame(minHeight: minimumHeight)
         Text("x: −10…10 · y: −10…10 · undefined and out-of-range samples are omitted").font(
           theme.typography.small)
       }

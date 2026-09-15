@@ -4,7 +4,7 @@ The public source repository is `emmettl/hellomini`. The private runner reposito
 
 ## Public checks
 
-`.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub-hosted `macos-26` ARM runners with Xcode 26.6 explicitly selected. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
+`.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub's Arm64 `xcode-27` runner image, which carries a single Xcode 27 installation and is currently a public preview running macOS 27. `scripts/ci-check-toolchain.sh` rejects any other Xcode major version or Swift release. Builds still target macOS 26. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
 
 The workflow runs `make check` (including Print Monitor tests in both debug and release configurations), builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
 
@@ -12,7 +12,7 @@ The workflow runs `make check` (including Print Monitor tests in both debug and 
 
 The configuration under `ci/private-build/` is copied to the root of `emmettl/hellomini-builds`, which must remain private. It is a template in this public repository, not an active public workflow. Keep private repository write access restricted to trusted maintainers.
 
-The dedicated runner uses the custom `hello-mini` label alongside `self-hosted`, `macOS`, and `ARM64`. It is registered at repository scope to the private build repository only. Its macOS user needs an active login session for the SwiftUI rendering tests and the runner's LaunchAgent. Xcode 26.6 must be available at `/Applications/Xcode.app`; the workflow checks the selected toolchain before building.
+The dedicated runner uses the custom `hello-mini` label alongside `self-hosted`, `macOS`, and `ARM64`. It is registered at repository scope to the private build repository only. Its macOS user needs an active login session for the SwiftUI rendering tests and the runner's LaunchAgent. Xcode 27 must be available at `/Applications/Xcode.app`, which requires macOS 26.6 or later on the Mini; the workflow checks the selected toolchain before building.
 
 Run **Build on Mac Mini** from the private repository's Actions page. Leave the SHA empty to build the current public `main`, or supply a full commit SHA reachable from that branch. The workflow fetches only `main`, validates the commit before checkout, runs all tests including Metal, builds a release bundle, and uploads a private artifact. Builds are serialized, have a 30-minute timeout, and remove their temporary source checkout afterward. They do not install or launch Hello Mini or interrupt the existing app.
 
@@ -38,4 +38,4 @@ Artifacts carry an ad-hoc signature and are development builds. The source is MI
 
 Cloudflare Pages deploys the repository’s `website/` directory to [hellomini.app](https://hellomini.app) automatically from `main`. It runs no Swift build and does not publish application releases. See [website maintenance](../website/README.md) for configuration and validation.
 
-References: [GitHub runner security](https://docs.github.com/en/actions/reference/security/secure-use), [macOS runner images](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md), and [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners).
+References: [GitHub runner security](https://docs.github.com/en/actions/reference/security/secure-use), [macOS runner images](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md), and [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners).
