@@ -20,7 +20,7 @@ Each application should work as a small, coherent application while contributing
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, and cloud sync are not included in 0.3.0. Scrapbook OCR, the Scrapbook Slideshow, build-streak fish, Talking Moose, genie minimise, and the Platinum theme are implemented for the next release.
+The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, and cloud sync are not included in 0.3.0. Scrapbook OCR, the Scrapbook Slideshow, build-streak fish, Talking Moose, genie minimise, and the Platinum theme are included in 0.4.0.
 
 ## Shared design commitments
 
@@ -69,7 +69,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - **Find File:** Spotlight file-name search with a little dog, selectable folder scope, the first 200 results, and Open/Reveal actions. Finder supplies a search button and Command-F. Indexing and access limitations are explained in the window.
 - **Desktop pattern editor:** Saved 8 × 8 ink/paper patterns in Control Panel → Appearance, applied immediately with clear/reset controls.
 - **Finder labels:** Seven colour labels update the matching named macOS tags and legacy label colour, retaining unrelated tags. Broader file operations remain future work.
-- **Aqua dock magnification and launch bounce:** Hover enlargement and a finite two-hop cue for newly opened apps respect Playfulness and Reduce Motion. Genie minimisation now follows as an optional perspective effect for the next release.
+- **Aqua dock magnification and launch bounce:** Hover enlargement and a finite two-hop cue for newly opened apps respect Playfulness and Reduce Motion. Genie minimisation is included in 0.4.0 as an optional perspective effect.
 - **System 7 Balloon Help:** A saved Help-menu toggle enables shared hover explanations above the desktop; native help and accessibility hints remain available.
 
 ## Other continuing directions

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — release candidate
 
 - Development moves to Xcode 27 and Swift 6.4. Public CI uses GitHub's `xcode-27` runner image, and the toolchain check accepts any Xcode 27 release. The Mac Mini runner needs Xcode 27 at `/Applications/Xcode.app`.
 - App bundling reads resource bundles from Swift Build, SwiftPM 6.4's default build engine, as well as the older native layout.

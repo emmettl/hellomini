@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.3.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md).
+This guide describes the **0.4.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md).
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
