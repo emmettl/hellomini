@@ -142,8 +142,9 @@ import SwiftUI
 }
 
 /// Only the renderer advances this clock. Pauses and hidden windows never accumulate catch-up time.
+/// It wraps once a day so long-running tanks keep swimming.
 struct AquariumSimulation {
-  var time: Float = 0
+  var time: Double = 0
   var foodAge: Float = 20
   var lastFeed = 0
   var previousTime: TimeInterval?
@@ -161,7 +162,7 @@ struct AquariumSimulation {
     }
     if animate, let previousTime {
       let delta = Float(max(0, min(0.1, now - previousTime)))
-      time += delta
+      time = AnimationClock.advance(time, by: Double(delta))
       foodAge = min(20, foodAge + delta)
       current += (activity.current - current) * min(1, delta * 2)
       bubbles += (activity.bubbles - bubbles) * min(1, delta * 2)
@@ -227,15 +228,14 @@ struct AquariumTank: View {
   let model: AquariumModel
   let playfulness: PlayfulnessSettings
   var suspended = false
-  @State private var active = NSApp.isActive
 
   private var animate: Bool {
-    active && visible && !suspended && !model.paused && !reduceMotion
+    visible && !suspended && !model.paused && !reduceMotion
       && playfulness.allows(AquariumApplication.animation.id)
   }
   private var remembers: Bool { playfulness.allows(AquariumApplication.buildMemory.id) }
   private var sample: Bool {
-    active && visible && !suspended && model.error == nil
+    visible && !suspended && model.error == nil
       && playfulness.allows(AquariumApplication.activity.id)
   }
   private var status: String {
@@ -275,14 +275,7 @@ struct AquariumTank: View {
         .padding(6).background(theme.paper).padding(8).allowsHitTesting(false)
     }
     .clipped()
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
-    {
-      _ in active = true
-    }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
-    {
-      _ in active = false
-    }
+
     .task(id: sample) {
       guard sample else { return }
       await model.sampler.reset()
