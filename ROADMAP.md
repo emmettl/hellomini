@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) adds **tiny-screen mode**, with 2× interface sizing across themes and bevelled edges preserved in full screen. Physical Wokyis testing is deferred until the device arrives. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
+Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
