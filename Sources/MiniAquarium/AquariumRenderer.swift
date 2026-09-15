@@ -57,10 +57,10 @@ struct AquariumMetalView: NSViewRepresentable {
   var sulking = false
 
   func makeCoordinator() -> Coordinator { Coordinator(model: model) }
-  func makeNSView(context: Context) -> MTKView {
+  func makeNSView(context: Context) -> MiniMetalView {
     let view = MiniMetalView(frame: .zero, device: MTLCreateSystemDefaultDevice())
     view.colorPixelFormat = .bgra8Unorm
-    view.preferredFramesPerSecond = 30
+    view.activeFramesPerSecond = 30
     view.isPaused = true
     view.enableSetNeedsDisplay = true
     view.setAccessibilityElement(true)
@@ -76,7 +76,7 @@ struct AquariumMetalView: NSViewRepresentable {
     return view
   }
 
-  func updateNSView(_ view: MTKView, context: Context) {
+  func updateNSView(_ view: MiniMetalView, context: Context) {
     let coordinator = context.coordinator
     coordinator.ink = ink
     coordinator.paper = paper
@@ -89,13 +89,12 @@ struct AquariumMetalView: NSViewRepresentable {
       "Aquarium with \(growth >= 0.5 ? "ten" : "nine") fish, swaying plants, and bubbles")
     if coordinator.animate != animate { model.simulation.previousTime = nil }
     coordinator.animate = animate
-    view.enableSetNeedsDisplay = !animate
-    view.isPaused = !animate || coordinator.gpu == nil
+    view.wantsAnimation = animate && coordinator.gpu != nil
     if view.isPaused && !suspended { view.draw() }
   }
 
-  static func dismantleNSView(_ view: MTKView, coordinator: Coordinator) {
-    view.isPaused = true
+  static func dismantleNSView(_ view: MiniMetalView, coordinator: Coordinator) {
+    view.wantsAnimation = false
     view.delegate = nil
     coordinator.model.simulation.previousTime = nil
   }
@@ -136,7 +135,7 @@ struct AquariumMetalView: NSViewRepresentable {
         command: command, pass: pass,
         uniforms: AquariumUniforms(
           ink: ink, paper: paper,
-          scene: SIMD4(240 * aspect, 240, model.simulation.time, model.simulation.foodAge),
+          scene: SIMD4(240 * aspect, 240, Float(model.simulation.time), model.simulation.foodAge),
           activity: SIMD4(
             model.simulation.current, model.simulation.bubbles, growth, model.simulation.sulk)))
       command.present(drawable)

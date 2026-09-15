@@ -73,10 +73,10 @@ private struct PuzzleView: View {
     return board
   }()
   @State private var frozen = false
-  @State private var active = NSApp.isActive
+
   @FocusState private var boardFocused: Bool
   private var live: Bool {
-    active && visible && !frozen && !reduceMotion && playfulness.allows(PuzzleApplication.effect.id)
+    visible && !frozen && !reduceMotion && playfulness.allows(PuzzleApplication.effect.id)
   }
   var body: some View {
     VStack(spacing: 12) {
@@ -131,12 +131,7 @@ private struct PuzzleView: View {
     }.padding(14)
       .onAppear { boardFocused = windowActive }
       .onChange(of: windowActive) { _, active in boardFocused = active }
-      .onReceive(
-        NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
-      ) { _ in active = true }
-      .onReceive(
-        NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
-      ) { _ in active = false }
+
       .task(id: live) {
         if picture.image == nil { picture.refresh() }
         guard live else { return }
