@@ -49,7 +49,7 @@ private struct PrintMonitorView: View {
   @State private var clearing: ProjectBuild?
   @State private var retry = PaperJamRetry()
   @State private var error: String?
-  @State private var active = NSApp.isActive
+
   @State private var manualRefreshTask: Task<Void, Never>?
   private var printing: Bool { model.builds.contains { $0.run.state == .running } }
 
@@ -192,12 +192,7 @@ private struct PrintMonitorView: View {
       }.padding(compact ? 10 : 16)
     }
     .onDisappear { manualRefreshTask?.cancel() }
-    .onReceive(
-      NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)
-    ) { _ in active = true }
-    .onReceive(
-      NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification)
-    ) { _ in active = false }
+
     .sheet(item: $clearing) { build in
       ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme).miniSheet(
         width: 520)
@@ -258,12 +253,12 @@ private struct PrintMonitorView: View {
     TimelineView(
       .animation(
         minimumInterval: 1 / 15,
-        paused: !printing || !active || !visible || reduceMotion
+        paused: !printing || !visible || reduceMotion
           || !playfulness.allows(PrintMonitorApplication.effect.id))
     ) { context in
       Canvas { graphics, size in
         let motion =
-          printing && active && visible && !reduceMotion
+          printing && visible && !reduceMotion
             && playfulness.allows(PrintMonitorApplication.effect.id)
           ? context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 2) * 7 : 0
         let paper = CGRect(x: 34, y: 4 + motion, width: 62, height: 36)

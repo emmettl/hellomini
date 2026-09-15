@@ -78,7 +78,6 @@ private struct TeapotView: View {
   let playfulness: PlayfulnessSettings
   @Bindable var model: TeapotModel
   @Environment(\.miniWindowVisible) private var visible
-  @State private var active = NSApp.isActive
 
   private var rotationAllowed: Bool { playfulness.allows(TeapotApplication.rotationEffect.id) }
   private var status: String {
@@ -119,7 +118,7 @@ private struct TeapotView: View {
         } else {
           TeapotMetalView(
             model: model, ink: rgba(theme.ink), paper: rgba(theme.paper),
-            animate: model.spinning && active && visible && !reduceMotion && rotationAllowed,
+            animate: model.spinning && visible && !reduceMotion && rotationAllowed,
             mode: model.mode, yaw: model.yaw, tilt: model.tilt, resetRevision: model.resetRevision
           )
 
@@ -134,10 +133,7 @@ private struct TeapotView: View {
           .font(theme.typography.small)
       }.padding(.horizontal, 12).frame(height: 28)
     }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
-    { _ in active = true }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
-    { _ in active = false }
+
   }
 
   private var spinButton: some View {

@@ -27,7 +27,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - Keep applications in their own SwiftPM modules using `MiniCore` and shared themed controls. External plugins containing compiled code and assets remain a possible distribution model; the exact model is undecided.
 - Express modern graphics through the selected theme's visual language, including the shipped System 7 and early Aqua themes.
 - Put optional spectacle in **Control Panel → Playfulness**, with individual switches and the existing Extra silliness master switch. Keep useful information available when effects are disabled.
-- Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or inactive. Elaborate effects must not compromise solid window interaction.
+- Respect Reduce Motion and window visibility, and stop unnecessary rendering when an application is closed or hidden. Visible ambient animation continues at a reduced frame rate while another app has focus. Elaborate effects must not compromise solid window interaction.
 - Preserve the distinction between real status and decorative storytelling: a printer jam may represent a failed build, but the actual failure details must remain accessible.
 - Treat legibility as a shared display concern across every theme. Enlarge text, controls, icons, and interaction targets together; adapt crowded layouts without shrinking essential information again.
 

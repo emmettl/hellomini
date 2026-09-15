@@ -10,7 +10,7 @@ public struct MiniMetalScene: View {
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.self) private var environment
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @State private var active = NSApp.isActive
+
   @State private var error: String?
   private let scene: Scene
   private let animate: Bool
@@ -25,13 +25,10 @@ public struct MiniMetalScene: View {
       } else {
         MetalSceneView(
           scene: scene.rawValue, ink: rgba(theme.ink), paper: rgba(theme.paper),
-          animate: animate && active && visible && !reduceMotion, error: $error)
+          animate: animate && visible && !reduceMotion, error: $error)
       }
     }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
-    { _ in active = true }
-    .onReceive(NotificationCenter.default.publisher(for: NSApplication.didResignActiveNotification))
-    { _ in active = false }
+
   }
   private func rgba(_ color: Color) -> SIMD4<Float> {
     let c = color.resolve(in: environment)
@@ -83,10 +80,10 @@ private struct MetalSceneView: NSViewRepresentable {
   let animate: Bool
   @Binding var error: String?
   func makeCoordinator() -> Coordinator { Coordinator() }
-  func makeNSView(context: Context) -> MTKView {
+  func makeNSView(context: Context) -> MiniMetalView {
     let view = BoundedMetalView(frame: .zero, device: MTLCreateSystemDefaultDevice())
     view.autoResizeDrawable = false
-    view.preferredFramesPerSecond = 30
+    view.activeFramesPerSecond = 30
     view.colorPixelFormat = .bgra8Unorm
     view.isPaused = true
     do {
@@ -105,19 +102,18 @@ private struct MetalSceneView: NSViewRepresentable {
         : scene == 1 ? "Decorative rotating globe" : "Flying winged toasters and slices of toast")
     return view
   }
-  func updateNSView(_ view: MTKView, context: Context) {
+  func updateNSView(_ view: MiniMetalView, context: Context) {
     let c = context.coordinator
     c.scene = scene
     c.ink = ink
     c.paper = paper
     if c.animate != animate { c.previous = nil }
     c.animate = animate
-    view.enableSetNeedsDisplay = !animate
-    view.isPaused = !animate || c.gpu == nil
+    view.wantsAnimation = animate && c.gpu != nil
     if view.isPaused { view.draw() }
   }
-  static func dismantleNSView(_ view: MTKView, coordinator: Coordinator) {
-    view.isPaused = true
+  static func dismantleNSView(_ view: MiniMetalView, coordinator: Coordinator) {
+    view.wantsAnimation = false
     view.delegate = nil
   }
   @MainActor final class Coordinator: NSObject, MTKViewDelegate {
@@ -127,7 +123,7 @@ private struct MetalSceneView: NSViewRepresentable {
     var paper = SIMD4<Float>(1, 1, 1, 1)
     var animate = false
     var previous: TimeInterval?
-    var time: Float = 0
+    var time: Double = 0
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { previous = nil }
     func draw(in view: MTKView) {
       guard let gpu, view.window?.occlusionState.contains(.visible) == true,
@@ -138,14 +134,15 @@ private struct MetalSceneView: NSViewRepresentable {
         return
       }
       let now = CACurrentMediaTime()
-      if animate, let previous { time += Float(min(0.1, max(0, now - previous))) }
+      if animate, let previous { time = AnimationClock.advance(time, by: min(0.1, now - previous)) }
       previous = animate ? now : nil
       gpu.encode(
         command, pass: pass,
         uniforms: DeskSceneUniforms(
           ink: ink, paper: paper,
           options: SIMD4(
-            Float(view.drawableSize.width / max(1, view.drawableSize.height)), time, scene, 0)))
+            Float(view.drawableSize.width / max(1, view.drawableSize.height)), Float(time), scene, 0
+          )))
       command.present(drawable)
       command.commit()
     }

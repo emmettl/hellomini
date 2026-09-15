@@ -134,11 +134,11 @@ struct TeapotMetalView: NSViewRepresentable {
 
   func makeCoordinator() -> Coordinator { Coordinator(model: model) }
 
-  func makeNSView(context: Context) -> MTKView {
-    let view = MTKView(frame: .zero, device: MTLCreateSystemDefaultDevice())
+  func makeNSView(context: Context) -> MiniMetalView {
+    let view = MiniMetalView(frame: .zero, device: MTLCreateSystemDefaultDevice())
     view.colorPixelFormat = .bgra8Unorm
     view.depthStencilPixelFormat = .depth32Float
-    view.preferredFramesPerSecond = 60
+    view.activeFramesPerSecond = 60
     view.isPaused = true
     view.enableSetNeedsDisplay = true
     view.setAccessibilityElement(true)
@@ -158,7 +158,7 @@ struct TeapotMetalView: NSViewRepresentable {
     return view
   }
 
-  func updateNSView(_ view: MTKView, context: Context) {
+  func updateNSView(_ view: MiniMetalView, context: Context) {
     let coordinator = context.coordinator
     coordinator.mode = mode
     coordinator.yaw = yaw
@@ -169,13 +169,12 @@ struct TeapotMetalView: NSViewRepresentable {
     coordinator.animate = animate
     view.clearColor = MTLClearColor(
       red: Double(paper.x), green: Double(paper.y), blue: Double(paper.z), alpha: 1)
-    view.enableSetNeedsDisplay = !animate
-    view.isPaused = !animate || coordinator.gpu == nil
+    view.wantsAnimation = animate && coordinator.gpu != nil
     if view.isPaused { view.draw() }
   }
 
-  static func dismantleNSView(_ view: MTKView, coordinator: Coordinator) {
-    view.isPaused = true
+  static func dismantleNSView(_ view: MiniMetalView, coordinator: Coordinator) {
+    view.wantsAnimation = false
     view.delegate = nil
     coordinator.previousTime = nil
   }

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Ambient animation:** Aquarium, Teapot, the World Clock globe, Desk Calculator's Mandelbrot, Print Monitor's paper, and live Puzzle tiles keep moving while they are on screen, even when another app or another Mac through Universal Control has focus. Metal views draw at half their frame rate while Hello Mini is in the background and pause only when their window is hidden, covered, or on a sleeping display.
+- Long-running tanks and scenes no longer freeze after about twelve days. Their animation clocks wrap once a day.
+
 ## [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) — 2026-09-15
 
 - Development moves to Xcode 27 and Swift 6.4. Public CI uses GitHub's `xcode-27` runner image, and the toolchain check accepts any Xcode 27 release. The Mac Mini runner needs Xcode 27 at `/Applications/Xcode.app`.

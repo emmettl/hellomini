@@ -39,3 +39,17 @@ import Testing
   simulation.advance(now: 3, animate: false, feedRevision: 0, sulking: true)
   #expect(simulation.sulk == 1)
 }
+
+@Test func tanksKeepSwimmingPastTwelveDays() {
+  var simulation = AquariumSimulation()
+  // Twelve and a bit days of swimming, which froze a Float clock at 30 fps.
+  simulation.time = 1_048_576
+  simulation.advance(now: 1, animate: true, feedRevision: 0)
+  simulation.advance(now: 1 + 1.0 / 30, animate: true, feedRevision: 0)
+  #expect(simulation.time < 86_400)
+  for frame in 2..<5 {
+    let before = Float(simulation.time)
+    simulation.advance(now: 1 + Double(frame) / 30, animate: true, feedRevision: 0)
+    #expect(Float(simulation.time) > before)
+  }
+}
