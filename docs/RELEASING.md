@@ -4,7 +4,7 @@ Hello Mini uses the MIT license. The first public release is [0.1.0 (build 1)](h
 
 For **0.3.0**, physical Wokyis validation is explicitly deferred until the device arrives. Release notes must preserve that limitation; development-Mac testing and automated checks do not establish legibility on the device.
 
-For **0.4.0**, the tiny-screen fixes came from testing on the Wokyis, but the fixed build still needs checking on the device before release.
+**0.4.0** was published on 15 September 2026. Its tiny-screen fixes came from testing on the Wokyis, but the fixed build has not yet been re-checked on the device; that remains follow-up work.
 
 ## One-time signing setup
 
