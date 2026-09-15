@@ -17,6 +17,7 @@ struct DesktopSession: Codable, Equatable {
   // Optional fields keep existing version-one sessions readable.
   var minimisedIDs: [String]?
   var zoomedIDs: [String]?
+  var shadedIDs: [String]?
 }
 
 struct DesktopSessionStore {

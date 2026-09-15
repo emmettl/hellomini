@@ -12,13 +12,13 @@ The desktop opens at 1280 × 720. Use View → Enter / Exit Full Screen (or Cont
 
 The Window menu reopens closed windows and **Reset Window Layout** restores their default positions and sizes. 
 
-Aqua adds working red **Close**, yellow **Minimise**, and green **Zoom** controls, with hover symbols and inactive grey states. Zoom fills the available desktop and toggles back to the previous geometry; dragging or resizing a zoomed window establishes a new normal size. Minimise keeps the application and its view state alive, hides the window, and gives focus to the next visible window. Restore it from the Aqua dock, its desktop icon in other themes, or its labelled entry in Window. **Window → Minimise** (Command-M) and **Zoom / Restore Size** are available in every theme.
+Aqua adds working red **Close**, yellow **Minimise**, and green **Zoom** controls, with hover symbols and inactive grey states. Zoom fills the available desktop and toggles back to the previous geometry; dragging or resizing a zoomed window establishes a new normal size. Minimise keeps the application and its view state alive, hides the window, and gives focus to the next visible window. In Aqua, **Control Panel → Playfulness → Genie minimise** pours the window into the dock and back out again; turning the switch off or enabling Reduce Motion makes it instant. Restore it from the Aqua dock, its desktop icon in other themes, or its labelled entry in Window. **Window → Minimise** (Command-M) and **Zoom / Restore Size** are available in every theme.
 
 ### Tiny-screen mode
 
-Enable **Control Panel → Appearance → Tiny-screen mode — 2×**, or **View → Tiny-screen Mode**, to make text, icons, controls, and window chrome twice as large. The setting works across all five themes, applies immediately, and survives relaunch. It is off by default. The native macOS View menu also offers the toggle.
+Enable **Control Panel → Appearance → Tiny-screen mode — 2×**, or **View → Tiny-screen Mode**, to make text, icons, controls, and window chrome twice as large. The setting works across all six themes, applies immediately, and survives relaunch. It is off by default. The native macOS View menu also offers the toggle.
 
-The available desktop stays filled, with half as much logical width and height: a 1280 × 720 content area becomes roughly 640 × 360 before menus and the Aqua dock. Finder offers a **Places** toggle and puts the path on a separate line in narrow windows. Print Monitor collapses filters and stacks build rows; scroll to reach more jobs and details. Control Panel puts display settings first. Other oversized app content remains reachable through scrolling.
+The available desktop stays filled, with half as much logical width and height: a 1280 × 720 content area becomes roughly 640 × 360 before menus and the Aqua dock. Finder offers a **Places** toggle and puts the path on a separate line in narrow windows. Print Monitor collapses filters and stacks build rows; scroll to reach more jobs and details. Control Panel puts display settings first, on one line when they fit, and shows smaller theme cards with an always-visible scrollbar. Every bundled app fits the tiny desktop: crowded toolbars shorten their labels or wrap onto a second row, secondary notes move into help, and long lists scroll inside the window. Activity Monitor switches to a compact summary, and very short windows hide its CPU graph so the process list stays visible. The Aqua dock uses a slimmer shelf.
 
 Custom sheets, startup, and screensavers share the enlargement. Native macOS menus, alerts, and file panels keep their system sizing. Bevelled screen edges and rounded corners remain visible in full screen. Tiny-screen and Purist modes are mutually exclusive: enabling one disables the other. Turning the active mode off returns to standard sizing. Display-mode changes retain running app state and do not overwrite saved window placements.
 
@@ -26,7 +26,7 @@ Physical Wokyis testing is deferred until the device arrives. The 2× setting ha
 
 ### Purist mode
 
-**Control Panel → Appearance → Purist mode — 512 × 384** runs the desktop at a fixed 512 × 384 logical resolution. It works with every theme and is also available in **View → Purist Mode**. The native app window shrinks to fit; turning the mode off restores its previous larger frame, including after relaunch. Full screen centres the same small desktop against black. Startup uses a compact layout, and screensavers use the same fixed canvas. Menus use compact headings and scroll when long; keyboard selection keeps the selected row visible. App windows retain their saved geometry and expose scrolling when their minimum content is larger than the available window. The Aqua dock still reserves its space and offers overflow navigation. Theme changes and display-mode changes keep application state; deliberate dragging/resizing still saves new geometry. The setting is off by default and survives relaunch.
+**Control Panel → Appearance → Purist mode — 512 × 384** runs the desktop at a fixed 512 × 384 logical resolution. It works with every theme and is also available in **View → Purist Mode**. The native app window shrinks to fit; turning the mode off restores its previous larger frame, including after relaunch. Full screen centres the same small desktop against black. Startup uses a compact layout, and screensavers use the same fixed canvas. Menus use compact headings and scroll when long; keyboard selection keeps the selected row visible. App windows retain their saved geometry and expose scrolling when their minimum content is larger than the available window. The Aqua dock uses the same slimmer shelf as tiny-screen mode and offers overflow navigation. Theme changes and display-mode changes keep application state; deliberate dragging/resizing still saves new geometry. The setting is off by default and survives relaunch.
 
 ### Saved layout and startup
 
@@ -40,7 +40,9 @@ The desktop menu bar uses custom themed dropdowns with checkmarks, disabled comm
 
 ## Appearance and Aqua dock
 
-Choose Classic, Paper, Midnight, System 7, or Aqua in **Control Panel → Appearance**. Themes change Hello Mini, not the system-wide macOS appearance, and keep application state intact.
+Choose Classic, Paper, Midnight, System 7, Platinum, or Aqua in **Control Panel → Appearance**. Themes change Hello Mini, not the system-wide macOS appearance, and keep application state intact.
+
+**Platinum** is a Mac OS 8 homage: bevelled grey windows and buttons, ridged title bars, heavy condensed type, shaded colour icons, and a blue woven desktop. Its title bars carry close, zoom, and collapse boxes. **Window shade** rolls a window up to its title bar: click the collapse box, double-click the title bar, or choose **Window → Collapse Window**. The application keeps running, and its contents return when you expand the window. Shaded windows pause their graphics like covered ones. Shade state survives relaunch and applies only in Platinum.
 
 Classic uses a dotted monochrome desktop; Paper is plain white; Midnight inverts the palette. System 7 adds lavender, coloured icons, and striped grey title bars.
 
@@ -74,9 +76,11 @@ The Playfulness pane also lists the future ideas explicitly as planned: fluid **
 
 ## Screensavers
 
-**Control Panel → Screensavers** selects Aquarium or Flying Toasters, previews the selected saver, and sets an idle delay of 1, 2, 5, 10, 15, or 30 minutes. The default is **Never**. Selection and delay survive relaunches. Aquarium's own **Screensaver preview** button previews its fish without changing the saved selection.
+**Control Panel → Screensavers** selects Aquarium, Flying Toasters, or Scrapbook Slideshow, previews the selected saver, and sets an idle delay of 1, 2, 5, 10, 15, or 30 minutes. The default is **Never**. Selection and delay survive relaunches. Aquarium's own **Screensaver preview** button previews its fish without changing the saved selection.
 
 **Flying Toasters** supplies original procedural pixel artwork: winged appliances and slices of toast travelling diagonally across a field of theme ink. Metal renders the parade at up to 30 fps with a bounded drawable. **Control Panel → Playfulness → Flying toaster animation** freezes the flight; Aquarium retains its own animation and activity switches. Turning off **Extra silliness** disables both previews and idle activation while preserving preferences. Reduce Motion disables automatic activation and keeps manual previews still.
+
+**Scrapbook Slideshow** shows the pictures on your Scrapbook shelf, newest first, framed with their title and date. It moves to the next picture every seven seconds with a cross-fade, or without one under Reduce Motion. Archived scraps are never shown, and an empty scrapbook shows a note instead.
 
 Automatic activation requires Hello Mini to be active, with its desktop window visible and focused, no native sheet or modal dialog, and no held mouse button or live window resize. Input resets the timer. Time spent inactive, asleep, or across a delayed timer callback does not count toward activation. The saver covers the desktop window's current display; it dismisses on mouse movement, clicking, scrolling, or a key press, and when focus leaves it. The waking event is consumed so it does not also invoke a desktop command. macOS sleep and lock behaviour are unchanged; this is an app presentation, not an installed `.saver` or lock screen.
 
@@ -98,7 +102,7 @@ Open **Scrapbook** from its desktop icon or the application menus. **New…** cr
 
 **Paste as New** (Shift-Command-V) captures the current text, web address, image, or first copied file. **Import…** adds a UTF-8 text file or image through the normal file picker. Clipboard content is read only on that explicit action; there is no background clipboard history, link fetching, or cloud sync. **Copy** (Shift-Command-C) returns the selected text or image to the clipboard. Normal copy/paste continues to work inside the editor.
 
-Search matches every query word across titles, text, image captions, and scrap kinds, ignoring case and accents. It does not perform OCR on image pixels. **Archive** removes a scrap from the shelf; **Show Archive → Restore** brings it back. Archiving preserves both text and image files. There is no permanent-delete action in this version.
+Search matches every query word across titles, text, image captions, text found in pictures, and scrap kinds, ignoring case and accents. Hello Mini reads text in image scraps with macOS Vision, on this Mac, one picture at a time after it is added; pictures saved before this feature are read when Scrapbook first opens. The shelf shows **reading text…** while it works, and **Text in picture** reveals what was found. Pictures without readable text are not read again. **Archive** removes a scrap from the shelf; **Show Archive → Restore** brings it back. Archiving preserves both text and image files. There is no permanent-delete action in this version.
 
 The library lives in `~/Library/Application Support/HelloMini/Scrapbook/`: a versioned `scrapbook.json` index, a `scrapbook.previous.json` copy of the previous complete index, and UUID-named PNG images. Image imports keep the first frame, apply its orientation, and limit the longest edge to 4096 pixels. These are owned snapshots, so moving or deleting an original file does not break the scrap. Text imports are limited to 1 MB, image inputs to 25 MB, and the text index to 64 MB. Back up the whole directory to retain the images as well as the index.
 
@@ -151,6 +155,10 @@ Public projects can work without a token. Each saved project's **Token…** acti
 ## Build-time lunch
 
 **Control Panel → Playfulness → Feed fish after successful builds** is enabled by default. When Print Monitor receives a successful refresh, newly successful builds cause one food drop per batch and an Aquarium note such as “A build passed. Lunch is served.” Ordinary manual feeding remains available. Aquarium need not be open: it remembers the latest meal until its renderer next runs. Paused/reduced-motion tanks retain the food without forcing motion.
+
+**Control Panel → Playfulness → Fish remember builds** is on by default. Consecutive successful builds grow the fish, and a fifth green build in a row brings a tenth resident. Ten in a row reach full size. A failed build resets the streak and sends the fish sulking along the gravel until the next success. The streak and mood survive relaunch. Turning the switch off pauses the memory and draws the ordinary nine fish.
+
+**Control Panel → Playfulness → Talking Moose** is off by default. When enabled, a pixel moose peeks up from the bottom-left corner to comment out loud on newly passed or failed builds, using macOS speech at the normal system volume. Each remark also appears in a balloon, at most one every 20 seconds. Click the moose to send it away.
 
 The first successful refresh for each project after launch or re-adding it establishes a baseline and does not feed from old history. Later refreshes detect transitions to success and newer successful run IDs, including builds that finish between polls. Repeated refreshes and repeated successes for the same retained run ID do not feed again. Each saved project retains its own tracker of the latest 200 observed IDs during the app session. Switching the visible queue preserves all trackers; removing a project discards its tracker, and relaunching establishes fresh baselines. Successful responses in one refresh cycle produce one combined food drop. Failed requests do not change this history. The host polls while Hello Mini is running, including with Print Monitor closed or the native app inactive. Pause in Print Monitor suspends automatic polling. Relaunch establishes fresh completion baselines.
 

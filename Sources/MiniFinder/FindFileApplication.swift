@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "Find File"
   public let icon = MiniApplicationIcon.folder
   public let defaultSize = CGSize(width: 660, height: 450)
-  public let minimumSize = CGSize(width: 540, height: 360)
+  public let minimumSize = CGSize(width: 420, height: 230)
   private let model = FindFileModel()
   public init() {}
   public func content() -> AnyView { AnyView(FindFileView(model: model)) }

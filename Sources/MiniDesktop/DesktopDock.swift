@@ -6,24 +6,33 @@ import SwiftUI
 /// Window geometry uses the same reserved area for zooming, dragging, resizing and visibility.
 struct DesktopDockLayout {
   static let reservedHeight: CGFloat = 88
+  /// Short desktops, such as tiny-screen and Purist modes, use a slimmer shelf.
+  static let compactReservedHeight: CGFloat = 56
+  static func isCompact(desktopHeight: CGFloat) -> Bool { desktopHeight < 480 }
+  static func reserved(compact: Bool) -> CGFloat {
+    compact ? compactReservedHeight : reservedHeight
+  }
   let iconSize: CGFloat
   let width: CGFloat
   let scrollWidth: CGFloat
   let overflows: Bool
 
-  init(desktopWidth: CGFloat, entryCount: Int, hasMinimised: Bool) {
+  init(desktopWidth: CGFloat, entryCount: Int, hasMinimised: Bool, compact: Bool = false) {
     let available = max(1, desktopWidth - 32)
     let count = CGFloat(max(1, entryCount))
     let decoration: CGFloat = 16 + max(0, count - 1) * 4 + (hasMinimised ? 16 : 0)
-    iconSize = min(48, max(28, floor((available - decoration) / count) - 12))
-    let content = count * (iconSize + 12) + decoration
+    let gutter: CGFloat = compact ? 8 : 12
+    iconSize = min(
+      compact ? 30 : 48, max(compact ? 22 : 28, floor((available - decoration) / count) - gutter))
+    let content = count * (iconSize + gutter) + decoration
     overflows = content > available
     width = min(available, content)
     scrollWidth = max(1, width - (overflows ? 52 : 0))
   }
 
   static func windowArea(desktop: CGSize, hasDock: Bool) -> CGSize {
-    CGSize(width: desktop.width, height: max(1, desktop.height - (hasDock ? reservedHeight : 0)))
+    let reserved = hasDock ? reserved(compact: isCompact(desktopHeight: desktop.height)) : 0
+    return CGSize(width: desktop.width, height: max(1, desktop.height - reserved))
   }
 }
 
@@ -37,6 +46,7 @@ struct DesktopDock: View {
   let style: ThemeFrameStyle
   let focusRequest: Int
   let playfulness: PlayfulnessSettings?
+  var compact = false
   @State private var hoveredID: String?
   @FocusState private var focusedID: String?
 
@@ -68,7 +78,7 @@ struct DesktopDock: View {
     let entries = entries
     let layout = DesktopDockLayout(
       desktopWidth: desktopWidth, entryCount: entries.count,
-      hasMinimised: !model.minimisedIDs.isEmpty)
+      hasMinimised: !model.minimisedIDs.isEmpty, compact: compact)
     ScrollViewReader { proxy in
       HStack(spacing: 0) {
         if layout.overflows {
@@ -83,18 +93,18 @@ struct DesktopDock: View {
           HStack(spacing: 4) {
             ForEach(entries) { entry in
               if entry.minimised && entry.id == entries.first(where: \.minimised)?.id {
-                Rectangle().fill(theme.ink.opacity(0.25)).frame(width: 1, height: 42)
+                Rectangle().fill(theme.ink.opacity(0.25)).frame(width: 1, height: compact ? 28 : 42)
                   .padding(.horizontal, 5.5).accessibilityHidden(true)
               }
               dockButton(entry, iconSize: layout.iconSize)
                 .id(entry.id)
             }
-          }.padding(.horizontal, 8).frame(height: 72)
+          }.padding(.horizontal, 8).frame(height: compact ? 46 : 72)
         }
         .scrollIndicators(.hidden)
         .scrollClipDisabled()
         .mask { Rectangle().padding(.vertical, -32) }
-        .frame(width: layout.scrollWidth, height: 72)
+        .frame(width: layout.scrollWidth, height: compact ? 46 : 72)
         if layout.overflows {
           scrollButton(
             "Show end of dock", symbol: "chevron.right.2"
@@ -111,7 +121,8 @@ struct DesktopDock: View {
             .padding(.horizontal, 10).padding(.vertical, 5)
             .background(.regularMaterial, in: Capsule())
             .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: 1))
-            .fixedSize().offset(y: -32).allowsHitTesting(false).accessibilityHidden(true)
+            .fixedSize().offset(y: compact ? -26 : -32).allowsHitTesting(false).accessibilityHidden(
+              true)
         }
       }
       .onChange(of: focusRequest) { _, _ in focusedID = entries.first?.id }
@@ -131,7 +142,7 @@ struct DesktopDock: View {
       }
       .onExitCommand { focusedID = nil }
     }
-    .padding(.bottom, 8)
+    .padding(.bottom, compact ? 4 : 8)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Dock")
     .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification))
@@ -146,7 +157,7 @@ struct DesktopDock: View {
     return Button {
       open(entry)
     } label: {
-      VStack(spacing: 3) {
+      VStack(spacing: compact ? 1 : 3) {
         Group {
           if entry.minimised {
             VStack(spacing: 0) {
@@ -201,7 +212,7 @@ struct DesktopDock: View {
         }.fill(theme.ink).frame(width: 8, height: 5)
           .opacity(running && !entry.minimised ? 1 : 0)
       }
-      .frame(width: iconSize + 12, height: 64)
+      .frame(width: iconSize + (compact ? 8 : 12), height: compact ? 42 : 64)
       .background(
         highlighted ? .white.opacity(0.22) : .clear, in: RoundedRectangle(cornerRadius: 8)
       )
@@ -240,7 +251,7 @@ struct DesktopDock: View {
   {
     Button(action: action) {
       Image(systemName: symbol).font(.system(size: 11, weight: .bold))
-        .frame(width: 26, height: 64).contentShape(Rectangle())
+        .frame(width: 26, height: compact ? 40 : 64).contentShape(Rectangle())
     }.buttonStyle(.plain).accessibilityLabel(label).miniHelp(label)
   }
 

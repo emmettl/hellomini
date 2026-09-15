@@ -64,3 +64,19 @@ import Testing
     }
   }
 }
+
+@Test func shortDesktopsUseTheCompactDockAndLargeOnesKeepTheFullShelf() {
+  func height(_ desktop: CGSize) -> CGFloat {
+    DesktopDockLayout.windowArea(desktop: desktop, hasDock: true).height
+  }
+  #expect(height(CGSize(width: 640, height: 360)) == 304)
+  #expect(height(CGSize(width: 512, height: 384)) == 328)
+  #expect(height(CGSize(width: 1280, height: 720)) == 632)
+  #expect(height(CGSize(width: 960, height: 600)) == 512)
+  for count in [15, 19, 30] {
+    let layout = DesktopDockLayout(
+      desktopWidth: 640, entryCount: count, hasMinimised: count > 19, compact: true)
+    #expect(layout.iconSize >= 22 && layout.iconSize <= 30)
+    #expect(layout.width <= 640 - 32 && layout.scrollWidth > 0)
+  }
+}

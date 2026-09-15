@@ -8,6 +8,7 @@ import SwiftUI
   public let name = "Clipboard"
   public let icon = MiniApplicationIcon.scrapbook
   public let defaultSize = CGSize(width: 480, height: 340)
+  public let minimumSize = CGSize(width: 320, height: 200)
   public init() {}
   public func content() -> AnyView { AnyView(ClipboardView()) }
 }

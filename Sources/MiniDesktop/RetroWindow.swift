@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RetroWindow<Content: View>: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   let title: String
   let minimumSize: CGSize
   let desktopSize: CGSize
@@ -13,6 +14,8 @@ struct RetroWindow<Content: View>: View {
   let minimise: @MainActor () -> Void
   let zoom: @MainActor () -> Void
   let zoomed: Bool
+  var shade: (@MainActor () -> Void)? = nil
+  var shaded = false
   @ViewBuilder let content: () -> Content
   @GestureState private var drag: WindowDrag?
   @GestureState private var resize: WindowResize?
@@ -36,9 +39,15 @@ struct RetroWindow<Content: View>: View {
   var body: some View {
     VStack(spacing: 0) {
       ThemeWindowTitleBar(
-        title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed
+        title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed,
+        shade: shade, shaded: shaded
       )
       .contentShape(Rectangle())
+      // Window shade: a double-clicked title bar rolls the window up, or back down.
+      .simultaneousGesture(TapGesture(count: 2).onEnded { shade?() })
+      .accessibilityActions {
+        if let shade { Button(shaded ? "Expand window" : "Collapse window", action: shade) }
+      }
       .gesture(
         DragGesture(minimumDistance: 1, coordinateSpace: .named(DesktopCoordinateSpace.windows))
           .updating($drag) { value, state, transaction in
@@ -80,8 +89,12 @@ struct RetroWindow<Content: View>: View {
       .frame(height: 16)
       .background { Rectangle().fill(theme.paper) }
     }
-    .frame(width: size.width, height: size.height)
+    .frame(
+      width: size.width,
+      height: shaded ? theme.titleBarHeight + theme.titleBarDivider : size.height, alignment: .top
+    )
     .themeFrame(active ? theme.window : theme.inactiveWindow)
+    .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: shaded)
     .offset(x: position.x, y: position.y)
     .simultaneousGesture(TapGesture().onEnded { activate() })
   }

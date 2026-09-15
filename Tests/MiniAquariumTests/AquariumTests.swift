@@ -71,7 +71,10 @@ import Testing
   descriptor.usage = .renderTarget
   descriptor.storageMode = .shared
   let target = try #require(device.makeTexture(descriptor: descriptor))
-  func render(time: Float = 5, food: Float = 20, inverse: Bool = false, activity: Float = 0) throws
+  func render(
+    time: Float = 5, food: Float = 20, inverse: Bool = false, activity: Float = 0,
+    growth: Float = 0, sulk: Float = 0
+  ) throws
     -> [UInt8]
   {
     let command = try #require(gpu.queue.makeCommandBuffer())
@@ -86,7 +89,7 @@ import Testing
       uniforms: AquariumUniforms(
         ink: SIMD4(ink, ink, ink, 1), paper: SIMD4(paper, paper, paper, 1),
         scene: SIMD4(Float(width) / Float(height) * 240, 240, time, food),
-        activity: SIMD4(activity, activity, 0, 0)))
+        activity: SIMD4(activity, activity, growth, sulk)))
     command.commit()
     command.waitUntilCompleted()
     #expect(command.status == .completed)
@@ -111,6 +114,8 @@ import Testing
   #expect(zip(frame, later).filter { $0 != $1 }.count > 10000)
   #expect(try render(food: 4) != frame)
   #expect(try render(activity: 1) != frame)
+  #expect(try render(growth: 1) != frame)
+  #expect(try render(sulk: 1) != frame)
   if let path = ProcessInfo.processInfo.environment["MINI_AQUARIUM_PROOF_PATH"] {
     let bitmap = try #require(
       NSBitmapImageRep(

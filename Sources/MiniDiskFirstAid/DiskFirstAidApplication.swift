@@ -8,7 +8,7 @@ import SwiftUI
   public let name = "Disk First Aid"
   public let icon = MiniApplicationIcon.disk
   public let defaultSize = CGSize(width: 690, height: 460)
-  public let minimumSize = CGSize(width: 580, height: 370)
+  public let minimumSize = CGSize(width: 420, height: 240)
   public init() {}
   public func content() -> AnyView { AnyView(DiskView()) }
 }
@@ -18,15 +18,23 @@ private struct DiskView: View {
   @State private var volumes: [VolumeReport] = []
   @State private var busy = false
   @State private var error: String?
+  @State private var height: CGFloat = 460
+  private var roomy: Bool { height >= 330 }
+  private static let guidance =
+    "Read-only inspection. SMART availability varies; APFS volumes may share free space. No repairs are performed."
   private let reader = StorageReader()
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: roomy ? 12 : 8) {
       HStack {
         PixelIcon(symbol: .disk)
-        Text("The doctor will see your disks now.").font(theme.typography.title)
-        Spacer()
+        ViewThatFits(in: .horizontal) {
+          Text("The doctor will see your disks now.")
+          Text("The doctor is in.")
+        }.font(theme.typography.title)
+        Spacer(minLength: 4)
         Button("Refresh") { Task { await refresh() } }.buttonStyle(RetroButtonStyle()).disabled(
-          busy)
+          busy
+        ).miniHelp(Self.guidance)
       }
       ScrollView {
         VStack(alignment: .leading, spacing: 18) {
@@ -61,13 +69,15 @@ private struct DiskView: View {
         }
       }
       if let error { Text(error).font(theme.typography.small) }
-      Text(
-        busy
-          ? "Reading the chart…"
-          : "Read-only inspection. SMART availability varies; APFS volumes may share free space. No repairs are performed."
-      )
-      .font(theme.typography.small)
-    }.padding(16).task { await refresh() }
+      if roomy || busy {
+        Text(busy ? "Reading the chart…" : Self.guidance).font(theme.typography.small)
+      }
+    }.padding(roomy ? 16 : 10).task { await refresh() }
+      .onGeometryChange(for: CGFloat.self) {
+        $0.size.height
+      } action: {
+        height = $0
+      }
   }
   private func bytes(_ n: Int64) -> String {
     ByteCountFormatter.string(fromByteCount: n, countStyle: .file)

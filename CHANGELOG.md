@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Development moves to Xcode 27 and Swift 6.4. Public CI uses GitHub's `xcode-27` runner image, and the toolchain check accepts any Xcode 27 release. The Mac Mini runner needs Xcode 27 at `/Applications/Xcode.app`.
+- App bundling reads resource bundles from Swift Build, SwiftPM 6.4's default build engine, as well as the older native layout.
+- **Tiny-screen fixes from Wokyis testing.** Control Panel theme choices now respond where they are drawn at 2×. The theme strip is pure SwiftUI, with a themed, always-visible scrollbar and smaller cards in tiny-screen mode.
+- Every bundled app now fits tiny-screen and Purist desktops in every theme. Crowded toolbars shorten or wrap, secondary notes move into help, and long content scrolls inside the window instead of hiding toolbars. Activity Monitor switches to a compact summary and keeps its process list visible.
+- The Aqua dock uses a slimmer shelf on desktops shorter than 480 points, which covers tiny-screen and Purist modes.
+- **Platinum**: a Mac OS 8 homage theme with bevelled chrome, ridged title bars, heavy condensed type, and window shade. Collapse a window from its title bar box, a double-click, or the Window menu.
+- **Genie minimise** pours Aqua windows into the dock and back out, with a Playfulness switch and Reduce Motion support.
+- **Scrapbook** reads text in pictures on this Mac with Vision and includes it in search. **Scrapbook Slideshow** joins the screensavers.
+- **Fish remember builds**: green streaks grow the fish and bring a tenth; a failure sends them sulking to the gravel.
+- **Talking Moose**, off by default, comments out loud on newly passed and failed builds.
+- The app still targets macOS 26; nothing in this change requires macOS 27 at runtime.
+
 ## [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) — 2026-09-13
 
 - **Tiny-screen mode**: a saved 2× presentation setting across themes, available in Control Panel and both View menus. Enlarges the desktop, startup, screensavers, and custom sheet content; mutually exclusive with Purist mode.

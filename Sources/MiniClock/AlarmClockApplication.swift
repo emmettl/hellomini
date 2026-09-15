@@ -56,6 +56,7 @@ import SwiftUI
   public let name = "Alarm Clock"
   public let icon = MiniApplicationIcon.clock
   public let defaultSize = CGSize(width: 380, height: 330)
+  public let minimumSize = CGSize(width: 320, height: 220)
   private let model: AlarmModel
   public init(onAlarm: @escaping () -> Void = {}) { model = AlarmModel(onAlarm: onAlarm) }
   public func tick() { model.tick() }
@@ -75,33 +76,41 @@ private struct AlarmClockView: View {
   @State private var minutes = 10
   var body: some View {
     TimelineView(.periodic(from: .now, by: 1)) { context in
-      VStack(spacing: 14) {
-        Text(model.ringing ? model.label + " finished!" : model.label).font(theme.typography.title)
-        Text(
-          model.ringing
-            ? "Time’s up." : model.deadline == nil ? "Ready." : model.remaining(now: context.date)
-        )
-        .font(theme.typography.display(32)).monospacedDigit()
-        HStack {
-          TextField("Minutes", value: $minutes, format: .number).frame(width: 65)
-            .accessibilityLabel("Timer minutes, 1 to 1440")
-          Text("minutes")
-          Button("Start") { model.start(minutes: minutes, label: "Timer") }
-            .disabled(!(1...1440).contains(minutes))
-        }
-        HStack {
-          Button("Pomodoro · 25m") { model.start(minutes: 25, label: "Focus session") }
-          Button("Break · 5m") { model.start(minutes: 5, label: "Break") }
-        }
-        HStack {
-          Button("Cancel") { model.cancel() }.disabled(model.deadline == nil && !model.ringing)
-          if model.ringing { Button("Dismiss alarm") { model.dismiss() } }
-        }
-        Text(
-          "Timers continue with this window closed. Sleep counts toward the timer; overdue alarms fire on wake or next launch. Start each focus session or break when ready."
-        )
-        .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
-      }.buttonStyle(RetroButtonStyle()).padding(16)
+      // Short windows, including tiny-screen mode, scroll rather than clip the controls.
+      ViewThatFits(in: .vertical) {
+        panel(now: context.date)
+        ScrollView { panel(now: context.date) }
+      }
     }
+  }
+
+  private func panel(now: Date) -> some View {
+    VStack(spacing: 14) {
+      Text(model.ringing ? model.label + " finished!" : model.label).font(theme.typography.title)
+      Text(
+        model.ringing
+          ? "Time’s up." : model.deadline == nil ? "Ready." : model.remaining(now: now)
+      )
+      .font(theme.typography.display(32)).monospacedDigit()
+      HStack {
+        TextField("Minutes", value: $minutes, format: .number).frame(width: 65)
+          .accessibilityLabel("Timer minutes, 1 to 1440")
+        Text("minutes")
+        Button("Start") { model.start(minutes: minutes, label: "Timer") }
+          .disabled(!(1...1440).contains(minutes))
+      }
+      HStack {
+        Button("Pomodoro · 25m") { model.start(minutes: 25, label: "Focus session") }
+        Button("Break · 5m") { model.start(minutes: 5, label: "Break") }
+      }
+      HStack {
+        Button("Cancel") { model.cancel() }.disabled(model.deadline == nil && !model.ringing)
+        if model.ringing { Button("Dismiss alarm") { model.dismiss() } }
+      }
+      Text(
+        "Timers continue with this window closed. Sleep counts toward the timer; overdue alarms fire on wake or next launch. Start each focus session or break when ready."
+      )
+      .font(theme.typography.small).fixedSize(horizontal: false, vertical: true)
+    }.buttonStyle(RetroButtonStyle()).padding(16)
   }
 }

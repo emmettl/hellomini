@@ -1,6 +1,6 @@
 # Architecture
 
-The baseline is macOS 26 and Swift 6.3, using SwiftUI, AppKit, Metal, Swift Testing, and `swift-format`. This guide describes the released architecture; external binary plugins and macOS 15 compatibility remain future decisions.
+The baseline is macOS 26 and Swift 6.4, using SwiftUI, AppKit, Metal, Swift Testing, and `swift-format`. This guide describes the released architecture; external binary plugins and macOS 15 compatibility remain future decisions.
 
 [Contributing](../CONTRIBUTING.md) · [User guide](USER_GUIDE.md) · [Build CI](CI.md) · [Releasing](RELEASING.md)
 
@@ -22,7 +22,7 @@ Themes are registered values with stable string IDs, rather than a closed enum. 
 
 - Semantic foreground, background, accent, and selection colors; body, small, title, and display fonts. Optional desktop text colors, label surfaces, and text shadows allow readable labels over a coloured wallpaper without changing window content.
 - Solid, gradient, dotted, pinstriped, bundled-image, and custom SwiftUI surfaces.
-- Active/inactive window frames, corner radii, borders, shadows, title-bar height, and menu dimensions and surfaces. An optional dock frame enables the shared dock and reserves its desktop area; themes supply styling while the shell owns launching and restoring.
+- Active/inactive window frames, corner radii, borders, shadows, title-bar height, and menu dimensions and surfaces. An optional dock frame enables the shared dock and reserves its desktop area; themes supply styling while the shell owns launching and restoring. A `windowShade` flag lets a theme offer window shade, whose state the shell also owns.
 - Optional title-bar, button, and semantic-icon renderers for artwork and controls that cannot be expressed by tokens alone. Title bars receive the window title, active and zoomed states, the close action, and optional minimise/zoom actions; buttons receive pressed/enabled state and their original label. Custom renderers must retain those actions and accessibility labels.
 
 App views read `@Environment(\.miniTheme)` for styling and use `RetroButtonStyle` and `PixelIcon` for shared controls and semantic artwork. The desktop retains dragging, focus, window ordering, keyboard navigation, and command dispatch. Theme replacement does not key or recreate application state. Native macOS dialogs and context menus remain native, with the theme's light/dark color scheme where applicable.

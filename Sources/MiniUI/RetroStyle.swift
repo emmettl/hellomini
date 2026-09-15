@@ -74,10 +74,11 @@ public struct ThemeWindowTitleBar: View {
   public init(
     title: String, active: Bool, close: @escaping @MainActor () -> Void,
     minimise: (@MainActor () -> Void)? = nil, zoom: (@MainActor () -> Void)? = nil,
-    zoomed: Bool = false
+    zoomed: Bool = false, shade: (@MainActor () -> Void)? = nil, shaded: Bool = false
   ) {
     state = ThemeWindowState(
-      title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed)
+      title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed,
+      shade: shade, shaded: shaded)
   }
 
   public var body: some View {

@@ -10,6 +10,7 @@ final class DesktopModel {
   private(set) var openIDs: [String]
   private(set) var minimisedIDs: Set<String>
   private(set) var zoomedIDs: Set<String>
+  private(set) var shadedIDs: Set<String>
   private var windows: [String: WindowPlacement]
   @ObservationIgnored private let store: DesktopSessionStore
   var visibleIDs: [String] { openIDs.filter { !minimisedIDs.contains($0) } }
@@ -32,6 +33,7 @@ final class DesktopModel {
     openIDs = restoredIDs
     minimisedIDs = Set(saved?.minimisedIDs ?? []).intersection(restoredIDs)
     zoomedIDs = Set(saved?.zoomedIDs ?? []).intersection(restoredIDs)
+    shadedIDs = Set(saved?.shadedIDs ?? []).intersection(restoredIDs)
   }
 
   func launch(_ app: any MiniApplication) {
@@ -47,6 +49,7 @@ final class DesktopModel {
     openIDs.removeAll { $0 == app.id }
     minimisedIDs.remove(app.id)
     zoomedIDs.remove(app.id)
+    shadedIDs.remove(app.id)
     persist()
   }
 
@@ -61,6 +64,13 @@ final class DesktopModel {
     guard openIDs.contains(app.id) else { return }
     launch(app)
     if !zoomedIDs.insert(app.id).inserted { zoomedIDs.remove(app.id) }
+    persist()
+  }
+
+  /// Window shade rolls a window up to its title bar while its application keeps running.
+  func toggleShade(_ app: any MiniApplication) {
+    guard openIDs.contains(app.id) else { return }
+    if !shadedIDs.insert(app.id).inserted { shadedIDs.remove(app.id) }
     persist()
   }
 
@@ -100,12 +110,15 @@ final class DesktopModel {
     store.save(
       DesktopSession(
         openIDs: openIDs, windows: windows,
-        minimisedIDs: minimisedIDs.sorted(), zoomedIDs: zoomedIDs.sorted()))
+        minimisedIDs: minimisedIDs.sorted(), zoomedIDs: zoomedIDs.sorted(),
+        shadedIDs: shadedIDs.sorted()))
   }
 }
 
 public struct DesktopView: View {
   @Environment(\.miniDesktopSuspended) private var suspended
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  private static let genieDuration = 0.5
   @State private var model: DesktopModel
   @State private var dockFocusRequest = 0
   private let settings: AppearanceSettings
@@ -228,13 +241,28 @@ public struct DesktopView: View {
             close: { model.close(app) },
             minimise: { model.minimise(app) },
             zoom: { model.toggleZoom(app) },
-            zoomed: model.zoomedIDs.contains(app.id)
+            zoomed: model.zoomedIDs.contains(app.id),
+            shade: theme.windowShade ? shadeAction(for: app) : nil,
+            shaded: isShaded(app)
           ) {
             app.content()
               .environment(\.miniWindowActive, !suspended && model.active?.id == app.id)
               .environment(\.miniWindowVisible, isVisible(app, desktop: windowArea))
           }
+          .modifier(
+            GenieEffect(
+              progress: model.minimisedIDs.contains(app.id) ? 1 : 0,
+              window: windowFrame(app, desktop: windowArea),
+              target: genieTarget(desktop: geometry.size, windowArea: windowArea))
+          )
+          .animation(genieAnimation, value: model.minimisedIDs.contains(app.id))
+          // The window vanishes only once the genie has poured it into the dock.
           .opacity(model.minimisedIDs.contains(app.id) ? 0 : 1)
+          .animation(
+            genieAnimation != nil && model.minimisedIDs.contains(app.id)
+              ? .linear(duration: 0.01).delay(Self.genieDuration) : nil,
+            value: model.minimisedIDs.contains(app.id)
+          )
           .allowsHitTesting(!model.minimisedIDs.contains(app.id))
           .accessibilityHidden(model.minimisedIDs.contains(app.id))
           .zIndex(Double((model.openIDs.firstIndex(of: app.id) ?? 0) + 1))
@@ -242,10 +270,14 @@ public struct DesktopView: View {
         if let style = theme.dock {
           DesktopDock(
             model: model, desktopWidth: geometry.size.width, style: style,
-            focusRequest: dockFocusRequest, playfulness: playfulness
+            focusRequest: dockFocusRequest, playfulness: playfulness,
+            compact: DesktopDockLayout.isCompact(desktopHeight: geometry.size.height)
           )
           .frame(
-            width: geometry.size.width, height: DesktopDockLayout.reservedHeight, alignment: .bottom
+            width: geometry.size.width,
+            height: DesktopDockLayout.reserved(
+              compact: DesktopDockLayout.isCompact(desktopHeight: geometry.size.height)),
+            alignment: .bottom
           )
           .offset(y: windowArea.height)
           .zIndex(Double(model.applications.count + 1))
@@ -286,25 +318,66 @@ public struct DesktopView: View {
   }
 
   private func isVisible(_ app: any MiniApplication, desktop: CGSize) -> Bool {
-    guard !suspended, !model.minimisedIDs.contains(app.id) else { return false }
-    func rectangle(_ app: any MiniApplication) -> CGRect {
-      let placement = model.displayedPlacement(
-        for: app, desktop: desktop, menuBarHeight: theme.menuBarHeight)
-      let size = WindowResize.constrain(
-        placement.size, minimum: app.minimumSize,
-        maximum: CGSize(
-          width: desktop.width - 16, height: desktop.height - theme.menuBarHeight - 18))
-      let origin = WindowBounds(
-        desktopSize: desktop, windowSize: size, menuBarHeight: theme.menuBarHeight
-      )
-      .constrain(placement.origin)
-      return CGRect(origin: origin, size: size)
-    }
+    guard !suspended, !model.minimisedIDs.contains(app.id), !isShaded(app) else { return false }
     guard let index = model.visibleIDs.firstIndex(of: app.id) else { return false }
     let covers = model.visibleIDs.dropFirst(index + 1).compactMap { id in
-      model.applications.first { $0.id == id }.map(rectangle)
+      model.applications.first { $0.id == id }.map { cover in
+        var frame = windowFrame(cover, desktop: desktop)
+        if isShaded(cover) { frame.size.height = theme.titleBarHeight + theme.titleBarDivider }
+        return frame
+      }
     }
-    return WindowVisibility.isVisible(rectangle(app), behind: covers)
+    return WindowVisibility.isVisible(windowFrame(app, desktop: desktop), behind: covers)
+  }
+
+  private func shadeAction(for app: any MiniApplication) -> @MainActor () -> Void {
+    { model.toggleShade(app) }
+  }
+
+  private func isShaded(_ app: any MiniApplication) -> Bool {
+    theme.windowShade && model.shadedIDs.contains(app.id)
+  }
+
+  /// The frame RetroWindow displays after constraining its saved placement to the desktop.
+  private func windowFrame(_ app: any MiniApplication, desktop: CGSize) -> CGRect {
+    let placement = model.displayedPlacement(
+      for: app, desktop: desktop, menuBarHeight: theme.menuBarHeight)
+    let size = WindowResize.constrain(
+      placement.size, minimum: app.minimumSize,
+      maximum: CGSize(
+        width: desktop.width - 16, height: desktop.height - theme.menuBarHeight - 18))
+    let origin = WindowBounds(
+      desktopSize: desktop, windowSize: size, menuBarHeight: theme.menuBarHeight
+    )
+    .constrain(placement.origin)
+    return CGRect(origin: origin, size: size)
+  }
+
+  private var genieAnimation: Animation? {
+    theme.dock != nil && !reduceMotion && playfulness?.allows(DesktopEffects.genie.id) == true
+      ? .easeIn(duration: Self.genieDuration) : nil
+  }
+
+  /// Minimised tiles sit at the trailing end of the dock.
+  private func genieTarget(desktop: CGSize, windowArea: CGSize) -> CGPoint {
+    let compact = DesktopDockLayout.isCompact(desktopHeight: desktop.height)
+    let layout = DesktopDockLayout(
+      desktopWidth: desktop.width, entryCount: model.applications.count + model.minimisedIDs.count,
+      hasMinimised: true, compact: compact)
+    return CGPoint(
+      x: (desktop.width + layout.width) / 2 - layout.iconSize,
+      y: windowArea.height + DesktopDockLayout.reserved(compact: compact) / 2)
+  }
+
+  private var shadeMenuItems: [RetroMenuItem] {
+    guard theme.windowShade else { return [] }
+    let shaded = model.active.map { model.shadedIDs.contains($0.id) } == true
+    return [
+      RetroMenuItem(
+        id: "shade", title: shaded ? "Expand Window" : "Collapse Window",
+        enabled: model.active != nil
+      ) { if let app = model.active { model.toggleShade(app) } }
+    ]
   }
 
   private var menus: [RetroMenu] {
@@ -407,8 +480,8 @@ public struct DesktopView: View {
               ? "Restore Size" : "Zoom",
             enabled: model.active != nil
           ) { if let app = model.active { model.toggleZoom(app) } },
-          .separator("window-actions-divider"),
         ]
+          + shadeMenuItems + [RetroMenuItem.separator("window-actions-divider")]
           + model.applications.map { app in
             RetroMenuItem(
               id: "window-\(app.id)",

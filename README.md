@@ -20,8 +20,8 @@ The desktop is designed around 1280 × 720, including small displays such as the
 
 - **Useful:** Finder, Find File, Activity Monitor, Clock, Alarm Clock, World Clock, Key Caps, Clipboard, Scrapbook, Desk Calculator, Chooser, Disk First Aid, and Wastebasket.
 - **Questionably useful:** Print Monitor turns GitHub Actions and GitLab builds into imaginary print jobs. Failures jam the printer; successful builds can feed the fish.
-- **Gloriously unnecessary:** a Metal Utah Teapot, Aquarium, a sliding Puzzle made from the live desktop, and original Flying Toasters screensavers.
-- **Five appearances:** Classic, Paper, Midnight, System 7, and early Aqua, complete with pinstripes, gel controls, traffic lights, and a dock with magnification and launch bounce.
+- **Gloriously unnecessary:** a Metal Utah Teapot, Aquarium fish that remember your build streaks, a sliding Puzzle made from the live desktop, a Talking Moose, and original Flying Toasters screensavers.
+- **Six appearances:** Classic, Paper, Midnight, System 7, Mac OS 8 Platinum with window shade, and early Aqua, complete with pinstripes, gel controls, traffic lights, and a dock with magnification and launch bounce.
 
 Windows move, resize, minimise, and remember their layout. Control Panel selects the theme, screensaver, and optional silliness. Effects respect Reduce Motion and pause when hidden. The [user guide](docs/USER_GUIDE.md) covers controls, keyboard shortcuts, application behaviour, and limitations.
 
@@ -33,7 +33,7 @@ The [roadmap](ROADMAP.md) collects the next contributions to the project's quint
 
 ## Running the first desktop
 
-For source development, use macOS 26 with Xcode 26.6 or another Swift 6.3+ toolchain. Open `Package.swift` in Xcode, or run:
+For source development, use Xcode 27 or another Swift 6.4+ toolchain on macOS 26.6 or later. The app itself still runs on macOS 26. Open `Package.swift` in Xcode, or run:
 
 ```sh
 make run     # Build a local app bundle and launch it

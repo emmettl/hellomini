@@ -14,9 +14,20 @@ import UniformTypeIdentifiers
   var notice = "An unreasonable amount of room for little things."
   @ObservationIgnored let store: ScrapbookStore
   @ObservationIgnored private let pasteboard: NSPasteboard
+  @ObservationIgnored private let recognizer: @Sendable (Data) async throws -> String
+  @ObservationIgnored private var recognitionTask: Task<Void, Never>?
+  @ObservationIgnored private var recognitionRequested = false
+  /// The image scrap whose text is being read, if any.
+  private(set) var reading: UUID?
 
-  init(directory: URL? = nil, pasteboard: NSPasteboard = .general) {
+  init(
+    directory: URL? = nil, pasteboard: NSPasteboard = .general,
+    recognizer: @escaping @Sendable (Data) async throws -> String = {
+      try await ScrapTextRecognizer.recognize($0)
+    }
+  ) {
     self.pasteboard = pasteboard
+    self.recognizer = recognizer
     let root =
       directory
       ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -42,6 +53,7 @@ import UniformTypeIdentifiers
       ready = true
       selection = visible.first?.id
       error = nil
+      recognizePending()
     } catch { self.error = error.localizedDescription }
   }
 
@@ -160,6 +172,50 @@ import UniformTypeIdentifiers
     query = ""
     selection = item.scrap.id
     notice = "Added to the scrapbook. No extra glue required."
+    if item.scrap.kind == .image { recognizePending() }
+  }
+
+  /// Reads text from image scraps one at a time, on this Mac, between the user's own edits.
+  func recognizePending() {
+    guard ready else { return }
+    recognitionRequested = true
+    guard recognitionTask == nil else { return }
+    recognitionTask = Task { [weak self] in
+      while let self, self.recognitionRequested {
+        self.recognitionRequested = false
+        await self.drainRecognition()
+      }
+      self?.recognitionTask = nil
+    }
+  }
+
+  private func drainRecognition() async {
+    var attempted = Set<UUID>()
+    while let scrap = scraps.first(where: { $0.awaitingRecognition && !attempted.contains($0.id) })
+    {
+      attempted.insert(scrap.id)
+      reading = scrap.id
+      let text: String
+      do {
+        let data = try await store.imageData(scrap.id)
+        text = try await recognizer(data).trimmingCharacters(in: .whitespacesAndNewlines)
+      } catch {
+        // An unreadable picture is recorded as having no text rather than retried on every launch.
+        text = ""
+      }
+      reading = nil
+      while busy { try? await Task.sleep(for: .milliseconds(40)) }
+      guard let index = scraps.firstIndex(where: { $0.id == scrap.id }),
+        scraps[index].awaitingRecognition
+      else { continue }
+      var next = scraps
+      next[index].recognizedText = String(text.prefix(ScrapbookStore.recognitionLimit))
+      busy = true
+      // A failed write still helps search now; the text is saved with the next successful change.
+      try? await store.save(next)
+      scraps = next
+      busy = false
+    }
   }
 
   func copySelected() {

@@ -15,11 +15,12 @@ concurrency:
 
 jobs:
   macos:
-    name: macOS 26 · Swift 6.3
-    runs-on: macos-26
+    name: Xcode 27 · Swift 6.4
+    # GitHub's Xcode-versioned image carries a single Xcode major; the toolchain check enforces it.
+    runs-on: xcode-27
     timeout-minutes: 30
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       # Hosted VMs may lack Metal. The physical Mini requires the GPU test to pass.
       MINI_ALLOW_MISSING_METAL: "1"
     steps:

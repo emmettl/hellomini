@@ -7,11 +7,15 @@ import SwiftUI
   public let name = "Scrapbook"
   public let icon = MiniApplicationIcon.scrapbook
   public let defaultSize = CGSize(width: 760, height: 480)
-  public let minimumSize = CGSize(width: 660, height: 400)
+  public let minimumSize = CGSize(width: 440, height: 240)
   private let model = ScrapbookModel()
   public init() {}
   public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
   public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }
+  public static let screensaver = MiniScreensaver(
+    id: "scrapbook-slideshow", name: "Scrapbook Slideshow",
+    description: "Your scrapbook pictures, one at a time, like a very patient projector.")
+  public func screensaverContent() -> AnyView { AnyView(ScrapbookSlideshow(model: model)) }
 
   public var menus: [RetroMenu] {
     [

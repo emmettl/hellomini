@@ -18,7 +18,7 @@ There is no Homebrew cask or automatic updater yet. GitHub Actions artifacts are
 
 ## Build from source
 
-Install Xcode 26.6 (or a compatible Swift 6.3 toolchain), open it once to finish setup, and select its command-line tools. Then:
+Install Xcode 27 (or a compatible Swift 6.4 toolchain, which needs macOS 26.6 or later), open it once to finish setup, and select its command-line tools. Then:
 
 ```sh
 git clone https://github.com/emmettl/hellomini.git

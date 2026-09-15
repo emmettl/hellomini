@@ -15,8 +15,11 @@ struct Scrap: Identifiable, Codable, Equatable, Sendable {
   var created = Date()
   var modified = Date()
   var archived = false
+  /// Text found in an image scrap's picture: nil until read, empty when there was none.
+  var recognizedText: String?
 
   var link: URL? { Self.webURL(text) }
+  var awaitingRecognition: Bool { kind == .image && recognizedText == nil }
   static func webURL(_ text: String) -> URL? {
     let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !value.contains(where: \.isWhitespace), let url = URL(string: value),
@@ -27,7 +30,7 @@ struct Scrap: Identifiable, Codable, Equatable, Sendable {
   }
 
   func matches(_ query: String) -> Bool {
-    let haystack = "\(title) \(text) \(kind.title)"
+    let haystack = "\(title) \(text) \(kind.title) \(recognizedText ?? "")"
     return query.split(whereSeparator: \.isWhitespace).allSatisfy {
       haystack.range(of: String($0), options: [.caseInsensitive, .diacriticInsensitive]) != nil
     }
@@ -69,6 +72,7 @@ actor ScrapbookStore {
   static let textLimit = 1_000_000
   static let imageLimit = 25_000_000
   static let indexLimit = 64_000_000
+  static let recognitionLimit = 100_000
 
   init(directory: URL) { self.directory = directory }
 

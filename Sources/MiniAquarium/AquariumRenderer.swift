@@ -8,7 +8,7 @@ struct AquariumUniforms {
   var paper: SIMD4<Float>
   // Logical width, logical height, simulation time, food age.
   var scene: SIMD4<Float>
-  // CPU current and network intensity.
+  // CPU current, network intensity, build-streak growth, and sulking.
   var activity: SIMD4<Float>
 }
 
@@ -53,6 +53,8 @@ struct AquariumMetalView: NSViewRepresentable {
   let suspended: Bool
   let activity: AquariumActivity
   let feedRevision: Int
+  var growth: Float = 0
+  var sulking = false
 
   func makeCoordinator() -> Coordinator { Coordinator(model: model) }
   func makeNSView(context: Context) -> MTKView {
@@ -81,6 +83,10 @@ struct AquariumMetalView: NSViewRepresentable {
     coordinator.activity = activity
     coordinator.feedRevision = feedRevision
     coordinator.suspended = suspended
+    coordinator.growth = growth
+    coordinator.sulking = sulking
+    view.setAccessibilityLabel(
+      "Aquarium with \(growth >= 0.5 ? "ten" : "nine") fish, swaying plants, and bubbles")
     if coordinator.animate != animate { model.simulation.previousTime = nil }
     coordinator.animate = animate
     view.enableSetNeedsDisplay = !animate
@@ -103,6 +109,8 @@ struct AquariumMetalView: NSViewRepresentable {
     var feedRevision = 0
     var animate = false
     var suspended = false
+    var growth: Float = 0
+    var sulking = false
     init(model: AquariumModel) { self.model = model }
 
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
@@ -120,7 +128,8 @@ struct AquariumMetalView: NSViewRepresentable {
         return
       }
       model.simulation.advance(
-        now: CACurrentMediaTime(), animate: animate, feedRevision: feedRevision, activity: activity)
+        now: CACurrentMediaTime(), animate: animate, feedRevision: feedRevision, activity: activity,
+        sulking: sulking)
       // A fixed logical height gives crisp, chunky pixels at both desk and screensaver sizes.
       let aspect = Float(view.drawableSize.width / max(1, view.drawableSize.height))
       gpu.encode(
@@ -128,7 +137,8 @@ struct AquariumMetalView: NSViewRepresentable {
         uniforms: AquariumUniforms(
           ink: ink, paper: paper,
           scene: SIMD4(240 * aspect, 240, model.simulation.time, model.simulation.foodAge),
-          activity: SIMD4(model.simulation.current, model.simulation.bubbles, 0, 0)))
+          activity: SIMD4(
+            model.simulation.current, model.simulation.bubbles, growth, model.simulation.sulk)))
       command.present(drawable)
       command.commit()
     }

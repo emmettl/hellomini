@@ -9,13 +9,15 @@ if (( ${macos_version%%.*} < 26 )); then
   exit 1
 fi
 xcode_version="$(xcodebuild -version)"
-if ! [[ "$xcode_version" == $'Xcode 26.6\n'* ]]; then
-  echo "CI requires Xcode 26.6. Set DEVELOPER_DIR to its Contents/Developer directory." >&2
+# Any Xcode 27 release is accepted, so point updates do not need a script change.
+if ! [[ "$xcode_version" =~ ^Xcode\ 27\. ]]; then
+  echo "CI requires Xcode 27. Set DEVELOPER_DIR to its Contents/Developer directory." >&2
   exit 1
 fi
 swift_version="$(swift --version)"
-if ! [[ "$swift_version" == *"Swift version 6.3."* ]]; then
-  echo "CI requires the Swift 6.3 toolchain from Xcode 26.6." >&2
+# Swift prints "Swift version 6.4 (" for the initial release and "6.4.1 (" for patches.
+if ! [[ "$swift_version" =~ Swift\ version\ 6\.4[.\ ] ]]; then
+  echo "CI requires the Swift 6.4 toolchain from Xcode 27." >&2
   exit 1
 fi
 printf '%s\n' "$xcode_version" "$swift_version" "macOS $macos_version · arm64"

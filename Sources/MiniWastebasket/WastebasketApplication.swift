@@ -9,7 +9,7 @@ import SwiftUI
   public let name = "Wastebasket"
   public let icon = MiniApplicationIcon.wastebasket
   public let defaultSize = CGSize(width: 750, height: 490)
-  public let minimumSize = CGSize(width: 640, height: 410)
+  public let minimumSize = CGSize(width: 440, height: 250)
   private let onEmpty: () -> Void
   public init(onEmpty: @escaping () -> Void = {}) { self.onEmpty = onEmpty }
   public func content() -> AnyView { AnyView(WastebasketView(onEmpty: onEmpty)) }
@@ -29,16 +29,20 @@ private struct WastebasketView: View {
     "Review build caches, then move selected items to macOS Trash. Nothing is selected automatically."
   @State private var confirming = false
   @State private var scanTask: Task<Void, Never>?
+  @State private var height: CGFloat = 490
+  private var roomy: Bool { height >= 340 }
+  private static let guidance =
+    "Sizes are estimates; + means a partial scan. Close affected builds before moving caches. Restore mistakes from macOS Trash."
   private let reader = StorageReader()
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Button("Scan caches", action: scan)
-        Button("Add Swift project…", action: addProject)
-        Spacer()
-        Button("Move to Trash…") { confirming = true }.disabled(selected.isEmpty)
+    VStack(alignment: .leading, spacing: roomy ? 12 : 8) {
+      ViewThatFits(in: .horizontal) {
+        toolbar(short: false)
+        toolbar(short: true)
       }.buttonStyle(RetroButtonStyle()).disabled(busy)
-      Text("Capacity: three crumpled pages, apparently.").font(theme.typography.title)
+      if roomy {
+        Text("Capacity: three crumpled pages, apparently.").font(theme.typography.title)
+      }
       ScrollView {
         LazyVStack(alignment: .leading, spacing: 10) {
           if items.isEmpty {
@@ -68,12 +72,15 @@ private struct WastebasketView: View {
           }
         }
       }
-      Text(message).font(theme.typography.small)
-      Text(
-        "Sizes are estimates; + means a partial scan. Close affected builds before moving caches. Restore mistakes from macOS Trash."
-      )
-      .font(theme.typography.small)
-    }.padding(16)
+      Text(message).font(theme.typography.small).lineLimit(roomy ? nil : 2)
+        .miniHelp(Self.guidance)
+      if roomy { Text(Self.guidance).font(theme.typography.small) }
+    }.padding(roomy ? 16 : 10)
+      .onGeometryChange(for: CGFloat.self) {
+        $0.size.height
+      } action: {
+        height = $0
+      }
       .confirmationDialog(
         "Move \(selected.count) reviewed cache items to macOS Trash?", isPresented: $confirming,
         titleVisibility: .visible
@@ -85,6 +92,17 @@ private struct WastebasketView: View {
       }
       .onDisappear { scanTask?.cancel() }
   }
+  private func toolbar(short: Bool) -> some View {
+    HStack {
+      Button(short ? "Scan" : "Scan caches", action: scan).accessibilityLabel("Scan caches")
+      Button(short ? "Add project…" : "Add Swift project…", action: addProject)
+        .accessibilityLabel("Add Swift project")
+      Spacer(minLength: 4)
+      Button(short ? "Trash…" : "Move to Trash…") { confirming = true }
+        .disabled(selected.isEmpty).accessibilityLabel("Move selected items to Trash")
+    }
+  }
+
   private func addProject() {
     let panel = NSOpenPanel()
     panel.canChooseFiles = false

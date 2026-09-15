@@ -279,3 +279,27 @@ import Testing
   #expect(!red(896, 551))
   #expect(!red(895, 552))
 }
+
+@Test @MainActor func windowShadeRollsUpSurvivesRelaunchAndClearsOnClose() throws {
+  let suite = "HelloMiniTests.\(UUID().uuidString)"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let first = SessionTestApp("a")
+  let second = SessionTestApp("b")
+  let model = DesktopModel(
+    applications: [first, second], initiallyOpen: [first.id, second.id], defaults: defaults)
+  model.toggleShade(first)
+  model.toggleShade(SessionTestApp("never-opened"))
+  #expect(model.shadedIDs == [first.id])
+  let relaunched = DesktopModel(
+    applications: [first, second], initiallyOpen: [], defaults: defaults)
+  #expect(relaunched.shadedIDs == [first.id])
+  model.toggleShade(second)
+  model.close(second)
+  #expect(model.shadedIDs == [first.id])
+  model.toggleShade(first)
+  #expect(model.shadedIDs.isEmpty)
+  #expect(
+    DesktopModel(applications: [first, second], initiallyOpen: [], defaults: defaults).shadedIDs
+      .isEmpty)
+}
