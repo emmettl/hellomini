@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## Unreleased — 0.6.0
+
+- **MiniPaint:** A monochrome 320 × 200 drawing accessory with pencil, eraser, patterned flood fill, rectangular selection/move, bounded undo/redo, local autosave, PNG export, and Send to Scrapbook. Includes an original icon in pixel and Aqua styles.
+- **Desktop presets:** Save named themes, patterns, display modes and window arrangements from View → Desktop Presets. Switching minimises other open windows while retaining their contents. Presets can be replaced or deleted without modifying application data.
+- **Scrapbook transfers:** Export one scrap as text or PNG, export the visible filtered scraps as a portable collection, or back up the whole library including archived scraps and pictures. Imports preview additions, skip identical content and preserve identifier conflicts as separate scraps; existing entries are never replaced.
 
 ## [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) — 2026-10-01
 

@@ -279,6 +279,7 @@ extension MiniApplicationIcon {
     case .chooser: .chooser
     case .wastebasket: .wastebasket
     case .printer: .printer
+    case .paint: .paint
     }
   }
 }

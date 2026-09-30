@@ -13,6 +13,7 @@ import MiniControlPanel
 import MiniCore
 import MiniDiskFirstAid
 import MiniFinder
+import MiniPaint
 import MiniPlatinumTheme
 import MiniPrintMonitor
 import MiniPuzzle
@@ -39,7 +40,7 @@ import Testing
   let aquarium = AquariumApplication(playfulness: playfulness)
   let applications: [any MiniApplication] = [
     FinderApplication(defaults: defaults), FindFileApplication(), ActivityMonitorApplication(),
-    ClockApplication(),
+    ClockApplication(), PaintApplication(),
     ControlPanelApplication(settings: settings, playfulness: playfulness, themes: themes),
     AboutApplication(), TeapotApplication(playfulness: playfulness), aquarium,
     ScrapbookApplication(),

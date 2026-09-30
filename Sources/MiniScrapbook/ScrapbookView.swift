@@ -64,6 +64,10 @@ struct ScrapbookView: View {
     }
     .task { await model.load() }
     .onChange(of: model.query) { _, _ in model.selection = model.visible.first?.id }
+    .sheet(item: $model.archivePreview) { preview in
+      ScrapbookTransferView(model: model, preview: preview).environment(\.miniTheme, theme)
+        .miniSheet(width: 460)
+    }
     .sheet(item: $model.draft) { scrap in
       ScrapEditor(model: model, scrap: scrap)
         .environment(\.miniTheme, theme).environment(\.colorScheme, theme.colorScheme)

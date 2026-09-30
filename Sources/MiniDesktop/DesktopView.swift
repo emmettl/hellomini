@@ -106,6 +106,34 @@ final class DesktopModel {
     persist()
   }
 
+  func snapshot() -> DesktopSession {
+    let placements = Dictionary(
+      uniqueKeysWithValues: applications.filter { openIDs.contains($0.id) }.map {
+        ($0.id, placement(for: $0))
+      })
+    return DesktopSession(
+      openIDs: openIDs, windows: placements, minimisedIDs: minimisedIDs.sorted(),
+      zoomedIDs: zoomedIDs.sorted(), shadedIDs: shadedIDs.sorted())
+  }
+
+  func apply(_ session: DesktopSession) {
+    let known = Set(applications.map(\.id))
+    var seen = Set<String>()
+    let requested = session.openIDs.filter { known.contains($0) && seen.insert($0).inserted }
+    let other = openIDs.filter { !requested.contains($0) }
+    // Keep other app views alive, including unsaved editors and drawings.
+    openIDs = other + requested
+    minimisedIDs = Set(other).union(Set(session.minimisedIDs ?? []).intersection(requested))
+    zoomedIDs = zoomedIDs.intersection(other).union(
+      Set(session.zoomedIDs ?? []).intersection(requested))
+    shadedIDs = shadedIDs.intersection(other).union(
+      Set(session.shadedIDs ?? []).intersection(requested))
+    for (id, placement) in session.windows where known.contains(id) && placement.isValid {
+      windows[id] = placement
+    }
+    persist()
+  }
+
   private func persist() {
     store.save(
       DesktopSession(
@@ -119,6 +147,8 @@ public struct DesktopView: View {
   @Environment(\.miniDesktopSuspended) private var suspended
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   private static let genieDuration = 0.5
+  @State private var presets: DesktopPresetStore
+  @State private var showPresets = false
   @State private var model: DesktopModel
   @State private var dockFocusRequest = 0
   private let settings: AppearanceSettings
@@ -145,6 +175,7 @@ public struct DesktopView: View {
     self.playfulness = playfulness
     self.captureDesktop = captureDesktop
     self.commands = commands
+    _presets = State(initialValue: DesktopPresetStore(defaults: defaults))
     _model = State(
       initialValue: DesktopModel(
         applications: applications, initiallyOpen: initiallyOpen, defaults: defaults))
@@ -304,6 +335,10 @@ public struct DesktopView: View {
         commands?.launchID = nil
       }
     }
+    .sheet(isPresented: $showPresets) {
+      DesktopPresetsView(store: presets, model: model, settings: settings)
+        .environment(\.miniTheme, theme).miniSheet(width: 460)
+    }
     .alert(
       "Hello Mini",
       isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })
@@ -450,6 +485,8 @@ public struct DesktopView: View {
       appMenus.append(RetroMenu(id: "view", title: "View", width: 330, items: [fullScreen]))
     }
     if let index = appMenus.firstIndex(where: { $0.id == "view" }) {
+      appMenus[index].items.append(
+        RetroMenuItem(id: "desktop-presets", title: "Desktop Presets…") { showPresets = true })
       appMenus[index].items.append(
         RetroMenuItem(
           id: "tiny-screen", title: "Tiny-screen Mode — 2×", checked: settings.tinyScreenMode
