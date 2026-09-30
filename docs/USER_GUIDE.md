@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.4.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md).
+This guide describes the **0.4.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Development builds after 0.4.0 also include [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -22,7 +22,7 @@ The available desktop stays filled, with half as much logical width and height: 
 
 Custom sheets, startup, and screensavers share the enlargement. Native macOS menus, alerts, and file panels keep their system sizing. Bevelled screen edges and rounded corners remain visible in full screen. Tiny-screen and Purist modes are mutually exclusive: enabling one disables the other. Turning the active mode off returns to standard sizing. Display-mode changes retain running app state and do not overwrite saved window placements.
 
-Physical Wokyis testing is deferred until the device arrives. The 2× setting has been checked on a development Mac; its comfort at normal desk distance on the Wokyis is not yet established.
+The published 0.4.0 build has been checked on the physical Wokyis and looks fine. Longer sessions and comparison with a possible 1.5× preset remain follow-ups.
 
 ### Purist mode
 

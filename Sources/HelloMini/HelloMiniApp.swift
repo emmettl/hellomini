@@ -7,6 +7,7 @@ import MiniAquarium
 import MiniCalculator
 import MiniChooser
 import MiniClock
+import MiniCommunications
 import MiniControlPanel
 import MiniCore
 import MiniDesktop
@@ -83,6 +84,12 @@ struct HelloMiniApp: App {
           do { try await Task.sleep(for: .seconds(5)) } catch { return }
         }
       }
+      .task {
+        while !Task.isCancelled {
+          await system.communications.refreshInBackground()
+          do { try await Task.sleep(for: .seconds(5)) } catch { return }
+        }
+      }
       .containerBackground(.black, for: .window)
     }
     .defaultSize(width: 1280, height: 720)
@@ -136,7 +143,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.dockMagnification, DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
-      TalkingMoose.effect,
+      TalkingMoose.effect, CommunicationsApplication.effect,
     ] + AquariumApplication.effects)
   let screensavers = ScreensaverSettings(savers: [
     AquariumApplication.screensaver, FlyingToasters.metadata, ScrapbookApplication.screensaver,
@@ -146,6 +153,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   let scrapbook = ScrapbookApplication()
   let alarm: AlarmClockApplication
   let printMonitor: PrintMonitorApplication
+  let communications: CommunicationsApplication
   let moose: TalkingMoose
   private var didChime = false
   func startupSound() {
@@ -164,12 +172,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
     DiskFirstAidApplication(),
     WastebasketApplication(onEmpty: { [sounds] in sounds.play(.wastebasket) }),
-    printMonitor, ClipboardApplication(), KeyCapsApplication(), alarm,
+    printMonitor, communications, ClipboardApplication(), KeyCapsApplication(), alarm,
   ]
   init() {
     let screensavers = screensavers
     let sounds = SystemSounds(settings: playfulness)
     self.sounds = sounds
+    communications = CommunicationsApplication(playfulness: playfulness) { attention in
+      sounds.play(attention ? .jam : .signal)
+    }
     alarm = AlarmClockApplication { sounds.play(.alarm) }
     let aquarium = AquariumApplication(
       playfulness: playfulness,

@@ -32,6 +32,7 @@ format:
 	swift format format --in-place --recursive Package.swift Sources Tests scripts
 
 ci-test:
+	python3 -m unittest discover -s examples/communications -p 'test_*.py'
 	python3 scripts/test-ci.py
 	python3 scripts/test-release.py
 	python3 scripts/test-bundle-resources.py

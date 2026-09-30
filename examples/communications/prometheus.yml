@@ -1,0 +1,8 @@
+# Run Prometheus on the same machine as the loopback-only exporter.
+# Bind Prometheus to loopback too, or place it behind authenticated HTTPS for remote use.
+global:
+  scrape_interval: 30s
+scrape_configs:
+  - job_name: motionstudies-observer
+    static_configs:
+      - targets: ['127.0.0.1:9469']

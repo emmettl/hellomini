@@ -8,6 +8,7 @@ let package = Package(
   products: [.executable(name: "HelloMini", targets: ["HelloMini"])],
   targets: [
     .target(name: "MiniCore"),
+    .target(name: "MiniCommunications", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniAccessories", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniAquaTheme", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniSystem7Theme", dependencies: ["MiniCore", "MiniUI"]),
@@ -42,13 +43,15 @@ let package = Package(
     .executableTarget(
       name: "HelloMini",
       dependencies: [
-        "MiniAccessories", "MiniDesktop", "MiniFinder", "MiniAbout", "MiniActivityMonitor",
+        "MiniCommunications", "MiniAccessories", "MiniDesktop", "MiniFinder", "MiniAbout",
+        "MiniActivityMonitor",
         "MiniClock",
         "MiniControlPanel", "MiniUI", "MiniTeapot", "MiniAquarium", "MiniScrapbook",
         "MiniCalculator", "MiniPuzzle", "MiniChooser", "MiniDiskFirstAid", "MiniWastebasket",
         "MiniPrintMonitor", "MiniScreensaver", "MiniToasters", "MiniSystem7Theme", "MiniAquaTheme",
         "MiniMoose", "MiniPlatinumTheme",
       ]),
+    .testTarget(name: "MiniCommunicationsTests", dependencies: ["MiniCommunications", "MiniCore"]),
     .testTarget(name: "MiniUITests", dependencies: ["MiniUI"], resources: [.process("Resources")]),
     .testTarget(name: "MiniTeapotTests", dependencies: ["MiniTeapot"]),
     .testTarget(name: "MiniAquariumTests", dependencies: ["MiniAquarium"]),
@@ -78,7 +81,8 @@ let package = Package(
     .testTarget(
       name: "MiniDisplayFitTests",
       dependencies: [
-        "MiniAbout", "MiniAccessories", "MiniActivityMonitor", "MiniAquaTheme", "MiniAquarium",
+        "MiniCommunications", "MiniAbout", "MiniAccessories", "MiniActivityMonitor",
+        "MiniAquaTheme", "MiniAquarium",
         "MiniCalculator", "MiniChooser", "MiniClock", "MiniControlPanel", "MiniCore", "MiniDesktop",
         "MiniDiskFirstAid", "MiniFinder", "MiniPrintMonitor", "MiniPuzzle", "MiniScrapbook",
         "MiniSystem7Theme", "MiniTeapot", "MiniUI", "MiniWastebasket", "MiniPlatinumTheme",

@@ -88,3 +88,7 @@ Turning off the feeding switch or Extra silliness consumes notifications without
 ## App icon
 
 The Dock and Finder icon uses the same pixel Macintosh artwork as the desktop. `make icons` generates all ten standard/Retina icon representations (16 through 1024 pixels), `Support/AppIcon.icns`, and a 1024-pixel preview at `Support/AppIcon.png`. Small icons use the pixel silhouette directly; larger icons sit on a white tile. Edit the computer artwork in `Sources/MiniUI/PixelSymbol.swift` or the rendering in `scripts/GenerateIcons.swift` to update it. App builds regenerate changed artwork and copy the icon into the bundle before signing.
+
+## Communications telemetry
+
+`MiniCommunications` owns a versioned station profile, bounded Prometheus query client, timestamp-based channel state, and session-only log. The host polls it independently of window visibility and injects optional sound cues. Disconnect/reconfiguration cancels requests and changes a generation token so late responses cannot repopulate a different station. Credentials use a separate Keychain service keyed by the exact endpoint, and profiles never contain them. Query history lives in the backend; the accessory requests one hour only when a chart is selected. The [MotionStudies example](../examples/communications/README.md) translates the existing observer response outside the app, preserving original evidence timestamps and leaving feed business rules with the observer.
