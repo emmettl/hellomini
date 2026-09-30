@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
+Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
@@ -47,15 +47,17 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 
 The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. The published 0.4.0 build has been checked on the physical Wokyis. Comparison with a possible 1.5× preset remains open. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
 
-## In development after 0.4.0
+## Shipped in 0.5.0
 
 - **Communications:** A vintage receiving station for modern telemetry. Configurable channels read a Prometheus-compatible query API; OpenTelemetry metrics can reach it through a compatible backend. The switchboard has callsigns, status lamps, an hour of strip-chart history, and a bounded session log. Test Lamps and an explicitly labelled simulation provide the nonsense. Freshness, original observation timestamps, disconnected state, and unknown data remain explicit. A read-only MotionStudies observer exporter and preset supply the first integration; deploying the exporter and metrics backend is a separate setup step. See the [setup guide](docs/COMMUNICATIONS.md).
 
-## Proposed next accessories and improvements
+## Planned for 0.6.0
 
 - **MiniPaint:** A small MacPaint-style bitmap accessory with pencil, eraser, fill, selection, and patterns. Start with a compact monochrome canvas and PNG export; send finished doodles to Scrapbook.
 - **Desktop presets:** Save named combinations of theme, pattern, display mode, and window arrangement. A desk for work, another for unnecessary fish; switching preserves application data.
 - **Scrapbook export and backup:** Export a page or selection, then add portable library backup/import with previews and duplicate handling. Make the useful collection easy to take elsewhere.
+## Further accessories and improvements
+
 - **Finder depth:** Get Info, lightweight previews, and saved favourite locations before broader file operations. Show real metadata inside period presentation.
 - **Network desk accessory:** Connection status, latency and reachability checks, and useful network details as a small modem or cable tester. Complements Chooser discovery and Communications telemetry.
 - **Print Monitor history and artifacts:** Server-side history searches, links to older attempts, and reviewed in-app artifact downloads. Keep the print-job metaphor and expose actual provider details.

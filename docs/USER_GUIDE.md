@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.4.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Development builds after 0.4.0 also include [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.5.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) — 2026-10-01
+
+- **Communications:** A vintage receiving station for Prometheus-compatible telemetry, with configurable channels, status lamps, an hour of strip-chart history, and a session log. OpenTelemetry metrics can be viewed through a compatible backend.
+- Background polling, explicit stale/missing evidence, read-only queries, per-server Keychain tokens, optional loss/recovery sounds, Test Lamps, and a clearly labelled simulation.
+- A MotionStudies preset and read-only observer exporter example preserve original observation timestamps. Live monitoring requires a separately configured exporter and metrics backend; no production connection is bundled.
+- Communications adapts to tiny-screen and Purist desktops; instrument motion respects Playfulness, Reduce Motion, and visibility.
+
 - **Ambient animation:** Aquarium, Teapot, the World Clock globe, Desk Calculator's Mandelbrot, Print Monitor's paper, and live Puzzle tiles keep moving while they are on screen, even when another app or another Mac through Universal Control has focus. Metal views draw at half their frame rate while Hello Mini is in the background and pause only when their window is hidden, covered, or on a sleeping display.
 - Long-running tanks and scenes no longer freeze after about twelve days. Their animation clocks wrap once a day.
 

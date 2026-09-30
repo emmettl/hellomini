@@ -1,6 +1,6 @@
 # Communications
 
-Communications is available in development builds after 0.4.0. It turns a Prometheus-compatible metrics server into a tiny receiving station: a switchboard of channels, status lamps, a paper strip chart, and a station log. It works with any matching metrics source; MotionStudies is an optional preset.
+Communications is available from 0.5.0. It turns a Prometheus-compatible metrics server into a tiny receiving station: a switchboard of channels, status lamps, a paper strip chart, and a station log. It works with any matching metrics source; MotionStudies is an optional preset.
 
 ## Connect a station
 
