@@ -8,6 +8,7 @@ import MiniAquarium
 import MiniCalculator
 import MiniChooser
 import MiniClock
+import MiniCommunications
 import MiniControlPanel
 import MiniCore
 import MiniDiskFirstAid
@@ -50,6 +51,7 @@ import Testing
       playfulness: playfulness, onSuccessfulBuilds: aquarium.feedFromSuccessfulBuilds,
       onFailedBuilds: { _ in }),
     ClipboardApplication(), KeyCapsApplication(), AlarmClockApplication(),
+    CommunicationsApplication(playfulness: playfulness, defaults: defaults),
   ]
   // A 1280 × 720 display at 2×, and Purist mode's fixed desktop.
   for desktop in [CGSize(width: 640, height: 360), CGSize(width: 512, height: 384)] {

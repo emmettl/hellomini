@@ -5,8 +5,9 @@ import AppKit
   public static let effect = MiniPlayfulEffect(
     id: "system.sounds", name: "System sounds",
     description:
-      "Original chimes for startup, paper jams, fish food, alarms, and emptying the basket.")
-  public enum Cue: CaseIterable, Sendable { case startup, jam, feed, wastebasket, alarm }
+      "Original chimes for startup, paper jams, fish food, alarms, emptying the basket, and station signals."
+  )
+  public enum Cue: CaseIterable, Sendable { case startup, jam, feed, wastebasket, alarm, signal }
   private let settings: PlayfulnessSettings
   private var playing: NSSound?
   private var lastPlayed = Date.distantPast
@@ -26,6 +27,7 @@ import AppKit
   public nonisolated static func wave(_ cue: Cue) -> Data {
     let notes: [Double]
     switch cue {
+    case .signal: notes = [1200, 1800, 1200, 2400]
     case .startup: notes = [262, 330, 392, 523]
     case .jam: notes = [196, 185, 131]
     case .feed: notes = [659, 880]
