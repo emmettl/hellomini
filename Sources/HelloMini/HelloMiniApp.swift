@@ -14,6 +14,7 @@ import MiniDesktop
 import MiniDiskFirstAid
 import MiniFinder
 import MiniMoose
+import MiniPaint
 import MiniPlatinumTheme
 import MiniPrintMonitor
 import MiniPuzzle
@@ -172,7 +173,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
     DiskFirstAidApplication(),
     WastebasketApplication(onEmpty: { [sounds] in sounds.play(.wastebasket) }),
-    printMonitor, communications, ClipboardApplication(), KeyCapsApplication(), alarm,
+    printMonitor, communications,
+    PaintApplication(sendToScrapbook: { [scrapbook, commands] image in
+      try await scrapbook.addDrawing(image)
+      commands.launchID = "scrapbook"
+    }), ClipboardApplication(), KeyCapsApplication(), alarm,
   ]
   init() {
     let screensavers = screensavers

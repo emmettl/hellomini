@@ -9,6 +9,7 @@ import UniformTypeIdentifiers
   var query = ""
   var showArchive = false
   var selection: UUID?
+  var archivePreview: ScrapbookImportPreview?
   var draft: Scrap?
   var error: String?
   var notice = "An unreasonable amount of room for little things."
@@ -75,6 +76,25 @@ import UniformTypeIdentifiers
       try await add(item)
       error = nil
     } catch { self.error = error.localizedDescription }
+  }
+
+  func addDrawing(_ image: CGImage) async throws {
+    if !ready { await load() }
+    guard canChange else {
+      throw CocoaError(
+        .fileWriteUnknown,
+        userInfo: [
+          NSLocalizedDescriptionKey:
+            "Scrapbook is busy or unavailable. Export the drawing as PNG or try again."
+        ])
+    }
+    busy = true
+    defer { busy = false }
+    guard let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
+    else { throw ScrapbookError.invalidImage }
+    let item = try await store.importImage(
+      data, title: "MiniPaint — " + Date.now.formatted(date: .abbreviated, time: .standard))
+    try await add(item)
   }
 
   func newNote() {
@@ -230,6 +250,55 @@ import UniformTypeIdentifiers
         self.pasteboard.setString(selected.text, forType: .string)
       }
       self.notice = "Copied."
+    }
+  }
+
+  func exportSelected() {
+    guard canChange, let selected else { return }
+    let panel = NSSavePanel()
+    panel.allowedContentTypes = selected.kind == .image ? [.png] : [.plainText]
+    panel.nameFieldStringValue = "Scrap." + (selected.kind == .image ? "png" : "txt")
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    run {
+      try await self.store.exportScrap(selected, to: url)
+      self.notice = "Exported this page. No scissors required."
+    }
+  }
+
+  func exportArchive(all: Bool) {
+    guard canChange else { return }
+    let scraps = all ? self.scraps : visible
+    let panel = NSSavePanel()
+    panel.allowedContentTypes = [.json]
+    panel.nameFieldStringValue = all ? "HelloMini-Scrapbook-Backup.json" : "HelloMini-Scraps.json"
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    run {
+      try await self.store.writeArchive(scraps, to: url)
+      self.notice = "Exported \(scraps.count) scraps, including their pictures."
+    }
+  }
+
+  func chooseArchive() {
+    guard canChange else { return }
+    let panel = NSOpenPanel()
+    panel.allowedContentTypes = [.json]
+    panel.allowsMultipleSelection = false
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    run {
+      self.archivePreview = try await self.store.previewArchive(at: url, existing: self.scraps)
+    }
+  }
+
+  func confirmArchiveImport(_ preview: ScrapbookImportPreview) {
+    run {
+      self.scraps = try await self.store.importArchive(preview, existing: self.scraps)
+      self.archivePreview = nil
+      self.query = ""
+      self.showArchive = false
+      self.selection = self.visible.first?.id
+      self.notice =
+        "Imported \(preview.entries.count) scraps; skipped \(preview.skipped) duplicates."
+      self.recognizePending()
     }
   }
 

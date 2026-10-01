@@ -39,6 +39,8 @@ State codes are `0 healthy`, `1 waiting`, `2 degraded`, `3 paused`, `4 unknown`.
 
 The observer deliberately returns HTTP 503 for unhealthy assessments; its valid body is still decoded. Authentication/network/parse failures emit exporter-up `0` and observer-state `4`, with no reused feed values. Responses are limited to 2 MB; HTTP redirects are refused. The response is cached for at most 30 seconds and re-aged on each scrape. Logs and metric labels exclude upstream error text, payloads, and credentials.
 
+Requests identify themselves as `HelloMini-MotionStudiesReceiver/0.5.0`. Cloudflare can reject Python's generic default user agent with error 1010 before checking the observer credentials; this explicit application identity avoids that rejection without impersonating a browser or changing the site's security policy.
+
 Run the adapter tests:
 
 ```sh

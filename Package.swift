@@ -8,6 +8,7 @@ let package = Package(
   products: [.executable(name: "HelloMini", targets: ["HelloMini"])],
   targets: [
     .target(name: "MiniCore"),
+    .target(name: "MiniPaint", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniCommunications", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniAccessories", dependencies: ["MiniCore", "MiniUI"]),
     .target(name: "MiniAquaTheme", dependencies: ["MiniCore", "MiniUI"]),
@@ -43,7 +44,8 @@ let package = Package(
     .executableTarget(
       name: "HelloMini",
       dependencies: [
-        "MiniCommunications", "MiniAccessories", "MiniDesktop", "MiniFinder", "MiniAbout",
+        "MiniPaint", "MiniCommunications", "MiniAccessories", "MiniDesktop", "MiniFinder",
+        "MiniAbout",
         "MiniActivityMonitor",
         "MiniClock",
         "MiniControlPanel", "MiniUI", "MiniTeapot", "MiniAquarium", "MiniScrapbook",
@@ -51,6 +53,7 @@ let package = Package(
         "MiniPrintMonitor", "MiniScreensaver", "MiniToasters", "MiniSystem7Theme", "MiniAquaTheme",
         "MiniMoose", "MiniPlatinumTheme",
       ]),
+    .testTarget(name: "MiniPaintTests", dependencies: ["MiniPaint"]),
     .testTarget(name: "MiniCommunicationsTests", dependencies: ["MiniCommunications", "MiniCore"]),
     .testTarget(name: "MiniUITests", dependencies: ["MiniUI"], resources: [.process("Resources")]),
     .testTarget(name: "MiniTeapotTests", dependencies: ["MiniTeapot"]),
@@ -81,7 +84,7 @@ let package = Package(
     .testTarget(
       name: "MiniDisplayFitTests",
       dependencies: [
-        "MiniCommunications", "MiniAbout", "MiniAccessories", "MiniActivityMonitor",
+        "MiniPaint", "MiniCommunications", "MiniAbout", "MiniAccessories", "MiniActivityMonitor",
         "MiniAquaTheme", "MiniAquarium",
         "MiniCalculator", "MiniChooser", "MiniClock", "MiniControlPanel", "MiniCore", "MiniDesktop",
         "MiniDiskFirstAid", "MiniFinder", "MiniPrintMonitor", "MiniPuzzle", "MiniScrapbook",

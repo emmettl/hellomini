@@ -10,6 +10,7 @@ import SwiftUI
   public let minimumSize = CGSize(width: 440, height: 240)
   private let model = ScrapbookModel()
   public init() {}
+  public func addDrawing(_ image: CGImage) async throws { try await model.addDrawing(image) }
   public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
   public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }
   public static let screensaver = MiniScreensaver(
@@ -33,6 +34,20 @@ import SwiftUI
           RetroMenuItem(
             id: "import-scrap", title: "Import Text or Image…", enabled: model.canChange,
             action: model.chooseFile),
+          .separator("transfers"),
+          RetroMenuItem(
+            id: "export-selected", title: "Export Scrap…",
+            enabled: model.canChange && model.selected != nil, action: model.exportSelected),
+          RetroMenuItem(
+            id: "export-visible", title: "Export Visible Scraps…",
+            enabled: model.canChange && !model.visible.isEmpty
+          ) { self.model.exportArchive(all: false) },
+          RetroMenuItem(id: "backup", title: "Back Up Library…", enabled: model.canChange) {
+            self.model.exportArchive(all: true)
+          },
+          RetroMenuItem(
+            id: "import-backup", title: "Import Backup…", enabled: model.canChange,
+            action: model.chooseArchive),
           .separator("scrap-actions"),
           RetroMenuItem(
             id: "edit-scrap", title: "Edit Scrap…",
