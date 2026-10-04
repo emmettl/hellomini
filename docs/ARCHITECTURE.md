@@ -92,3 +92,8 @@ The Dock and Finder icon uses the same pixel Macintosh artwork as the desktop. `
 ## Communications telemetry
 
 `MiniCommunications` owns a versioned station profile, bounded Prometheus query client, timestamp-based channel state, and session-only log. The host polls it independently of window visibility and injects optional sound cues. Disconnect/reconfiguration cancels requests and changes a generation token so late responses cannot repopulate a different station. Credentials use a separate Keychain service keyed by the exact endpoint, and profiles never contain them. Query history lives in the backend; the accessory requests one hour only when a chart is selected. The [MotionStudies example](../examples/communications/README.md) translates the existing observer response outside the app, preserving original evidence timestamps and leaving feed business rules with the observer.
+
+
+## Drawing, presets and portable scraps
+
+`MiniPaint` keeps a bounded monochrome bitmap and 20-step operation history, writes the current drawing atomically after each completed edit, and exports an original-resolution PNG. The host injects its Send to Scrapbook connection; the painting module does not import Scrapbook. Desktop presets belong to `MiniDesktop`, compose appearance values with a desktop-session snapshot, and minimise extra open windows instead of destroying their views. Scrapbook's actor owns backup encoding, validation, duplicate fingerprints and staged image writes; an explicit preview precedes the index commit, with rollback of only newly created images on failure.

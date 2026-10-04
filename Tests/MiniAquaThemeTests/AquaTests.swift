@@ -68,7 +68,7 @@ import Testing
   let draw = try #require(theme.icon)
   let symbols: [PixelSymbol] = [
     .computer, .disk, .folder, .document, .activity, .clock, .settings, .teapot, .aquarium,
-    .scrapbook, .calculator, .puzzle, .chooser, .wastebasket, .printer,
+    .scrapbook, .calculator, .puzzle, .chooser, .wastebasket, .printer, .paint,
   ]
   var images = Set<Data>()
   for symbol in symbols {

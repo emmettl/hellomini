@@ -208,6 +208,15 @@ struct AquaIcon: View {
           line([CGPoint(x: 22, y: y), CGPoint(x: 78, y: y)], .white.opacity(0.8), 1)
         }
         oval(CGRect(x: 17, y: 27, width: 66, height: 13), silver)
+      case .paint:
+        paper(CGRect(x: 16, y: 10, width: 66, height: 80))
+        polygon(
+          [
+            CGPoint(x: 30, y: 65), CGPoint(x: 72, y: 18), CGPoint(x: 82, y: 28),
+            CGPoint(x: 40, y: 75),
+          ], .orange)
+        polygon([CGPoint(x: 30, y: 65), CGPoint(x: 40, y: 75), CGPoint(x: 25, y: 80)], dark)
+        line([CGPoint(x: 30, y: 85), CGPoint(x: 69, y: 85)], blue, 3)
       case .printer:
         paper(CGRect(x: 29, y: 7, width: 44, height: 39))
         panel(CGRect(x: 8, y: 32, width: 84, height: 43), silver, 10)

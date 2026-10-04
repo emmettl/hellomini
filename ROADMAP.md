@@ -51,11 +51,12 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Communications:** A vintage receiving station for modern telemetry. Configurable channels read a Prometheus-compatible query API; OpenTelemetry metrics can reach it through a compatible backend. The switchboard has callsigns, status lamps, an hour of strip-chart history, and a bounded session log. Test Lamps and an explicitly labelled simulation provide the nonsense. Freshness, original observation timestamps, disconnected state, and unknown data remain explicit. A read-only MotionStudies observer exporter and preset supply the first integration; deploying the exporter and metrics backend is a separate setup step. See the [setup guide](docs/COMMUNICATIONS.md).
 
-## Planned for 0.6.0
+## Implemented for 0.6.0 — unreleased
 
-- **MiniPaint:** A small MacPaint-style bitmap accessory with pencil, eraser, fill, selection, and patterns. Start with a compact monochrome canvas and PNG export; send finished doodles to Scrapbook.
-- **Desktop presets:** Save named combinations of theme, pattern, display mode, and window arrangement. A desk for work, another for unnecessary fish; switching preserves application data.
-- **Scrapbook export and backup:** Export a page or selection, then add portable library backup/import with previews and duplicate handling. Make the useful collection easy to take elsewhere.
+- **MiniPaint:** A small MacPaint-style bitmap accessory with pencil, eraser, fill, selection, and patterns. The first version has a 320 × 200 monochrome canvas, 20-step undo/redo, local autosave, PNG export and Send to Scrapbook.
+- **Desktop presets:** Save named combinations of theme, pattern, display mode, and window arrangement. A desk for work, another for unnecessary fish; switching minimises other open windows and preserves their contents.
+- **Scrapbook export and backup:** Export one scrap or the visible filtered selection, with portable library backup/import, previews and duplicate handling. Make the useful collection easy to take elsewhere.
+
 ## Further accessories and improvements
 
 - **Finder depth:** Get Info, lightweight previews, and saved favourite locations before broader file operations. Show real metadata inside period presentation.

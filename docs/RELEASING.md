@@ -6,6 +6,8 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 **0.4.0** was published on 15 September 2026. Its tiny-screen fixes came from testing on the Wokyis, and the published build was then checked on the device and looks fine.
 
+**0.5.0** was published on 1 October 2026 (Europe/Zurich), with Communications and ambient-animation fixes. Hosted CI passed; physical-Mini format, test/Metal, build and bundle steps passed. The private workflow's artifact upload hit GitHub Actions storage quota; the separately uploaded signed/notarized release assets were verified and published successfully.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.

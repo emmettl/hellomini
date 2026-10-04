@@ -166,7 +166,7 @@ actor ScrapbookStore {
   }
 
   func imageData(_ id: UUID) throws -> Data { try Data(contentsOf: imageURL(id)) }
-  private func imageURL(_ id: UUID) -> URL {
+  func imageURL(_ id: UUID) -> URL {
     directory.appendingPathComponent(id.uuidString + ".png")
   }
 }

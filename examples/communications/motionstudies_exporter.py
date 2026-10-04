@@ -86,7 +86,8 @@ class NoRedirects(HTTPRedirectHandler):
 
 
 def fetch(url):
-    headers = {"Accept": "application/json"}
+    headers = {"Accept": "application/json",
+               "User-Agent": "HelloMini-MotionStudiesReceiver/0.5.0"}
     for env, header in [("FEED_READ_TOKEN", "Authorization"),
                         ("CF_ACCESS_CLIENT_ID", "CF-Access-Client-Id"),
                         ("CF_ACCESS_CLIENT_SECRET", "CF-Access-Client-Secret")]:
