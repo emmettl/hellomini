@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.9.0** app plus the implemented **0.10 development scope** (saved Chooser services, 1.5× comparison scale, and Impossible instruments). The latter features are not in the published 0.9.0 binary; see the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.9.0** app plus the implemented **0.10.0 scope** (saved Chooser services, 1.5× comparison scale, and Impossible instruments). These features were added after 0.9.0; see the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -253,6 +253,6 @@ Desktop Presets shows a small theme and window-arrangement map for the selected 
 
 **Control Panel → Playfulness → Living dither** enables an optional ink-dot field around windows. It is off by default and shares the master switch. Reduce Motion keeps it static; animation pauses when the desktop is inactive, covered or the display sleeps. It visualises no system or document data.
 
-### Impossible instruments (0.10 development)
+### Impossible instruments (0.10.0)
 
 **Control Panel → Playfulness → Impossible instruments** replaces Activity Monitor’s CPU history graphic with an elaborate dial and a bounded swarm of ink particles. It is off by default and respects Extra silliness. The CPU percentage remains a real sample across all cores; particles are decoration. Small windows keep the numeric summary and process list, omitting the instrument when space is too short. Reduce Motion keeps the drawing static. Sampling and animation pause while updates are paused, the window is hidden/covered, the desktop scene is inactive, or the display sleeps. There is no additional telemetry service or network traffic.

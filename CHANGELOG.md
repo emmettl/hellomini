@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — 0.10.0 scope
+## 0.10.0 — 2026-10-18
 
 - **Chooser:** Save up to 40 service/host/port destinations, skip duplicates, forget addresses and connect explicitly through macOS handlers; stale discovery callbacks cannot repopulate a stopped search.
 - **Impossible instruments:** Opt-in CPU dial and decorative particles in Activity Monitor, retaining real numeric readings and pausing with visibility, scene, display sleep and Reduce Motion controls.

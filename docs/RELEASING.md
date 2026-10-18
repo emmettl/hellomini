@@ -18,6 +18,8 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-display checks from physical Wokyis coverage and records the manual-install/Homebrew upgrade trap. It also records physical resolution/display-sleep/DarkWake checks and post-0.9 layout fixes; full system sleep remains unverified. Check the running executable and display identity before starting hardware validation.
 
+**0.10.0** adds saved Chooser services, optional CPU instruments, a 1.5× comparison preset, responsive sheets and display-window recovery fixes. The physical comparison supports retaining 2× on the Wokyis. See [0.10 validation](0.10_VALIDATION.md) for evidence and remaining VoiceOver, full-system-sleep and soak gaps.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.

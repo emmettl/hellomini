@@ -49,7 +49,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - **Bevelled edges:** Rounded screen corners and the inset bevel remain visible in full screen.
 - **State and recovery:** Tiny-screen and Purist modes are mutually exclusive. Changes retain running apps and saved window placements; disabling the active mode returns to Standard.
 
-The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. The published 0.4.0 build has been checked on the physical Wokyis. The 0.10 development scope adds a saved 1.5× comparison option alongside the default 2×; the physical comparison found 1.5× too small for the user and supports retaining 2× as the Wokyis default. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
+The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. The published 0.4.0 build has been checked on the physical Wokyis. The 0.10.0 scope adds a saved 1.5× comparison option alongside the default 2×; the physical comparison found 1.5× too small for the user and supports retaining 2× as the Wokyis default. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
 
 ## Shipped in 0.5.0
 
@@ -88,7 +88,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Living dither, off by default, with Reduce Motion, occlusion, scene and sleep gates.
 - Dated recovery backups and clearer guidance; transfer, portability and lifecycle regression tests.
 
-## Implemented for 0.10.0 — not yet released
+## 0.10.0 release scope
 
 - Chooser saved service destinations, explicit ports, duplicate handling, and stale-discovery protection.
 - Optional Impossible instruments in Activity Monitor, driven by real CPU samples with bounded decorative particles and motion/visibility/sleep gates.
@@ -131,7 +131,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other continuing directions
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
-- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented for 0.10 development. Physical windows and Depth behind glass remain future effects, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
