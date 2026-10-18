@@ -19,6 +19,7 @@ struct RetroWindow<Content: View>: View {
   var physicalWindows = false
   @Environment(\.scenePhase) private var phase
   @State private var settling: CGFloat = 0
+  @State private var settleRequest = 0
   @ViewBuilder let content: () -> Content
   @GestureState private var drag: WindowDrag?
   @GestureState private var resize: WindowResize?
@@ -40,6 +41,11 @@ struct RetroWindow<Content: View>: View {
   }
 
   var body: some View {
+    let motionAmount =
+      PhysicalWindowMotion.allows(
+        enabled: physicalWindows,
+        reduceMotion: reduceMotion, active: phase == .active) ? settling : 0
+    let rounded = theme.window.cornerRadius > 0
     VStack(spacing: 0) {
       ThemeWindowTitleBar(
         title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed,
@@ -100,9 +106,13 @@ struct RetroWindow<Content: View>: View {
     .themeFrame(active ? theme.window : theme.inactiveWindow)
     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: shaded)
     .modifier(WindowInteraction(active: active, title: title, activate: activate))
-    .scaleEffect(x: 1 + settling * 0.004, y: 1 - settling * 0.006, anchor: .top)
-    .transaction {
-      if !physicalWindows || reduceMotion || phase != .active { $0.disablesAnimations = true }
+    .keyframeAnimator(initialValue: CGFloat.zero, trigger: settleRequest) {
+      [motionAmount] view, progress in
+      let amount = progress * motionAmount
+      view.scaleEffect(x: 1 + amount * 0.004, y: 1 - amount * 0.006, anchor: .top)
+    } keyframes: { _ in
+      LinearKeyframe(1, duration: 0.06)
+      SpringKeyframe(0, duration: rounded ? 0.4 : 0.28, spring: rounded ? .bouncy : .smooth)
     }
     .offset(x: position.x, y: position.y)
     .onChange(of: physicalWindows && !reduceMotion && phase == .active) { _, allowed in
@@ -117,17 +127,9 @@ struct RetroWindow<Content: View>: View {
         enabled: physicalWindows, reduceMotion: reduceMotion,
         active: phase == .active), !zoomed
     else { return }
-    var transaction = Transaction()
-    transaction.disablesAnimations = true
-    withTransaction(transaction) {
-      settling = PhysicalWindowMotion.impulse(translation: value.translation)
-    }
-    // A finite deformation, never an animation of the saved origin or pointer coordinates.
-    withAnimation(
-      .spring(
-        response: theme.window.cornerRadius > 0 ? 0.36 : 0.24,
-        dampingFraction: theme.window.cornerRadius > 0 ? 0.62 : 0.8)
-    ) { settling = 0 }
+    settling = PhysicalWindowMotion.impulse(translation: value.translation)
+    // A trigger guarantees a rendered impulse; two state writes in one update can coalesce.
+    settleRequest += 1
   }
 
   private var resizeGrip: some View {
