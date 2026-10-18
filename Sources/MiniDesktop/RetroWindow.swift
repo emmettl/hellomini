@@ -106,14 +106,9 @@ struct RetroWindow<Content: View>: View {
     .themeFrame(active ? theme.window : theme.inactiveWindow)
     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: shaded)
     .modifier(WindowInteraction(active: active, title: title, activate: activate))
-    .keyframeAnimator(initialValue: CGFloat.zero, trigger: settleRequest) {
-      [motionAmount] view, progress in
-      let amount = progress * motionAmount
-      view.scaleEffect(x: 1 + amount * 0.004, y: 1 - amount * 0.006, anchor: .top)
-    } keyframes: { _ in
-      LinearKeyframe(1, duration: 0.06)
-      SpringKeyframe(0, duration: rounded ? 0.4 : 0.28, spring: rounded ? .bouncy : .smooth)
-    }
+    .modifier(
+      PhysicalWindowSettling(amount: motionAmount, trigger: settleRequest, rounded: rounded)
+    )
     .offset(x: position.x, y: position.y)
     .onChange(of: physicalWindows && !reduceMotion && phase == .active) { _, allowed in
       if !allowed { settling = 0 }
