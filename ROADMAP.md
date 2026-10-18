@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-The signed 0.10.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+The signed 0.11.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
 
 Version **0.10.0** adds saved Chooser services, optional CPU instruments and display polish.
 
@@ -80,7 +80,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 ## Completed distribution work — 18 October 2026
 
-- **Homebrew tap:** `emmettl/tap/hellomini` installs the current signed, notarized app (0.10.0), with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
+- **Homebrew tap:** `emmettl/tap/hellomini` installs the current signed, notarized app (0.11.0), with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
 - **Release maintenance:** The [release process](docs/RELEASING.md#after-publishing-update-homebrew) includes a verified, repeatable tap update after publishing each stable release. Installation/update guidance and the website include the Homebrew route. Uninstall retains application data and Keychain tokens.
 
 ## Shipped in 0.9.0
@@ -98,7 +98,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Shared responsive sheet content widths, including token, build details, retry, recovery, inspection and Scrapbook dialogs; the physical-validation window-recovery and Projects-sheet fixes are included.
 - Expanded populated Chooser control geometry, persistence, scale and lifecycle regression coverage. Comprehensive live VoiceOver, full system sleep, long soak remain explicitly unverified; the physical reading-distance comparison supports 2× over 1.5× for this setup.
 
-## Implemented for 0.11 — not yet released
+## Shipped in 0.11.0
 
 - Active-window keyboard and accessibility isolation: inactive windows expose a labelled activation button; their content stays out of traversal. Finder sheets start at the name field and return focus to the selected item or toolbar.
 - Physical windows: an opt-in, finite settling spring after a title-bar drag. Pointer coordinates and saved geometry remain exact; Reduce Motion, suspension and scene inactivity suppress the effect.
@@ -140,7 +140,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other continuing directions
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
-- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows is implemented for 0.11; Depth behind glass remains a future effect, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows shipped in 0.11.0; Depth behind glass remains a future effect, all optional through Playfulness.
 - **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
@@ -148,4 +148,4 @@ See the [user guide](docs/USER_GUIDE.md) for what works today and [CI documentat
 
 Development evidence and remaining validation for this scope: [0.10 validation](docs/0.10_VALIDATION.md).
 
-Development evidence for the next scope: [0.11 validation](docs/0.11_VALIDATION.md).
+Validation evidence for 0.11: [0.11 validation](docs/0.11_VALIDATION.md).

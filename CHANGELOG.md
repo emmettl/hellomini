@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — 0.11
+## 0.11.0 — 2026-10-19
 
 - Active-window keyboard/accessibility isolation and Finder sheet focus restoration.
 - Optional Physical windows: finite theme-sensitive settling after a drag, with motion/activity gates.

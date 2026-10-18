@@ -23,7 +23,7 @@ If first launch from Downloads stalls, quit that copy and move the app using Fin
 The release also includes a SHA-256 checksum and build manifest. To verify a download, put the ZIP and its `.sha256` file in the same directory and run, for example:
 
 ```sh
-shasum -a 256 -c Hello-Mini-0.10.0-macos-arm64.zip.sha256
+shasum -a 256 -c Hello-Mini-0.11.0-macos-arm64.zip.sha256
 ```
 
 There is no in-app automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.

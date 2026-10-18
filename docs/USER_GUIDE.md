@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the published **0.10.0** app and explicitly labelled **0.11 development additions**. See the [roadmap](../ROADMAP.md) for release status. Communications setup is documented [separately](COMMUNICATIONS.md).
+This guide describes the **0.11.0** app. See the [roadmap](../ROADMAP.md) for release status. Communications setup is documented [separately](COMMUNICATIONS.md).
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -14,7 +14,7 @@ The Window menu reopens closed windows and **Reset Window Layout** restores thei
 
 Aqua adds working red **Close**, yellow **Minimise**, and green **Zoom** controls, with hover symbols and inactive grey states. Zoom fills the available desktop and toggles back to the previous geometry; dragging or resizing a zoomed window establishes a new normal size. Minimise keeps the application and its view state alive, hides the window, and gives focus to the next visible window. In Aqua, **Control Panel → Playfulness → Genie minimise** pours the window into the dock and back out again; turning the switch off or enabling Reduce Motion makes it instant. Restore it from the Aqua dock, its desktop icon in other themes, or its labelled entry in Window. **Window → Minimise** (Command-M) and **Zoom / Restore Size** are available in every theme.
 
-### 0.11 development additions
+### Interaction and Undo
 
 Inactive windows expose an **Activate … window** control instead of their inner controls. Click once to activate, then interact, or choose the accessory from Window or the launcher. Finder’s operation sheet starts in the destination name field; dismissing an operation or inspection returns keyboard focus to the selection or Find toolbar button.
 

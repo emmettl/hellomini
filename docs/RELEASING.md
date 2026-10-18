@@ -20,6 +20,8 @@ The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-d
 
 **0.10.0** adds saved Chooser services, optional CPU instruments, a 1.5× comparison preset, responsive sheets and display-window recovery fixes. The physical comparison supports retaining 2× on the Wokyis. See [0.10 validation](0.10_VALIDATION.md) for evidence and remaining VoiceOver, full-system-sleep and soak gaps.
 
+**0.11.0** adds active-window keyboard/accessibility isolation, Finder sheet focus restoration, guarded session-only Finder Undo and optional Physical windows. See [0.11 validation](0.11_VALIDATION.md) for passing automated/live checks and the remaining spoken VoiceOver, full-system-sleep, cable hot-plug and soak limits.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.
