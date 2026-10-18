@@ -225,6 +225,12 @@ public struct DesktopView: View {
             context.fill(dots, with: .color(theme.ink))
           }.allowsHitTesting(false).accessibilityHidden(true)
         }
+        if playfulness?.allows(DesktopEffects.livingDither.id) == true {
+          LivingDither(
+            windows: model.applications.filter { model.visibleIDs.contains($0.id) }.map {
+              windowFrame($0, desktop: windowArea)
+            })
+        }
         if theme.dock == nil {
           ScrollView(.vertical) {
             VStack(
@@ -277,7 +283,7 @@ public struct DesktopView: View {
         .background { ThemeSurfaceView(theme.desktopLabelSurface ?? .solid(theme.paper)) }
         .offset(x: 28, y: windowArea.height - 90)
 
-        ForEach(model.applications.filter { model.openIDs.contains($0.id) }, id: \.id) { app in
+        ForEach(model.applications.filter { model.visibleIDs.contains($0.id) }, id: \.id) { app in
           RetroWindow(
             title: app.title,
             minimumSize: app.minimumSize,

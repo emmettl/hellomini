@@ -35,7 +35,11 @@ struct DesktopSessionStore {
   /// Keep the original bytes, including unsupported future versions, until explicit recovery.
   func recover() {
     if let original = defaults.object(forKey: Self.key) {
-      defaults.set(original, forKey: "desktop.session.recovery." + UUID().uuidString)
+      let key = "desktop.session.recovery." + UUID().uuidString
+      defaults.set(original, forKey: key)
+      var dates = defaults.dictionary(forKey: "desktop.recoveryDates") ?? [:]
+      dates[key] = Date()
+      defaults.set(dates, forKey: "desktop.recoveryDates")
     }
     defaults.removeObject(forKey: Self.key)
   }

@@ -61,3 +61,5 @@ See the [architecture guide](docs/ARCHITECTURE.md) for module boundaries, theme 
 ## License
 
 Hello Mini is [MIT licensed](LICENSE). Imported teapot data retains its original permission notice; see [third-party notices](THIRD_PARTY_NOTICES.md). Both notices ship inside the app bundle.
+
+Version 0.9 adds cancellable Finder copies and same-volume moves, reviewed desktop preset import/export, optional Living dither, and clearer saved-layout recovery. See the [changelog](CHANGELOG.md) and [user guide](docs/USER_GUIDE.md) for bounds and validation limits.

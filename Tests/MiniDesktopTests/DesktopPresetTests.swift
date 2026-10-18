@@ -70,3 +70,38 @@ import Testing
   model.apply(DesktopSession(openIDs: ["uninstalled"], windows: [:]))
   #expect(model.openIDs == ["a"] && model.minimisedIDs == ["a"] && model.active == nil)
 }
+
+@MainActor @Test func portablePresetsSkipDuplicatesAndPreserveConflictsAndDesktop() throws {
+  let suite = "PortablePresets.\(UUID())"
+  let defaults = UserDefaults(suiteName: suite)!
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let model = DesktopModel(applications: [PresetApp("a")], initiallyOpen: ["a"], defaults: defaults)
+  let store = DesktopPresetStore(defaults: defaults)
+  store.save(name: "Desk", model: model, settings: AppearanceSettings(defaults: defaults))
+  let data = try store.exportData()
+  let incoming = try DesktopPresetStore.previewImport(data)
+  try store.importPresets(incoming)
+  #expect(store.presets.count == 1)
+  var conflict = try #require(incoming.first)
+  conflict.tiny = true
+  try store.importPresets([conflict])
+  #expect(store.presets.count == 2)
+  #expect(Set(store.presets.map(\.id)).count == 2)
+  #expect(store.presets.last?.name == "Desk (2)")
+  #expect(model.openIDs == ["a"])
+  #expect(throws: (any Error).self) {
+    try DesktopPresetStore.previewImport(Data(repeating: 0, count: 500_001))
+  }
+  #expect(throws: (any Error).self) {
+    try DesktopPresetStore.previewImport(Data("{\"version\":2,\"presets\":[]}".utf8))
+  }
+  #expect(store.presets.count == 2)
+}
+
+@Test func livingDitherStopsForReducedMotionOcclusionSleepAndInactiveScene() {
+  #expect(LivingDither.animates(reduceMotion: false, visible: true, awake: true, active: true))
+  #expect(!LivingDither.animates(reduceMotion: true, visible: true, awake: true, active: true))
+  #expect(!LivingDither.animates(reduceMotion: false, visible: false, awake: true, active: true))
+  #expect(!LivingDither.animates(reduceMotion: false, visible: true, awake: false, active: true))
+  #expect(!LivingDither.animates(reduceMotion: false, visible: true, awake: true, active: false))
+}

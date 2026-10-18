@@ -68,6 +68,10 @@ import AppKit
 }
 
 public enum DesktopEffects {
+  public static let livingDither = MiniPlayfulEffect(
+    id: "desktop.livingDither", name: "Living dither",
+    description: "A slow field of ink dots ripples around desktop windows.", enabledByDefault: false
+  )
   public static let genie = MiniPlayfulEffect(
     id: "desktop.genie", name: "Genie minimise",
     description: "Pour Aqua windows into the dock when they are minimised, and back out again.")

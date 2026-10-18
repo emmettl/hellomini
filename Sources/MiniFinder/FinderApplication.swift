@@ -28,6 +28,9 @@ import SwiftUI
             id: "rename", title: "Rename…", enabled: model.selectedEntry != nil && !model.fileBusy,
             action: model.prepareRename),
           RetroMenuItem(
+            id: "move-to", title: "Move To…",
+            enabled: model.selectedEntry != nil && !model.fileBusy, action: model.prepareMove),
+          RetroMenuItem(
             id: "copy-to", title: "Copy To…",
             enabled: model.selectedEntry != nil && !model.fileBusy, action: model.prepareCopy),
           RetroMenuItem(

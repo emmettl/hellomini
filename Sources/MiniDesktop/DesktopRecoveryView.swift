@@ -7,6 +7,7 @@ struct DesktopBackup: Identifiable {
   let bytes: Data
   let summary: String
   let session: DesktopSession?
+  var label: String = "Preserved layout (date unavailable)"
 }
 extension DesktopSessionStore {
   func backups() -> [DesktopBackup] {
@@ -30,7 +31,10 @@ extension DesktopSessionStore {
         id: key, bytes: bytes,
         summary: session.map {
           "Version \($0.version) · \($0.openIDs.count) windows · \(bytes.count) bytes"
-        } ?? "Unreadable layout · \(bytes.count) bytes", session: usable)
+        } ?? "Unreadable layout · \(bytes.count) bytes", session: usable,
+        label: (defaults.dictionary(forKey: "desktop.recoveryDates")?[key] as? Date).map {
+          "Saved " + $0.formatted(date: .abbreviated, time: .shortened)
+        } ?? "Preserved layout (date unavailable)")
     }
   }
 }
@@ -52,12 +56,17 @@ struct DesktopRecoveryView: View {
         ForEach(model.sessionBackups) { backup in
           Text(
             backup.id == DesktopSessionStore.key
-              ? "Current saved layout" : String(backup.id.suffix(36))
+              ? "Current saved layout" : backup.label + " · " + String(backup.id.suffix(8))
           ).tag(Optional(backup.id))
         }
       }
       if let backup = model.sessionBackups.first(where: { $0.id == selection }) {
         Text(backup.summary).font(theme.typography.small)
+        Text(
+          backup.session == nil
+            ? "Export available. This layout cannot be restored by this version."
+            : "Restoring first preserves the current saved layout. Open documents stay in memory."
+        ).font(theme.typography.small)
         ScrollView {
           Text(String(decoding: backup.bytes.prefix(2048), as: UTF8.self)).font(
             .system(size: 11, design: .monospaced)

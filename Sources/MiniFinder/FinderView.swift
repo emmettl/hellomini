@@ -280,6 +280,10 @@ struct FinderView: View {
       model.selection = entry.url
       model.prepareRename()
     }.disabled(model.fileBusy)
+    Button("Move To…") {
+      model.selection = entry.url
+      model.prepareMove()
+    }.disabled(model.fileBusy)
     Button("Copy To…") {
       model.selection = entry.url
       model.prepareCopy()

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0 — 2026-10-18
+
+- **Finder transfers:** Bounded streaming copies with byte progress and cancellation, exclusive staged commits, source-change checks, metadata preservation and rejection of special files. Reviewed Move To performs an atomic move within one volume; cross-volume moves leave the source intact and require macOS Finder.
+- **Portable desks:** Export/import desktop presets with window-map review, duplicate skipping and separate identities/names for conflicts. Imports retain existing desks and open documents; unavailable themes are identified before applying.
+- **Living dither:** An opt-in themed field of moving ink dots around windows. Reduce Motion gives a static field; inactive, obscured and sleeping desktops pause animation.
+- **Recovery and validation:** New layout backups record dates and show clearer restore/export guidance. Regression tests cover transfer cancellation/cleanup, exclusive moves, preset portability and animation lifecycle gates. Live GitLab testing is unavailable because no test instance is configured; extended hardware soak and comprehensive VoiceOver coverage remain continuing work.
+
 ## Distribution update — 2026-10-18
 
 - Added the existing signed, notarized 0.8.0 release to `emmettl/tap/hellomini`; no new app binary or version was released.

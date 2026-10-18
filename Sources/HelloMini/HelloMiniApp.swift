@@ -144,7 +144,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       MiniStartup.effect, TeapotApplication.rotationEffect, CalculatorApplication.effect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
-      DesktopEffects.dockMagnification, DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
+      DesktopEffects.livingDither, DesktopEffects.dockMagnification,
+      DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
       TalkingMoose.effect, CommunicationsApplication.effect, NetworkApplication.effect,
     ] + AquariumApplication.effects)
   let screensavers = ScreensaverSettings(savers: [

@@ -105,3 +105,9 @@ The `MiniNetwork` module owns its path monitor and a serial-queue TCP probe. Pro
 Build history and artifact metadata extend the provider protocol with conservative defaults for other providers. Each provider derives download endpoints from its validated server/project and numeric artifact identifier rather than trusting remote URLs. `ArtifactDownload` uses a dedicated ephemeral session, strips all headers on cross-origin redirects, bounds received bytes, validates ZIP headers and applies quarantine before committing to a new path. Finder operations stage bounded copies and use exclusive rename on commit. Network probe transports/deadlines are injectable for deterministic failure tests. Control-frame preferences expose geometry only for targeted regression assertions.
 
 Provider references: [GitHub artifacts](https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28), [GitLab job artifacts](https://docs.gitlab.com/api/job_artifacts/), and [GitLab jobs](https://docs.gitlab.com/api/jobs/).
+
+## 0.9 transfers and desktop effects
+
+Finder copies stream regular files in 256 KB chunks into an owned staging directory, checking cancellation and limits during transfer. Special files are refused, symlinks remain links, and metadata is copied without following symlinks. Source identity/size/modification changes fail before the exclusive commit. Move uses `RENAME_EXCL`; an `EXDEV` failure leaves the source intact instead of attempting copy-and-delete. No destination replacement is implemented.
+
+Preset transfer reuses the versioned, bounded document validation and requires explicit import review. Imports never apply layouts, replace existing presets or close documents. Living dither uses a bounded Canvas grid at up to 12 Hz, with no hit testing or accessibility nodes, and pauses for Reduce Motion, inactive scenes, desktop occlusion and display sleep.

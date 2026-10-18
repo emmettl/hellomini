@@ -30,7 +30,7 @@ The published 0.4.0 build has been checked on the physical Wokyis and looks fine
 
 ### Saved layout and startup
 
-Open applications, stacking order, positions, sizes, and minimised/zoomed states are saved automatically and restored after the startup sequence. A deliberately empty desktop stays empty. On a first launch, Activity Monitor opens by default. Layouts adapt to the current display without overwriting the saved geometry until you move or resize a window. Unknown application IDs are ignored, and unreadable or unsupported session data falls back to the initial layout.
+Open applications, stacking order, positions, sizes, and minimised/zoomed states are saved automatically and restored after the startup sequence. A deliberately empty desktop stays empty. On a first launch, Activity Monitor opens by default. Layouts adapt to the current display without overwriting the saved geometry until you move or resize a window. Unknown application IDs are ignored. Unreadable or unsupported session data is preserved and opens recovery guidance with a fallback layout; saving stays blocked until explicit recovery. **Window → Saved Desktop Backups…** inspects, exports and restores compatible layouts. New backups include dates; older backups honestly show that their date is unavailable. Restoring first preserves the current layout and retains open documents.
 
 At launch, a brief Macintosh boot homage shows a happy Mac, then “Welcome to Macintosh.” with a stepped progress bar and a row of startup icons. It uses the selected theme and lasts about four seconds before opening the desktop. Click **Skip startup** or press Escape to enter immediately. **Control Panel → Playfulness → Macintosh startup** disables it for subsequent launches; the Extra silliness master switch and macOS Reduce Motion also bypass it. An original chime plays when System sounds is enabled. The presentation does not measure system boot or application loading. Desktop windows and their input handlers are created afterward. The sequence runs once per launch and does not replay when changing themes, focusing the app, or reopening an application window.
 
@@ -54,7 +54,7 @@ Known visual limitation: a theme thumbnail can partially repaint after a live ap
 
 ## Finder
 
-The Finder browses real folders, with icon and list views, back/up navigation, hidden-file visibility, and a folder chooser. Its last folder, icon/list mode, and hidden-file preference survive relaunches; navigation history starts fresh. Missing or inaccessible restored folders use the normal error view and folder chooser. Double-click a folder to browse it or a file to open it with its default macOS application. Right-click an item to reveal it in macOS Finder. Folder access follows normal macOS permissions; errors appear in the window. The context menu offers seven colour labels, updating the matching named macOS tag and legacy colour while preserving unrelated tags. File contents are unchanged; move and delete operations remain future work.
+The Finder browses real folders, with icon and list views, back/up navigation, hidden-file visibility, and a folder chooser. Its last folder, icon/list mode, and hidden-file preference survive relaunches; navigation history starts fresh. Missing or inaccessible restored folders use the normal error view and folder chooser. Double-click a folder to browse it or a file to open it with its default macOS application. Right-click an item to reveal it in macOS Finder. Folder access follows normal macOS permissions; errors appear in the window. The context menu offers seven colour labels, updating the matching named macOS tag and legacy colour while preserving unrelated tags. Labels leave file contents unchanged. **Move To…** reviews an exclusive same-volume destination; cross-volume moves and deletion remain outside Hello Mini.
 
 ## Activity Monitor
 
@@ -72,7 +72,7 @@ Creeping anachronism is part of the design: modern GPU effects should borrow the
 
 **Teapot animation** controls automatic rotation. It stops automatic rotation in an already-open Teapot window, retaining manual orbit, shading modes, and the app's own pause/resume choice. Re-enabling it does not open Teapot or undo a manual pause. Reduce Motion still prevents automatic rotation.
 
-The Playfulness pane also lists the future ideas explicitly as planned: fluid **Living dither**, particle-based **Impossible instruments**, folding **Physical windows**, and stippled 3D **Depth behind glass**. These renderers are not implemented yet; each will receive its own working switch when registered.
+The Playfulness pane also lists the future ideas explicitly as planned: particle-based **Impossible instruments**, folding **Physical windows**, and stippled 3D **Depth behind glass**. These renderers are not implemented yet; each will receive its own working switch when registered.
 
 ## Screensavers
 
@@ -237,10 +237,18 @@ Select one project in Print Monitor, then choose **History…**. Search an exact
 
 **File → New Folder…**, **Rename…**, and **Copy To…** show a review sheet with the name and destination. Rename and Copy are also in file context menus. Copy first asks for a destination folder. Confirm performs the operation off the UI actor. Existing destinations, including symbolic links, are never replaced. Case-only rename on a case-insensitive volume may report a conflict; use macOS Finder for that operation.
 
-Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. There is no operation Undo or large-copy progress in this release; use macOS Finder for Move, replacement and larger collections.
+Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. Copy progress and cancellation are available in 0.9.0, alongside atomic same-volume Move To. There is no operation Undo; use macOS Finder for cross-volume moves, replacement and larger collections.
 
 ## Desktop window maps and backup controls
 
 Desktop Presets shows a small theme and window-arrangement map for the selected preset. It does not capture or store screenshots of document contents.
 
 **Window → Saved Desktop Backups…** lists the current saved layout and preserved recovery records. Inspect the summary and first 2 KB, or **Export Original…** to retain all original bytes. **Restore Layout…** requires confirmation, backs up the current saved data and restores a compatible version-one layout, minimising other windows while retaining their contents. Unreadable and newer-version backups remain exportable but cannot be restored by this version.
+
+### 0.9 desktop tools
+
+**Finder Copy To…** streams up to 512 MB / 10,000 entries, displays bytes copied and supports Cancel. Cancellation or source-change errors remove the staged copy and retain the source. Permissions, timestamps and extended attributes are preserved; symbolic links remain links. Existing destinations are never replaced. **Move To…** uses an atomic same-volume move. Cross-volume moves are refused without deleting the source; use macOS Finder for those.
+
+**Desktop Presets → Export… / Import…** transfers a bounded JSON collection. Import first shows names, themes and window maps. Confirming skips identical presets and preserves conflicts as separately named desks, up to 20 total; it does not apply a desk or change open documents. Missing themes are labelled and cannot be applied until installed.
+
+**Control Panel → Playfulness → Living dither** enables an optional ink-dot field around windows. It is off by default and shares the master switch. Reduce Motion keeps it static; animation pauses when the desktop is inactive, covered or the display sleeps. It visualises no system or document data.

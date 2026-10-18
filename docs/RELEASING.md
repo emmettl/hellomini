@@ -14,6 +14,8 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 **0.8.0** source is dated 18 October 2026 (Europe/Zurich). Validation evidence and remaining hardware/self-hosted coverage limits are recorded in its GitHub release notes.
 
+**0.9.0** adds Finder transfers, portable presets, Living dither and recovery guidance. Report actual accessibility/hardware validation in release notes; deterministic lifecycle gates do not establish a long physical sleep/wake soak. No GitLab test instance is available.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.

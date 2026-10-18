@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import MiniCore
 import MiniUI
@@ -88,6 +89,43 @@ private struct PresetDocument: Codable {
     error = nil
     return true
   }
+  func exportData() throws -> Data {
+    guard readable else { throw PresetError.invalid }
+    return try JSONEncoder().encode(PresetDocument(presets: presets))
+  }
+  static func previewImport(_ data: Data) throws -> [DesktopPreset] {
+    guard data.count <= 500_000 else { throw PresetError.invalid }
+    let document = try JSONDecoder().decode(PresetDocument.self, from: data)
+    guard document.version == 1, document.presets.count <= 20,
+      document.presets.allSatisfy(\.isValid),
+      Set(document.presets.map(\.id)).count == document.presets.count
+    else { throw PresetError.invalid }
+    return document.presets
+  }
+  func importPresets(_ incoming: [DesktopPreset]) throws {
+    guard readable, incoming.count <= 20, incoming.allSatisfy(\.isValid) else {
+      throw PresetError.invalid
+    }
+    var next = presets
+    for var preset in incoming {
+      // Identical payloads are skipped; conflicting identifiers get a new identity/name.
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .sortedKeys
+      if try next.contains(where: { try encoder.encode($0) == encoder.encode(preset) }) { continue }
+      if next.contains(where: { $0.id == preset.id }) { preset.id = UUID() }
+      let base = String(preset.name.prefix(65))
+      var suffix = 2
+      while next.contains(where: {
+        $0.name.localizedCaseInsensitiveCompare(preset.name) == .orderedSame
+      }) {
+        preset.name = "\(base) (\(suffix))"
+        suffix += 1
+      }
+      next.append(preset)
+    }
+    guard next.count <= 20 else { throw PresetError.invalid }
+    try persist(next)
+  }
   private func persist(_ next: [DesktopPreset]) throws {
     let data = try JSONEncoder().encode(PresetDocument(presets: next))
     guard data.count <= 500_000 else { throw PresetError.invalid }
@@ -118,54 +156,93 @@ struct DesktopPresetsView: View {
   @State private var selection: UUID?
   @State private var confirmReplace = false
   @State private var confirmDelete = false
+  @State private var incoming: [DesktopPreset]?
+  @State private var transferError: String?
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("Desktop Presets").font(theme.typography.title)
-      Text("A desk for work. A desk for fish. Same computer.").font(theme.typography.small)
-      if store.presets.isEmpty {
-        Text("No desks on file. Arrange your windows, then save this desktop.")
-      } else {
-        Picker("Saved desk", selection: $selection) {
-          Text("Choose a preset").tag(Optional<UUID>.none)
-          ForEach(store.presets) { Text($0.name).tag(Optional($0.id)) }
-        }
-        if let selected = store.presets.first(where: { $0.id == selection }) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 12) {
+          Text("Desktop Presets").font(theme.typography.title)
+          Text("A desk for work. A desk for fish. Same computer.").font(theme.typography.small)
+          if store.presets.isEmpty {
+            Text("No desks on file. Arrange your windows, then save this desktop.")
+          } else {
+            Picker("Saved desk", selection: $selection) {
+              Text("Choose a preset").tag(Optional<UUID>.none)
+              ForEach(store.presets) { Text($0.name).tag(Optional($0.id)) }
+            }
+            if let selected = store.presets.first(where: { $0.id == selection }) {
+              Text(
+                "\(selected.session.openIDs.count) windows · \(selected.themeID) · \(selected.purist ? "Purist" : selected.tiny ? "2×" : "Standard")"
+              )
+              .font(theme.typography.small)
+              PresetThumbnail(
+                preset: selected, theme: themes.definition(for: selected.themeID) ?? theme)
+              HStack {
+                Button("Use this desk") {
+                  if store.apply(selected, model: model, settings: settings) { dismiss() }
+                }
+                Button("Replace…") { confirmReplace = true }
+                Button("Delete…") { confirmDelete = true }
+              }
+            }
+          }
+          HStack {
+            Button("Export…") { exportPresets() }.disabled(!store.readable)
+            Button("Import…") { previewPresets() }.disabled(!store.readable)
+          }
+          if let incoming {
+            ScrollView {
+              VStack(alignment: .leading) {
+                Text("Review \(incoming.count) presets. Existing presets and documents are kept.")
+                ForEach(incoming) { preset in
+                  Text(preset.name + " · " + preset.themeID)
+                  PresetThumbnail(
+                    preset: preset, theme: themes.definition(for: preset.themeID) ?? theme)
+                  if themes.definition(for: preset.themeID) == nil {
+                    Text(
+                      "Theme unavailable; import keeps this preset, but it cannot be applied here.")
+                  }
+                }
+              }
+            }.frame(maxHeight: 180)
+            HStack {
+              Button("Cancel Import") { self.incoming = nil }
+              Button("Import Reviewed Presets") {
+                do {
+                  try store.importPresets(incoming)
+                  self.incoming = nil
+                  transferError = nil
+                } catch { transferError = error.localizedDescription }
+              }
+            }
+          }
+          if let transferError { Text(transferError).font(theme.typography.small) }
+          Divider()
+          TextField("Name for this desktop", text: $name)
+          Button("Save current desktop") {
+            store.save(name: name, model: model, settings: settings)
+            if store.error == nil { name = "" }
+          }
+          .disabled(
+            !store.readable || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+              || store.presets.count >= 20)
           Text(
-            "\(selected.session.openIDs.count) windows · \(selected.themeID) · \(selected.purist ? "Purist" : selected.tiny ? "2×" : "Standard")"
+            "Saves theme, pattern, display mode and window arrangement. Other open windows are minimised when switching; their contents remain intact. Presets do not change app settings or data."
           )
           .font(theme.typography.small)
-          PresetThumbnail(
-            preset: selected, theme: themes.definition(for: selected.themeID) ?? theme)
-          HStack {
-            Button("Use this desk") {
-              if store.apply(selected, model: model, settings: settings) { dismiss() }
-            }
-            Button("Replace…") { confirmReplace = true }
-            Button("Delete…") { confirmDelete = true }
+          if let error = store.error {
+            Text(error).font(theme.typography.small).foregroundStyle(theme.accent)
           }
         }
-      }
-      Divider()
-      TextField("Name for this desktop", text: $name)
-      Button("Save current desktop") {
-        store.save(name: name, model: model, settings: settings)
-        if store.error == nil { name = "" }
-      }
-      .disabled(
-        !store.readable || name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-          || store.presets.count >= 20)
-      Text(
-        "Saves theme, pattern, display mode and window arrangement. Other open windows are minimised when switching; their contents remain intact. Presets do not change app settings or data."
-      )
-      .font(theme.typography.small)
-      if let error = store.error {
-        Text(error).font(theme.typography.small).foregroundStyle(theme.accent)
       }
       HStack {
         Spacer()
         Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
       }
-    }.padding(16).font(theme.typography.body).foregroundStyle(theme.ink).buttonStyle(
+    }.frame(width: 400, height: 280).padding(12).font(theme.typography.body).foregroundStyle(
+      theme.ink
+    ).buttonStyle(
       RetroButtonStyle()
     )
     .confirmationDialog(
@@ -186,6 +263,29 @@ struct DesktopPresetsView: View {
       }
     }
   }
+  private func exportPresets() {
+    let panel = NSSavePanel()
+    panel.nameFieldStringValue = "HelloMini-Desktop-Presets.json"
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    do {
+      try store.exportData().write(to: url, options: .atomic)
+      transferError = nil
+    } catch { transferError = error.localizedDescription }
+  }
+  private func previewPresets() {
+    let panel = NSOpenPanel()
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    guard panel.runModal() == .OK, let url = panel.url else { return }
+    do {
+      let handle = try FileHandle(forReadingFrom: url)
+      defer { try? handle.close() }
+      let data = try handle.read(upToCount: 500_001) ?? Data()
+      incoming = try DesktopPresetStore.previewImport(data)
+      transferError = nil
+    } catch { transferError = error.localizedDescription }
+  }
+
 }
 
 struct PresetThumbnail: View {

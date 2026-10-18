@@ -4,6 +4,8 @@ Hello Mini's guiding principle is **quintessential idiocy**: useful little appli
 
 The signed 0.8.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
 
+Version **0.9.0** adds cancellable Finder copies, atomic same-volume moves, portable desktop presets, Living dither and clearer recovery controls.
+
 Version **0.8.0** deepens Print Monitor and Finder, adds preset window maps and backup recovery controls, and strengthens validation. Version **0.7.0** adds Network, Finder inspection and favourites, saved-session recovery, and reliability improvements. Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
@@ -79,9 +81,16 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - **Homebrew tap:** `emmettl/tap/hellomini` installs the signed, notarized 0.8.0 app, with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
 - **Release maintenance:** The [release process](docs/RELEASING.md#after-publishing-update-homebrew) includes a verified, repeatable tap update after publishing each stable release. Installation/update guidance and the website include the Homebrew route. Uninstall retains application data and Keychain tokens.
 
+## Shipped in 0.9.0
+
+- Finder copy progress/cancellation, source-change detection and atomic same-volume Move To. Cross-volume moves and replacement/Undo remain future work.
+- Portable presets with reviewed imports, duplicate/conflict handling and window previews.
+- Living dither, off by default, with Reduce Motion, occlusion, scene and sleep gates.
+- Dated recovery backups and clearer guidance; transfer, portability and lifecycle regression tests.
+
 ## Further accessories and improvements
 
-- Finder Move, conflict replacement and large-copy progress need separate careful flows.
+- Finder cross-volume Move, conflict replacement, Undo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
 - Broader end-to-end accessibility coverage and long physical Wokyis/display-change/sleep-wake sessions remain continuing validation work.
 - Additional live self-hosted provider installations require configured endpoints and suitable test accounts.
 
@@ -113,7 +122,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other continuing directions
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
-- **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
 - **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 

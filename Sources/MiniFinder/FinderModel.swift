@@ -13,6 +13,9 @@ final class FinderModel {
   var inspection: FileInspection?
   var fileDraft: FileOperationDraft?
   private(set) var fileBusy = false
+  private(set) var copiedBytes: Int64 = 0
+  @ObservationIgnored private var fileTask: Task<Void, Never>?
+  func cancelFileOperation() { fileTask?.cancel() }
   private(set) var fileOperationError: String?
   func prepareNewFolder() {
     fileOperationError = nil
@@ -25,28 +28,40 @@ final class FinderModel {
     fileDraft = FileOperationDraft(
       kind: .rename, source: entry.url, folder: location, name: entry.name)
   }
-  func prepareCopy() {
+  func prepareMove() { prepareTransfer(move: true) }
+  func prepareCopy() { prepareTransfer(move: false) }
+  private func prepareTransfer(move: Bool) {
     guard let entry = selectedEntry else { return }
     let panel = NSOpenPanel()
     panel.canChooseDirectories = true
     panel.canChooseFiles = false
     panel.allowsMultipleSelection = false
-    panel.prompt = "Choose Copy Destination"
+    panel.prompt = move ? "Choose Move Destination" : "Choose Copy Destination"
     guard panel.runModal() == .OK, let destination = panel.url else { return }
     fileOperationError = nil
     fileDraft = FileOperationDraft(
-      kind: .copy, source: entry.url, folder: destination, name: entry.name)
+      kind: move ? .move : .copy, source: entry.url, folder: destination, name: entry.name)
   }
   func performFileOperation(_ draft: FileOperationDraft) {
     guard !fileBusy else { return }
     fileBusy = true
-    Task {
+    copiedBytes = 0
+    fileOperationError = nil
+    fileTask = Task {
       defer { fileBusy = false }
       do {
-        _ = try await reader.perform(draft)
+        _ = try await reader.perform(draft) { [weak self] bytes in
+          Task { @MainActor [weak self] in self?.copiedBytes = bytes }
+        }
         fileDraft = nil
         reload()
-      } catch { fileOperationError = "Nothing was replaced. " + error.localizedDescription }
+      } catch {
+        fileOperationError =
+          Task.isCancelled
+          ? "Cancelled. The source was kept and no destination was committed."
+          : "Nothing was replaced. Cross-volume moves require macOS Finder. "
+            + error.localizedDescription
+      }
     }
   }
   private(set) var favourites: [URL] = []
