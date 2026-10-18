@@ -75,6 +75,37 @@ struct PaintBitmap: Codable, Equatable, Sendable {
       }
     }
   }
+  func desktopRows(selection: PaintSelection) -> [UInt8] {
+    (0..<8).map { y in
+      (0..<8).reduce(UInt8(0)) { row, x in
+        let px = selection.x + x * selection.width / 8
+        let py = selection.y + y * selection.height / 8
+        return row | (self[px, py] == 0 ? UInt8(1 << x) : 0)
+      }
+    }
+  }
+  static func importing(_ image: CGImage) throws -> PaintBitmap {
+    var result = PaintBitmap()
+    let scale = min(Double(width) / Double(image.width), Double(height) / Double(image.height))
+    let w = max(1, Int(Double(image.width) * scale))
+    let h = max(1, Int(Double(image.height) * scale))
+    let drawn = result.pixels.withUnsafeMutableBytes { bytes -> Bool in
+      guard
+        let context = CGContext(
+          data: bytes.baseAddress, width: width, height: height,
+          bitsPerComponent: 8, bytesPerRow: width, space: CGColorSpaceCreateDeviceGray(),
+          bitmapInfo: CGImageAlphaInfo.none.rawValue)
+      else { return false }
+      context.setFillColor(gray: 1, alpha: 1)
+      context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+      context.interpolationQuality = .high
+      context.draw(image, in: CGRect(x: (width - w) / 2, y: (height - h) / 2, width: w, height: h))
+      return true
+    }
+    guard drawn else { throw PaintError.invalid }
+    result.pixels = Data(result.pixels.map { $0 < 128 ? 0 : 255 })
+    return result
+  }
   func image() -> CGImage? {
     guard isValid, let provider = CGDataProvider(data: pixels as CFData) else { return nil }
     return CGImage(

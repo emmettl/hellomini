@@ -9,14 +9,19 @@ import SwiftUI
   public let defaultSize = CGSize(width: 720, height: 510)
   public let minimumSize = CGSize(width: 440, height: 250)
   private let model: PaintModel
-  public init(sendToScrapbook: @escaping @MainActor (CGImage) async throws -> Void = { _ in }) {
+  public init(
+    applyPattern: @escaping @MainActor ([UInt8]) -> Void = { _ in },
+    sendToScrapbook: @escaping @MainActor (CGImage) async throws -> Void = { _ in }
+  ) {
     model = PaintModel(send: sendToScrapbook)
+    model.applyPattern = applyPattern
   }
+  public func openDrawing(_ image: CGImage) throws { try model.prepareImport(image) }
   public func content() -> AnyView { AnyView(PaintView(model: model)) }
   public var menus: [RetroMenu] {
     [
       RetroMenu(
-        id: "paint", title: "Paint",
+        id: "paint", title: "Paint", width: 330,
         items: [
           RetroMenuItem(id: "new", title: "New Drawing…", enabled: model.ready) {
             self.model.showNew = true
@@ -31,6 +36,9 @@ import SwiftUI
           RetroMenuItem(
             id: "clear", title: "Clear Selection", enabled: model.selection != nil,
             action: model.clearSelection),
+          RetroMenuItem(
+            id: "desktop-pattern", title: "Use Selection as Desktop Pattern",
+            enabled: model.ready && model.selection != nil, action: model.useAsDesktopPattern),
           RetroMenuItem(
             id: "export", title: "Export PNG…", enabled: model.ready, action: model.exportPNG),
           RetroMenuItem(
@@ -101,6 +109,26 @@ private struct PaintView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }.padding(8).font(theme.typography.body).foregroundStyle(theme.ink).background(theme.paper)
       .disabled(!model.ready).onAppear { model.load() }.onDisappear { model.finish() }
+      .sheet(
+        isPresented: Binding(
+          get: { model.pendingImport != nil }, set: { if !$0 { model.pendingImport = nil } })
+      ) {
+        VStack(spacing: 8) {
+          Text("Open picture in MiniPaint?").font(.headline)
+          Text(
+            "Fit to 320 × 200 with white margins and a black-and-white threshold. Your current drawing can be recovered with Undo."
+          ).font(theme.typography.small)
+          if let image = model.pendingImport?.image() {
+            Image(decorative: image, scale: 1).resizable().interpolation(.none).scaledToFit()
+              .frame(height: 90)
+          }
+          HStack {
+            Button("Cancel") { model.pendingImport = nil }.keyboardShortcut(.cancelAction)
+            Button("Open", action: model.confirmImport).keyboardShortcut(.defaultAction)
+          }.buttonStyle(RetroButtonStyle())
+        }.padding(12).frame(width: 370).foregroundStyle(theme.ink).background(theme.paper)
+          .miniSheet(width: 370)
+      }
       .confirmationDialog(
         "Start a new drawing? The current drawing can still be recovered with Undo during this session.",
         isPresented: $model.showNew

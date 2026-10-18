@@ -14,6 +14,8 @@ import UniformTypeIdentifiers
   var pattern = PaintPattern.black
   var selection: PaintSelection?
   var showNew = false
+  var pendingImport: PaintBitmap?
+  var applyPattern: @MainActor ([UInt8]) -> Void = { _ in }
   var notice = "320 × 200 pixels. An intimidating amount of potential."
   private(set) var ready = false
   private(set) var error: String?
@@ -132,6 +134,25 @@ import UniformTypeIdentifiers
     } catch {
       self.error = "Drawing is still in memory, but could not be saved. Export PNG to keep a copy."
     }
+  }
+  func prepareImport(_ image: CGImage) throws {
+    load()
+    guard ready else { throw PaintError.invalid }
+    finish()
+    pendingImport = try PaintBitmap.importing(image)
+  }
+  func confirmImport() {
+    guard ready, let imported = pendingImport else { return }
+    before = bitmap
+    bitmap = imported
+    selection = nil
+    pendingImport = nil
+    finish()
+  }
+  func useAsDesktopPattern() {
+    guard ready, let selection else { return }
+    applyPattern(bitmap.desktopRows(selection: selection))
+    notice = "Selection sampled to an 8 × 8 desktop pattern."
   }
   func exportPNG() {
     let panel = NSSavePanel()

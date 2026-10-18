@@ -92,3 +92,21 @@ private func imageBytes() throws -> Data {
       atPath: dir.appendingPathComponent(image.scrap.id.uuidString + ".png").path))
   #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("scrapbook.json").path))
 }
+
+@MainActor @Test func exampleScrapsAreExplicitAndRepeatWithoutDuplicates() async throws {
+  let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
+    "ScrapExamples-\(UUID())")
+  defer { try? FileManager.default.removeItem(at: directory) }
+  let model = ScrapbookModel(directory: directory, recognizer: { _ in "" })
+  await model.load()
+  #expect(model.scraps.isEmpty)
+  model.addExamples()
+  while model.busy { try await Task.sleep(for: .milliseconds(10)) }
+  #expect(model.error == nil)
+  #expect(model.scraps.count == 4)
+  let ids = Set(model.scraps.map(\.id))
+  model.addExamples()
+  while model.busy { try await Task.sleep(for: .milliseconds(10)) }
+  #expect(Set(model.scraps.map(\.id)) == ids)
+  #expect(model.error == nil)
+}

@@ -162,23 +162,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     didChime = true
     sounds.play(.startup)
   }
-  lazy var applications: [any MiniApplication] = [
-    FinderApplication(findFile: { [commands] in commands.launch("find-file") }),
-    FindFileApplication(), ActivityMonitorApplication(), ClockApplication(),
-    ControlPanelApplication(
-      settings: settings, playfulness: playfulness, themes: Self.themes, screensavers: screensavers),
-    AboutApplication(), TeapotApplication(playfulness: playfulness), aquarium, scrapbook,
-    CalculatorApplication(playfulness: playfulness),
-    WorldClockApplication(playfulness: playfulness),
-    PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
-    DiskFirstAidApplication(),
-    WastebasketApplication(onEmpty: { [sounds] in sounds.play(.wastebasket) }),
-    printMonitor, communications,
-    PaintApplication(sendToScrapbook: { [scrapbook, commands] image in
+  lazy var paint = PaintApplication(
+    applyPattern: { [settings] rows in
+      settings.setPattern(DesktopPattern(rows: rows))
+    },
+    sendToScrapbook: { [scrapbook, commands] image in
       try await scrapbook.addDrawing(image)
       commands.launchID = "scrapbook"
-    }), ClipboardApplication(), KeyCapsApplication(), alarm,
-  ]
+    })
+  lazy var applications: [any MiniApplication] = {
+    scrapbook.connectPaint { [weak self] image in
+      guard let self else { return }
+      try self.paint.openDrawing(image)
+      self.commands.launchID = "mini-paint"
+    }
+    return [
+      FinderApplication(findFile: { [commands] in commands.launch("find-file") }),
+      FindFileApplication(), ActivityMonitorApplication(), ClockApplication(),
+      ControlPanelApplication(
+        settings: settings, playfulness: playfulness, themes: Self.themes,
+        screensavers: screensavers),
+      AboutApplication(), TeapotApplication(playfulness: playfulness), aquarium, scrapbook,
+      CalculatorApplication(playfulness: playfulness),
+      WorldClockApplication(playfulness: playfulness),
+      PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
+      DiskFirstAidApplication(),
+      WastebasketApplication(onEmpty: { [sounds] in sounds.play(.wastebasket) }),
+      printMonitor, communications,
+      paint, ClipboardApplication(), KeyCapsApplication(), alarm,
+    ]
+  }()
   init() {
     let screensavers = screensavers
     let sounds = SystemSounds(settings: playfulness)

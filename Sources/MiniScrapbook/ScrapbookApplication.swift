@@ -10,6 +10,9 @@ import SwiftUI
   public let minimumSize = CGSize(width: 440, height: 240)
   private let model = ScrapbookModel()
   public init() {}
+  public func connectPaint(_ open: @escaping @MainActor (CGImage) throws -> Void) {
+    model.openPaint = open
+  }
   public func addDrawing(_ image: CGImage) async throws { try await model.addDrawing(image) }
   public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
   public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }
@@ -34,6 +37,13 @@ import SwiftUI
           RetroMenuItem(
             id: "import-scrap", title: "Import Text or Image…", enabled: model.canChange,
             action: model.chooseFile),
+          RetroMenuItem(
+            id: "open-paint", title: "Open Picture in MiniPaint…",
+            enabled: model.canChange && model.selected?.kind == .image,
+            action: model.openSelectedInPaint),
+          RetroMenuItem(
+            id: "examples", title: "Add Example Scraps", enabled: model.canChange,
+            action: model.addExamples),
           .separator("transfers"),
           RetroMenuItem(
             id: "export-selected", title: "Export Scrap…",

@@ -1,4 +1,5 @@
 import AppKit
+import ImageIO
 import Observation
 import UniformTypeIdentifiers
 
@@ -6,6 +7,7 @@ import UniformTypeIdentifiers
   private(set) var scraps: [Scrap] = []
   private(set) var ready = false
   private(set) var busy = false
+  var openPaint: @MainActor (CGImage) throws -> Void = { _ in }
   var query = ""
   var showArchive = false
   var selection: UUID?
@@ -97,6 +99,62 @@ import UniformTypeIdentifiers
     try await add(item)
   }
 
+  func openSelectedInPaint() {
+    guard let selected, selected.kind == .image else { return }
+    run {
+      let data = try await self.store.imageData(selected.id)
+      guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+        let image = CGImageSourceCreateImageAtIndex(source, 0, nil)
+      else { throw ScrapbookError.invalidImage }
+      try self.openPaint(image)
+    }
+  }
+  func addExamples() {
+    run {
+      let examples: [(ScrapKind, String, String)] = [
+        (
+          .note, "A small creative department",
+          "Draw in MiniPaint, send your picture here, then choose Open Picture in MiniPaint to keep tinkering. Select part of a drawing and use it as your desktop pattern."
+        ),
+        (.command, "Check a download", "shasum -a 256 -c Hello-Mini-0.6.0-macos-arm64.zip.sha256"),
+        (
+          .note, "Department of Encouragement",
+          "Your work has been reviewed by the fish. They request more bubbles.\n\nRemember to save. The computer remembers everything except what you meant."
+        ),
+      ]
+      for (kind, title, text) in examples
+      where !self.scraps.contains(where: { $0.title == title && $0.text == text }) {
+        try await self.add(ScrapImport(scrap: Scrap(kind: kind, title: title, text: text)))
+      }
+      let title = "An entirely original office fish"
+      if !self.scraps.contains(where: { $0.title == title }) {
+        let w = 160
+        let h = 100
+        var pixels = [UInt8](repeating: 255, count: w * h)
+        for y in 0..<h {
+          for x in 0..<w {
+            let dx = Double(x - 75) / 40
+            let dy = Double(y - 50) / 24
+            let body = dx * dx + dy * dy < 1
+            let tail = x >= 110 && x < 140 && abs(y - 50) < (x - 110) * 3 / 4
+            if body || tail { pixels[y * w + x] = 0 }
+            if (x - 55) * (x - 55) + (y - 44) * (y - 44) < 9 { pixels[y * w + x] = 255 }
+          }
+        }
+        let data = Data(pixels)
+        guard let provider = CGDataProvider(data: data as CFData),
+          let image = CGImage(
+            width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 8,
+            bytesPerRow: w, space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: 0),
+            provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent),
+          let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
+        else { throw ScrapbookError.invalidImage }
+        try await self.add(self.store.importImage(png, title: title))
+      }
+      self.notice = "Example scraps added. The fish is available for alterations."
+    }
+  }
   func newNote() {
     guard canChange else { return }
     error = nil

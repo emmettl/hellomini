@@ -51,11 +51,13 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Communications:** A vintage receiving station for modern telemetry. Configurable channels read a Prometheus-compatible query API; OpenTelemetry metrics can reach it through a compatible backend. The switchboard has callsigns, status lamps, an hour of strip-chart history, and a bounded session log. Test Lamps and an explicitly labelled simulation provide the nonsense. Freshness, original observation timestamps, disconnected state, and unknown data remain explicit. A read-only MotionStudies observer exporter and preset supply the first integration; deploying the exporter and metrics backend is a separate setup step. See the [setup guide](docs/COMMUNICATIONS.md).
 
-## Implemented for 0.6.0 — unreleased
+## Implemented for 0.6.0 — release candidate
 
 - **MiniPaint:** A small MacPaint-style bitmap accessory with pencil, eraser, fill, selection, and patterns. The first version has a 320 × 200 monochrome canvas, 20-step undo/redo, local autosave, PNG export and Send to Scrapbook.
 - **Desktop presets:** Save named combinations of theme, pattern, display mode, and window arrangement. A desk for work, another for unnecessary fish; switching minimises other open windows and preserves their contents.
 - **Scrapbook export and backup:** Export one scrap or the visible filtered selection, with portable library backup/import, previews and duplicate handling. Make the useful collection easy to take elsewhere.
+
+- **Creative connections:** Scrapbook pictures open in MiniPaint with a monochrome preview and Undo; drawing selections become desktop patterns. Explicitly added example scraps include original fish artwork.
 
 ## Further accessories and improvements
 
@@ -69,7 +71,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
 - Continue live CI retry validation across providers and self-hosted installations, including token permissions and long-running pipelines.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
-- Add deliberate Finder file operations and Scrapbook export/import.
+- Add deliberate Finder file operations. Scrapbook export/import is implemented for 0.6.0.
 - Decide the external binary plugin model when contributor needs are clearer.
 
 ## Shipped in 0.2.0

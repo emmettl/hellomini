@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.5.0** app and the upcoming **0.6.0** additions marked below. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.6.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -180,21 +180,23 @@ Turning off the feeding switch or Extra silliness consumes notifications without
 
 Genie minimisation and other physical keyboard layouts remain on the roadmap.
 
-## MiniPaint (0.6.0 development)
+## MiniPaint
 
 A 320 × 200 monochrome canvas with **Pencil**, a five-pixel **Eraser**, **Fill**, and **Select**. Choose black, white, dots, checks or diagonal stripes. Drag a rectangle with Select, then drag inside it to move its contents; Paint → Clear Selection erases it. Selection moves stay inside the canvas. The canvas scales to fit the window; exported PNGs retain the original resolution.
 
 Undo and Redo remember up to 20 completed operations during this session (Command-Z and Shift-Command-Z). Paint → New Drawing asks before clearing; Undo can recover it in the same session. Each finished edit saves the current drawing locally and restores it on next launch. There is one working canvas; use **PNG…** to keep separate drawings. An unreadable saved drawing is preserved and reported; a failed save leaves the picture in memory so you can export it.
 
-**Scrapbook** sends a new image scrap and opens that app after a successful save. No clipboard replacement is required. Drawing uses a pointing device; toolbar and menu commands support keyboard access. There are no layers, colour editing, external image import, or multi-document management in this first version.
+**Scrapbook** sends a new image scrap and opens that app after a successful save. No clipboard replacement is required. Drawing uses a pointing device; toolbar and menu commands support keyboard access. Choose **Scrapbook → Open Picture in MiniPaint…** for a preview fitted inside the canvas with white margins and threshold monochrome conversion. Open confirms replacement; Undo restores the previous drawing. **Paint → Use Selection as Desktop Pattern** samples the selected rectangle to 8 × 8 and applies it immediately; Control Panel can edit or reset the pattern. There are no layers, colour editing, or multi-document management in this first version.
 
-## Desktop presets (0.6.0 development)
+**Scrapbook → Add Example Scraps** adds original fish artwork, a checksum command, and encouragement. Repeating it skips matching examples; it never replaces your scraps.
+
+## Desktop presets
 
 Choose **View → Desktop Presets** from any app. Arrange the desktop, name it, then **Save current desktop**. A preset records theme, custom pattern, display mode, open-window order and geometry, and minimised/zoomed/shaded states. Save up to 20 presets, with names up to 80 characters.
 
 **Use this desk** restores the preset. Other open windows are minimised, keeping their view contents alive; app settings, files, and background tasks stay intact. Unknown app IDs are ignored and current display bounds constrain restored windows. A missing theme leaves the desktop unchanged with an explanation. **Replace…** captures the current desktop under the selected name; **Delete…** removes only that saved preset. Unreadable saved presets are preserved rather than silently overwritten.
 
-## Scrapbook export and backup (0.6.0 development)
+## Scrapbook export and backup
 
 The **Scrapbook** menu adds four transfers:
 

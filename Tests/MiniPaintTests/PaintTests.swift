@@ -88,3 +88,34 @@ import Testing
   unsaved.finish()
   #expect(unsaved.bitmap[1, 1] == 0 && unsaved.error != nil)
 }
+
+@Test func desktopPatternSamplesSelectionWithCorrectBitOrder() {
+  var bitmap = PaintBitmap()
+  bitmap[10, 20] = 0
+  bitmap[17, 27] = 0
+  let rows = bitmap.desktopRows(
+    selection: .init(from: .init(x: 10, y: 20), to: .init(x: 17, y: 27)))
+  #expect(rows == [1, 0, 0, 0, 0, 0, 0, 128])
+}
+@Test func importedPictureFitsWithoutStretchingAndKeepsMonochrome() throws {
+  var bitmap = PaintBitmap()
+  bitmap[0, 0] = 0
+  bitmap[319, 199] = 0
+  let converted = try PaintBitmap.importing(#require(bitmap.image()))
+  #expect(converted == bitmap)
+}
+@MainActor @Test func importPreviewDoesNotReplaceDrawingUntilConfirmedAndSupportsUndo() throws {
+  let dir = FileManager.default.temporaryDirectory.appendingPathComponent("PaintImport-\(UUID())")
+  defer { try? FileManager.default.removeItem(at: dir) }
+  let model = PaintModel(file: dir.appendingPathComponent("drawing.json"))
+  model.load()
+  model.draw(at: .init(x: 5, y: 5))
+  model.finish()
+  let original = model.bitmap
+  try model.prepareImport(#require(PaintBitmap().image()))
+  #expect(model.bitmap == original)
+  model.confirmImport()
+  #expect(model.bitmap == PaintBitmap())
+  model.undo()
+  #expect(model.bitmap == original)
+}
