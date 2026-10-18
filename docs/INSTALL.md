@@ -10,6 +10,8 @@ brew install --cask emmettl/tap/hellomini
 
 This installs the signed, notarized release from [emmettl/tap](https://github.com/emmettl/homebrew-tap). To update, quit Hello Mini, then run `brew update` and `brew upgrade --cask emmettl/tap/hellomini`. Homebrew uninstall removes the app; saved data and Keychain tokens remain.
 
+If you previously installed manually into `~/Applications`, quit that copy and open `/Applications/Hello Mini.app` after installing with Homebrew. Homebrew does not replace or quit a separate manual installation. Check About Mini for the running version; an old Dock item may still point at the manual copy. Keep the old copy until you have verified the Homebrew installation, then remove or archive it deliberately.
+
 ## Download and install
 
 1. Get the versioned macOS ARM64 ZIP from [hellomini.app](https://hellomini.app) or [GitHub Releases](https://github.com/emmettl/hellomini/releases/latest).

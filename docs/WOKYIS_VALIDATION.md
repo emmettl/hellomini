@@ -1,0 +1,33 @@
+# Wokyis and lifecycle validation
+
+## 18 October 2026 — Hello Mini 0.9.0
+
+Release source: `c1be334bc6dbc373e9a8baa8bad1b06729f75ad0`, build 9, installed by Homebrew at `/Applications/Hello Mini.app` on the M4 Mini.
+
+Before connecting, `system_profiler SPDisplaysDataType` reported the physical Wokyis as the main, online display at 1280 × 720, 60 Hz. The running application was still the manually installed 0.5.0 copy in `~/Applications`; Homebrew had correctly installed 0.9.0 separately. The older process was quit through its own menu. The Homebrew copy was opened through Finder, passed the normal macOS first-launch prompt, and its running executable path was verified.
+
+The initial screen-sharing session subsequently reported only a **Screen Sharing Virtual Display**, 3840 × 2160 pixels / 1920 × 1080 logical points. Results from that session establish behaviour on the Mini with a virtual display, not physical Wokyis legibility.
+
+The saved Screen Sharing connection used High Performance mode. It was changed to Standard in the connection's Edit sheet. Ending the session through the Mini's screen-sharing menu restored the Wokyis at 1280 × 720, as verified over SSH. Reconnecting with Standard nevertheless resumed the virtual display; changing the saved connection alone did not establish console-session coverage. Apple documents pressing Escape on the host's physical keyboard to end High Performance mode. Verify the reported display again after reconnecting instead of relying on the viewer's connection-type label.
+
+### Completed in the virtual-display session
+
+- Upgrade from the existing saved 0.5 desktop retained configured CI projects and restored windows. Public GitHub requests displayed access/rate-limit errors; this is not evidence of a display failure or successful live-provider validation.
+- Entered full screen through the themed View menu. The desktop and controls reflowed to the available display area.
+- Control Panel theme cards responded at their drawn positions at 2×; Paper, Midnight and System 7 were selected.
+- Switched from 2× to Purist in full screen. The 512 × 384 logical desktop was centred with black surrounding space and retained a reachable Control Panel and display-mode switches.
+
+### Test environment constraints
+
+The Mini runs CI infrastructure with `caffeinate` assertions on behalf of its Node runtime, and screen sharing itself holds a prevent-system-sleep assertion. No CI process was killed or keep-awake service disabled for these checks. A full sleep/wake result must be backed by power-management log evidence, rather than inferred from a black screen or reconnection.
+
+Physical panel reading distance, ambient light, viewing angle and subjective legibility require a person at the Wokyis. A remotely enlarged screenshot cannot establish these.
+
+## Repeatable checks
+
+1. Verify both the installed version and the actual running executable; a manual copy in `~/Applications` may otherwise continue running after a Homebrew upgrade.
+2. Record `system_profiler SPDisplaysDataType` before and after connection. Confirm Wokyis remains online; do not count a virtual display as the physical panel.
+3. In Standard, 2× and Purist, exercise full-screen entry/exit, theme selection, menus, scrolling, sheets and graphics. Check that open documents and saved placements survive temporary constraints.
+4. Change an available macOS display resolution and restore it. Record both modes and check recovery of window chrome, controls and Metal rendering. Cable removal/reconnection is a separate physical test.
+5. Exercise display sleep and full system sleep separately. Record actual sleep/wake events and verify graphics movement, input, clocks, refresh and saved state after wake. Arrange a reliable wake path before sleeping a remote CI host.
+6. Restore the starting theme, mode and window arrangement; record duration and number of cycles. A short functional check is not a multi-hour soak.

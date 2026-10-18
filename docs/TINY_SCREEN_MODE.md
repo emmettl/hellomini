@@ -92,3 +92,7 @@ The original acceptance targets below remain the validation checklist. For 0.3.0
 - Retain the standard 1280 × 720 experience and the existing fixed 512 × 384 Purist mode. Update the user guide and changelog only when behaviour is implemented and verified.
 
 External theme/plugin distribution, new themes, OS-wide scaling, automatic physical-display detection, and unrelated accessories are outside this feature's 0.3.0 scope.
+
+## 0.9 hardware/lifecycle follow-up
+
+See the dated [Wokyis validation record](WOKYIS_VALIDATION.md) for the actual display identity, upgrade path, mode transitions and test limits. A screen-sharing virtual display is recorded separately from the physical Wokyis; remote screenshots do not establish panel legibility.
