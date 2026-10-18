@@ -3,10 +3,13 @@ import SwiftUI
 
 struct FinderView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniWindowActive) private var active
   @Bindable var model: FinderModel
   let findFile: () -> Void
   @State private var showingPlaces = false
   @FocusState private var focusedEntry: URL?
+  @FocusState private var toolbarFocused: Bool
+  @State private var focusRestoration: Task<Void, Never>?
   private let labelNames = ["None", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"]
   private let labelColors: [Color] = [
     .clear, .gray, .green, .purple, .blue, .yellow, .red, .orange,
@@ -24,7 +27,7 @@ struct FinderView: View {
         if compact {
           Button(showingPlaces ? "Hide Places" : "Places") { showingPlaces.toggle() }
         }
-        Button("Find…", action: findFile).miniControlBounds("finder.find")
+        Button("Find…", action: findFile).focused($toolbarFocused).miniControlBounds("finder.find")
         Button("Back", action: model.goBack).miniControlBounds("finder.back").disabled(
           !model.history.canGoBack)
         Button("Up", action: model.goUp).disabled(!model.history.canGoUp)
@@ -102,16 +105,35 @@ struct FinderView: View {
     }
     .font(theme.typography.body)
     .onAppear { model.reload() }
-    .sheet(item: $model.fileDraft) { draft in
+    .sheet(item: $model.fileDraft, onDismiss: restoreFocus) { draft in
       FileOperationView(model: model, draft: draft).environment(\.miniTheme, theme).miniSheet(
         width: 400)
     }
-    .sheet(item: $model.inspection) { inspection in
+    .sheet(item: $model.inspection, onDismiss: restoreFocus) { inspection in
       FileInspectionView(inspection: inspection).environment(\.miniTheme, theme).miniSheet(
         width: 400)
     }
     .onChange(of: focusedEntry) { _, value in if let value { model.selection = value } }
     .onChange(of: model.showHidden) { model.reload() }
+    .onChange(of: active) { _, value in if !value { focusRestoration?.cancel() } }
+    .onDisappear { focusRestoration?.cancel() }
+  }
+
+  private func restoreFocus() {
+    focusRestoration?.cancel()
+    toolbarFocused = false
+    focusedEntry = nil
+    focusRestoration = Task { @MainActor in
+      // AppKit restores its old responder after the sheet's SwiftUI dismissal callback.
+      // Wait for that transition before selecting the accessory's own target.
+      do { try await Task.sleep(for: .milliseconds(250)) } catch { return }
+      guard active, model.fileDraft == nil, model.inspection == nil else { return }
+      if let selected = model.selection, model.entries.contains(where: { $0.url == selected }) {
+        focusedEntry = selected
+      } else {
+        toolbarFocused = true
+      }
+    }
   }
 
   private var location: some View {

@@ -2,7 +2,9 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-The signed 0.9.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+The signed 0.10.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+
+Version **0.10.0** adds saved Chooser services, optional CPU instruments and display polish.
 
 Version **0.9.0** adds cancellable Finder copies, atomic same-volume moves, portable desktop presets, Living dither and clearer recovery controls.
 
@@ -78,12 +80,12 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 ## Completed distribution work — 18 October 2026
 
-- **Homebrew tap:** `emmettl/tap/hellomini` installs the current signed, notarized app (0.9.0), with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
+- **Homebrew tap:** `emmettl/tap/hellomini` installs the current signed, notarized app (0.10.0), with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
 - **Release maintenance:** The [release process](docs/RELEASING.md#after-publishing-update-homebrew) includes a verified, repeatable tap update after publishing each stable release. Installation/update guidance and the website include the Homebrew route. Uninstall retains application data and Keychain tokens.
 
 ## Shipped in 0.9.0
 
-- Finder copy progress/cancellation, source-change detection and atomic same-volume Move To. Cross-volume moves and replacement/Undo remain future work.
+- Finder copy progress/cancellation, source-change detection and atomic same-volume Move To. Cross-volume moves and replacement remain future work; limited Undo is implemented for 0.11.
 - Portable presets with reviewed imports, duplicate/conflict handling and window previews.
 - Living dither, off by default, with Reduce Motion, occlusion, scene and sleep gates.
 - Dated recovery backups and clearer guidance; transfer, portability and lifecycle regression tests.
@@ -96,9 +98,16 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Shared responsive sheet content widths, including token, build details, retry, recovery, inspection and Scrapbook dialogs; the physical-validation window-recovery and Projects-sheet fixes are included.
 - Expanded populated Chooser control geometry, persistence, scale and lifecycle regression coverage. Comprehensive live VoiceOver, full system sleep, long soak remain explicitly unverified; the physical reading-distance comparison supports 2× over 1.5× for this setup.
 
+## Implemented for 0.11 — not yet released
+
+- Active-window keyboard and accessibility isolation: inactive windows expose a labelled activation button; their content stays out of traversal. Finder sheets start at the name field and return focus to the selected item or toolbar.
+- Physical windows: an opt-in, finite settling spring after a title-bar drag. Pointer coordinates and saved geometry remain exact; Reduce Motion, suspension and scene inactivity suppress the effect.
+- Finder Edit → Undo for the most recent New Folder, Rename or same-volume Move. Session-only receipts check item/tree metadata and parent identity; occupied original names and changed items are refused. New Folder Undo removes only an unchanged empty folder. Copy and Redo are outside this scope.
+- Extracted desktop state management and effect metadata into dedicated source files. Corrected historical/current-version documentation.
+
 ## Further accessories and improvements
 
-- Finder cross-volume Move, conflict replacement, Undo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
+- Finder cross-volume Move, conflict replacement, broader Undo/Redo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
 - Broader end-to-end accessibility coverage and long physical Wokyis/display-change/sleep-wake sessions remain continuing validation work.
 - The [18 October Mini validation record](docs/WOKYIS_VALIDATION.md) records the 0.5-to-0.9 running-app upgrade, virtual-display mode/theme checks, keyboard-free recovery to the Wokyis console, physical 720p/1080p resolution round trips, display-sleep and DarkWake recovery, and two resulting layout fixes. Full system sleep remains unverified with active host workloads and keep-awake assertions; long soak and physical cable hot-plug remain open.
 - Additional live self-hosted provider installations require configured endpoints and suitable test accounts.
@@ -131,10 +140,12 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other continuing directions
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
-- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows and Depth behind glass remain future effects, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows is implemented for 0.11; Depth behind glass remains a future effect, all optional through Playfulness.
 - **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
 See the [user guide](docs/USER_GUIDE.md) for what works today and [CI documentation](docs/CI.md) for the existing build pipelines.
 
 Development evidence and remaining validation for this scope: [0.10 validation](docs/0.10_VALIDATION.md).
+
+Development evidence for the next scope: [0.11 validation](docs/0.11_VALIDATION.md).

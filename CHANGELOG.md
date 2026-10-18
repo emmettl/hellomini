@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — 0.11
+
+- Active-window keyboard/accessibility isolation and Finder sheet focus restoration.
+- Optional Physical windows: finite theme-sensitive settling after a drag, with motion/activity gates.
+- Session-only Finder Undo for New Folder, Rename and same-volume Move, refusing changed items and occupied destinations.
+- Separate desktop state and effect definitions from view/sound files; refresh release and display-validation documentation.
+
 ## 0.10.0 — 2026-10-18
 
 - **Chooser:** Save up to 40 service/host/port destinations, skip duplicates, forget addresses and connect explicitly through macOS handlers; stale discovery callbacks cannot repopulate a stopped search.

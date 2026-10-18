@@ -16,6 +16,9 @@ struct RetroWindow<Content: View>: View {
   let zoomed: Bool
   var shade: (@MainActor () -> Void)? = nil
   var shaded = false
+  var physicalWindows = false
+  @Environment(\.scenePhase) private var phase
+  @State private var settling: CGFloat = 0
   @ViewBuilder let content: () -> Content
   @GestureState private var drag: WindowDrag?
   @GestureState private var resize: WindowResize?
@@ -65,6 +68,7 @@ struct RetroWindow<Content: View>: View {
               ?? WindowDrag(
                 origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
             completed.location = value.location
+            settle(from: value)
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
@@ -95,8 +99,35 @@ struct RetroWindow<Content: View>: View {
     )
     .themeFrame(active ? theme.window : theme.inactiveWindow)
     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: shaded)
+    .modifier(WindowInteraction(active: active, title: title, activate: activate))
+    .scaleEffect(x: 1 + settling * 0.004, y: 1 - settling * 0.006, anchor: .top)
+    .transaction {
+      if !physicalWindows || reduceMotion || phase != .active { $0.disablesAnimations = true }
+    }
     .offset(x: position.x, y: position.y)
+    .onChange(of: physicalWindows && !reduceMotion && phase == .active) { _, allowed in
+      if !allowed { settling = 0 }
+    }
     .simultaneousGesture(TapGesture().onEnded { activate() })
+  }
+
+  private func settle(from value: DragGesture.Value) {
+    guard
+      PhysicalWindowMotion.allows(
+        enabled: physicalWindows, reduceMotion: reduceMotion,
+        active: phase == .active), !zoomed
+    else { return }
+    var transaction = Transaction()
+    transaction.disablesAnimations = true
+    withTransaction(transaction) {
+      settling = PhysicalWindowMotion.impulse(translation: value.translation)
+    }
+    // A finite deformation, never an animation of the saved origin or pointer coordinates.
+    withAnimation(
+      .spring(
+        response: theme.window.cornerRadius > 0 ? 0.36 : 0.24,
+        dampingFraction: theme.window.cornerRadius > 0 ? 0.62 : 0.8)
+    ) { settling = 0 }
   }
 
   private var resizeGrip: some View {

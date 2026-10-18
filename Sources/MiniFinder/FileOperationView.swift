@@ -6,6 +6,7 @@ struct FileOperationView: View {
   @Environment(\.dismiss) private var dismiss
   let model: FinderModel
   @State var draft: FileOperationDraft
+  @FocusState private var nameFocused: Bool
   var body: some View {
     VStack(alignment: .leading, spacing: 10) {
       Text(
@@ -21,7 +22,9 @@ struct FileOperationView: View {
           Text("Destination folder: " + draft.folder.path).font(theme.typography.small)
             .textSelection(
               .enabled)
-          TextField("Name", text: $draft.name).accessibilityLabel("Destination name").disabled(
+          TextField("Name", text: $draft.name).focused($nameFocused).accessibilityLabel(
+            "Destination name"
+          ).disabled(
             model.fileBusy)
           Text(
             "Existing files are never replaced. Copy keeps the source and preserves symbolic links as links. Moves are atomic within one volume; use macOS Finder for cross-volume moves."
@@ -47,9 +50,10 @@ struct FileOperationView: View {
           .disabled(model.fileBusy).keyboardShortcut(.defaultAction).miniControlBounds(
             "files.confirm")
       }
-    }.padding(12).frame(width: 400).foregroundStyle(theme.ink).background(theme.paper).buttonStyle(
+    }.padding(12).miniFormWidth(400).foregroundStyle(theme.ink).background(theme.paper).buttonStyle(
       RetroButtonStyle()
     )
+    .onAppear { nameFocused = true }
     .interactiveDismissDisabled(model.fileBusy)
   }
 }

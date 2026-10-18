@@ -14,6 +14,24 @@ final class FinderModel {
   var fileDraft: FileOperationDraft?
   private(set) var fileBusy = false
   private(set) var copiedBytes: Int64 = 0
+  private(set) var undoReceipt: FileUndoReceipt?
+  var undoTitle: String { undoReceipt?.title ?? "Undo" }
+  var canUndo: Bool { undoReceipt != nil && !fileBusy }
+  func undoFileOperation() {
+    guard canUndo, let receipt = undoReceipt else { return }
+    fileBusy = true
+    fileTask = Task {
+      defer { fileBusy = false }
+      do {
+        try await reader.undo(receipt)
+        undoReceipt = nil
+        reload()
+      } catch {
+        self.error = error.localizedDescription
+        undoReceipt = nil
+      }
+    }
+  }
   @ObservationIgnored private var fileTask: Task<Void, Never>?
   func cancelFileOperation() { fileTask?.cancel() }
   private(set) var fileOperationError: String?
@@ -50,9 +68,10 @@ final class FinderModel {
     fileTask = Task {
       defer { fileBusy = false }
       do {
-        _ = try await reader.perform(draft) { [weak self] bytes in
+        let (_, receipt) = try await reader.performWithUndo(draft) { [weak self] bytes in
           Task { @MainActor [weak self] in self?.copiedBytes = bytes }
         }
+        undoReceipt = receipt
         fileDraft = nil
         reload()
       } catch {
