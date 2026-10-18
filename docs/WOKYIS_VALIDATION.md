@@ -46,7 +46,7 @@ These source changes are not part of the published 0.9.0 binary. An ad-hoc devel
 
 The Mini runs an active BombCAD CI job and a MotionStudies Node recorder with `caffeinate -is` assertions; screen sharing itself also holds a prevent-system-sleep assertion. No CI process was killed or keep-awake service disabled for these checks. A full sleep/wake result must be backed by power-management log evidence, rather than inferred from a black screen or reconnection.
 
-A full system-sleep cycle remains unverified: the software-sleep attempt reached DarkWake while those assertions were active. The user has confirmed a physical power-button wake fallback; that solves recovery availability but does not remove the active workloads or their assertions. Complete a full cycle during an idle maintenance window and require actual system-sleep/wake log evidence. Cable hot-plug, a comprehensive bundled-app/keyboard audit, comparison with 1.5×, and a multi-hour soak also remain separate follow-ups.
+A full system-sleep cycle remains unverified: the software-sleep attempt reached DarkWake while those assertions were active. The user has confirmed a physical power-button wake fallback; that solves recovery availability but does not remove the active workloads or their assertions. Complete a full cycle during an idle maintenance window and require actual system-sleep/wake log evidence. Cable hot-plug, a comprehensive bundled-app/keyboard audit and a multi-hour soak also remain separate follow-ups.
 
 Physical panel reading distance, ambient light, viewing angle and subjective legibility require a person at the Wokyis. A remotely enlarged screenshot cannot establish these.
 

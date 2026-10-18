@@ -146,7 +146,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       CalculatorApplication.effect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
-      DesktopEffects.livingDither, DesktopEffects.dockMagnification,
+      DesktopEffects.livingDither, DesktopEffects.physicalWindows, DesktopEffects.dockMagnification,
       DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
       TalkingMoose.effect, CommunicationsApplication.effect, NetworkApplication.effect,
     ] + AquariumApplication.effects)

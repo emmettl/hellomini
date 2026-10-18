@@ -16,6 +16,10 @@ struct RetroWindow<Content: View>: View {
   let zoomed: Bool
   var shade: (@MainActor () -> Void)? = nil
   var shaded = false
+  var physicalWindows = false
+  @Environment(\.scenePhase) private var phase
+  @State private var settling: CGFloat = 0
+  @State private var settleRequest = 0
   @ViewBuilder let content: () -> Content
   @GestureState private var drag: WindowDrag?
   @GestureState private var resize: WindowResize?
@@ -37,6 +41,11 @@ struct RetroWindow<Content: View>: View {
   }
 
   var body: some View {
+    let motionAmount =
+      PhysicalWindowMotion.allows(
+        enabled: physicalWindows,
+        reduceMotion: reduceMotion, active: phase == .active) ? settling : 0
+    let rounded = theme.window.cornerRadius > 0
     VStack(spacing: 0) {
       ThemeWindowTitleBar(
         title: title, active: active, close: close, minimise: minimise, zoom: zoom, zoomed: zoomed,
@@ -65,6 +74,7 @@ struct RetroWindow<Content: View>: View {
               ?? WindowDrag(
                 origin: placement.origin, startLocation: value.startLocation, bounds: bounds)
             completed.location = value.location
+            settle(from: value)
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
@@ -95,8 +105,26 @@ struct RetroWindow<Content: View>: View {
     )
     .themeFrame(active ? theme.window : theme.inactiveWindow)
     .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: shaded)
+    .modifier(WindowInteraction(active: active, title: title, activate: activate))
+    .modifier(
+      PhysicalWindowSettling(amount: motionAmount, trigger: settleRequest, rounded: rounded)
+    )
     .offset(x: position.x, y: position.y)
+    .onChange(of: physicalWindows && !reduceMotion && phase == .active) { _, allowed in
+      if !allowed { settling = 0 }
+    }
     .simultaneousGesture(TapGesture().onEnded { activate() })
+  }
+
+  private func settle(from value: DragGesture.Value) {
+    guard
+      PhysicalWindowMotion.allows(
+        enabled: physicalWindows, reduceMotion: reduceMotion,
+        active: phase == .active), !zoomed
+    else { return }
+    settling = PhysicalWindowMotion.impulse(translation: value.translation)
+    // A trigger guarantees a rendered impulse; two state writes in one update can coalesce.
+    settleRequest += 1
   }
 
   private var resizeGrip: some View {

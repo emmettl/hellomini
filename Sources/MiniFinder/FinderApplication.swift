@@ -57,6 +57,14 @@ import SwiftUI
             id: "reveal", title: "Reveal in macOS Finder", action: model.revealSelection),
         ]),
       RetroMenu(
+        id: "edit", title: "Edit",
+        items: [
+          RetroMenuItem(
+            id: "undo-file", title: model.undoTitle,
+            shortcut: RetroShortcut(key: "z", label: "⌘Z"), enabled: model.canUndo,
+            action: model.undoFileOperation)
+        ]),
+      RetroMenu(
         id: "view", title: "View", width: 330,
         items: [
           RetroMenuItem(id: "icons", title: "As Icons", checked: !model.listView) {
