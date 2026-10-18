@@ -20,6 +20,18 @@ struct FileUndoReceipt: Sendable {
   }
 }
 
+/// Redo is available only immediately after a successful Undo in this session.
+enum FileRedoReceipt: Sendable {
+  case folder(URL, FileUndoIdentity)
+  case transfer(FileUndoReceipt)
+  var title: String {
+    switch self {
+    case .folder: "Redo New Folder"
+    case .transfer(let receipt): receipt.title.replacingOccurrences(of: "Undo", with: "Redo")
+    }
+  }
+}
+
 struct FileUndoIdentity: Equatable, Sendable {
   let device: dev_t
   let inode: ino_t
@@ -90,12 +102,48 @@ extension DirectoryReader {
     }
   }
 
+  func undoWithRedo(_ receipt: FileUndoReceipt) throws -> FileRedoReceipt? {
+    try undo(receipt)
+    // A successful Undo stays successful if recording Redo is unavailable.
+    if receipt.kind == .newFolder {
+      return try? .folder(receipt.item, FileUndoIdentity(receipt.item.deletingLastPathComponent()))
+    }
+    guard let original = receipt.original else { return nil }
+    return try? .transfer(
+      FileUndoReceipt(
+        kind: receipt.kind, item: original, original: receipt.item,
+        fingerprint: Self.undoFingerprint(original),
+        parent: FileUndoIdentity(original.deletingLastPathComponent()),
+        originalParent: FileUndoIdentity(receipt.item.deletingLastPathComponent())))
+  }
+
+  func redo(_ receipt: FileRedoReceipt) throws -> FileUndoReceipt? {
+    switch receipt {
+    case .folder(let item, let parent):
+      guard try parent.sameDirectory(as: FileUndoIdentity(item.deletingLastPathComponent()))
+      else { throw Self.undoRefused() }
+      return try performWithUndo(
+        FileOperationDraft(
+          kind: .newFolder, source: nil, folder: item.deletingLastPathComponent(),
+          name: item.lastPathComponent)
+      ).1
+    case .transfer(let inverse):
+      try undo(inverse)
+      guard let item = inverse.original else { return nil }
+      return try? FileUndoReceipt(
+        kind: inverse.kind, item: item, original: inverse.item,
+        fingerprint: Self.undoFingerprint(item),
+        parent: FileUndoIdentity(item.deletingLastPathComponent()),
+        originalParent: FileUndoIdentity(inverse.item.deletingLastPathComponent()))
+    }
+  }
+
   private static func undoRefused() -> NSError {
     NSError(
       domain: "HelloMini.FinderUndo", code: 1,
       userInfo: [
         NSLocalizedDescriptionKey:
-          "Undo stopped because the item or a folder changed, the original name is occupied, or access is unavailable. Nothing was replaced. Use macOS Finder to review it."
+          "Undo or Redo stopped because the item or a folder changed, the original name is occupied, or access is unavailable. Nothing was replaced. Use macOS Finder to review it."
       ])
   }
 

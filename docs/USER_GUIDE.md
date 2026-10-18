@@ -20,7 +20,7 @@ Inactive windows expose an **Activate … window** control instead of their inne
 
 **Control Panel → Playfulness → Physical windows** adds a small, finite settling spring after dragging a title bar. It is off by default. Rounded themes settle more softly; square themes settle more crisply. Saved positions and pointer tracking are unchanged. Extra silliness, Reduce Motion and desktop/scene activity gate the effect.
 
-Finder’s **Edit → Undo** (Command-Z) reverses the last successful New Folder, Rename or same-volume Move in this session. There is one undo slot, no Redo and no Copy undo. Another successful operation replaces or clears the slot. An item/tree metadata change, replaced parent, occupied original name or access failure stops Undo. A newly created folder must still be unchanged and empty. Undo errors stay visible in Finder; review changes in macOS Finder if refused. Receipts are not a filesystem transaction or protection against concurrent hostile path changes.
+Finder’s **Edit → Undo** (Command-Z) reverses the last successful New Folder, Rename or same-volume Move in this session. There is one Undo/Redo slot and no Copy undo. Another successful operation replaces or clears the slot. An item/tree metadata change, replaced parent, occupied original name or access failure stops Undo. A newly created folder must still be unchanged and empty. Undo errors stay visible in Finder; review changes in macOS Finder if refused. Receipts are not a filesystem transaction or protection against concurrent hostile path changes.
 
 ### Tiny-screen mode
 
@@ -80,7 +80,7 @@ Creeping anachronism is part of the design: modern GPU effects should borrow the
 
 **Teapot animation** controls automatic rotation. It stops automatic rotation in an already-open Teapot window, retaining manual orbit, shading modes, and the app's own pause/resume choice. Re-enabling it does not open Teapot or undo a manual pause. Reduce Motion still prevents automatic rotation.
 
-**Impossible instruments**, **Physical windows** and **Depth behind glass** each have a working optional switch in Playfulness. Depth behind glass opens in Desk Calculator’s **Glass** pane: a themed stippled perspective clockwork scene. It is decorative, off by default, static under Reduce Motion and paused while hidden, inactive or sleeping.
+**Impossible instruments**, **Physical windows** and **Depth behind glass** each have a working optional switch in Playfulness. **Paper shuffle** adds a brief, optional themed movement after filing scraps; it is off by default and suppressed under Reduce Motion or while inactive/suspended. Depth behind glass opens in Desk Calculator’s **Glass** pane: a themed stippled perspective clockwork scene. It is decorative, off by default, static under Reduce Motion and paused while hidden, inactive or sleeping.
 
 ## Screensavers
 
@@ -112,7 +112,7 @@ Open **Scrapbook** from its desktop icon or the application menus. **New…** cr
 
 Search matches every query word across titles, text, image captions, text found in pictures, and scrap kinds, ignoring case and accents. Hello Mini reads text in image scraps with macOS Vision, on this Mac, one picture at a time after it is added; pictures saved before this feature are read when Scrapbook first opens. The shelf shows **reading text…** while it works, and **Text in picture** reveals what was found. Pictures without readable text are not read again. **Archive** removes a scrap from the shelf; **Show Archive → Restore** brings it back. Archiving preserves both text and image files. There is no permanent-delete action in this version.
 
-Use **All collections** (or the current collection name) to open **Organise Scrapbook**. Create named collections, file the selected scrap, mark favourites, filter favourites and choose Recently changed, Newest first or Title order. Search stays within these filters. Removing a collection keeps its scraps. Names use 1–80 characters, with up to 100 collections.
+Use **All collections** (or the current collection name) to open **Organise Scrapbook**. Create named collections, file the selected scrap, mark favourites, filter favourites and choose Recently changed, Newest first or Title order. Search stays within these filters. Rename the current collection in the same sheet. **Select…** enables explicit multi-selection: choose scraps individually or **All** for every visible scrap, then open Organise Scrapbook to file, favourite/unfavourite, archive or restore the selection. Filters still bound the operation; hidden scraps are excluded. **Done** leaves selection mode. **Undo Filing** restores the most recent filing, favourite, archive or collection change in this session, including collection removal; it preserves note text and recognised picture text. If the library’s filing changed since, Undo refuses to overwrite it. Removing a collection keeps its scraps. Names use 1–80 characters, with up to 100 collections.
 
 The library lives in `~/Library/Application Support/HelloMini/Scrapbook/`: a versioned `scrapbook.json` index, a `scrapbook.previous.json` copy of the previous complete index, and UUID-named PNG images. Image imports keep the first frame, apply its orientation, and limit the longest edge to 4096 pixels. These are owned snapshots, so moving or deleting an original file does not break the scrap. Text imports are limited to 1 MB, image inputs to 25 MB, and the text index to 64 MB. Back up the whole directory to retain the images as well as the index. The first 0.12 save upgrades the index to version 2 and preserves the original as `scrapbook.v1.json`. Older app versions cannot read the upgraded index. To downgrade, quit Hello Mini, back up the entire directory, and restore a compatible full backup; restoring only the retained version-1 index loses subsequent edits and organisation.
 
@@ -247,7 +247,7 @@ Select one project in Print Monitor, then choose **History…**. Search an exact
 
 **File → New Folder…**, **Rename…**, and **Copy To…** show a review sheet with the name and destination. Rename and Copy are also in file context menus. Copy first asks for a destination folder. Confirm performs the operation off the UI actor. Existing destinations, including symbolic links, are never replaced. Case-only rename on a case-insensitive volume may report a conflict; use macOS Finder for that operation.
 
-Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. Copy progress and cancellation are available in 0.9.0, alongside atomic same-volume Move To. There is no operation Undo; use macOS Finder for cross-volume moves, replacement and larger collections.
+Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. Copy progress and cancellation are available in 0.9.0, alongside atomic same-volume Move To. New Folder, Rename and same-volume Move have guarded session-only Undo/Redo; use macOS Finder for cross-volume moves, replacement and larger collections.
 
 ## Desktop window maps and backup controls
 
@@ -266,3 +266,8 @@ Desktop Presets shows a small theme and window-arrangement map for the selected 
 ### Impossible instruments (0.10.0)
 
 **Control Panel → Playfulness → Impossible instruments** replaces Activity Monitor’s CPU history graphic with an elaborate dial and a bounded swarm of ink particles. It is off by default and respects Extra silliness. The CPU percentage remains a real sample across all cores; particles are decoration. Small windows keep the numeric summary and process list, omitting the instrument when space is too short. Reduce Motion keeps the drawing static. Sampling and animation pause while updates are paused, the window is hidden/covered, the desktop scene is inactive, or the display sleeps. There is no additional telemetry service or network traffic.
+
+
+## Finder Redo
+
+After **Edit → Undo**, use **Edit → Redo** (Shift-Command-Z) to repeat New Folder, Rename or a same-volume Move. This is one operation in the current session, with fresh item/tree and parent checks. Redo refuses changed items, occupied names (including dangling links) and replaced parent directories. A successful new operation clears Redo; failure to validate a receipt clears that action. There is no multi-step history, copy deletion or cross-volume Move. Use macOS Finder for those operations.

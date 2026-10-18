@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0 — 2026-10-19
+
+- Scrapbook collection renaming, explicit multi-selection and batch filing/favourite/archive actions, with one session-only Undo Filing operation that keeps content and OCR text.
+- Guarded Finder Redo for New Folder, Rename and same-volume Move, refusing changed sources, occupied destinations and replaced parents.
+- Optional, finite Paper shuffle filing animation with theme, Reduce Motion, activity and suspension controls.
+- Shared cancellable sheet-dismissal focus coordination without fixed delays; separate Scrapbook transfer, filing, OCR coordination and shelf-row files.
+- Expanded complete-library upgrade/failure fixtures and all-theme small-display layout checks; collection/favourite/batch state appears in accessibility labels.
+
 ## 0.12.0 — 2026-10-19
 
 - Scrapbook named collections, favourites, title/date sorting and collection-scoped search. Portable backups retain organisation and empty collections; upgrading preserves the original version-1 index.

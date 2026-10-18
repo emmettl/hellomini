@@ -12,6 +12,7 @@ import Testing
 @testable import MiniFinder
 @testable import MiniNetwork
 @testable import MiniPrintMonitor
+@testable import MiniScrapbook
 
 @MainActor private final class LayoutEvidence {
   var frames: [String: CGRect] = [:]
@@ -153,6 +154,60 @@ import Testing
       #expect(
         frame.minX >= -1 && frame.maxX <= width + 1,
         "Project sheet action \(id) is clipped horizontally: \(frame)")
+    }
+  }
+}
+
+@Test @MainActor func scrapbookBatchControlsAndFilingFormsFitEveryThemeAtSmallScales() async throws
+{
+  let root = FileManager.default.temporaryDirectory.appendingPathComponent("FilingLayout-\(UUID())")
+  defer { try? FileManager.default.removeItem(at: root) }
+  let model = ScrapbookModel(directory: root)
+  let note = Scrap(
+    kind: .note, title: "A long demonstration title", text: "Example", collection: "Work",
+    favourite: true)
+  try await model.store.save([note], collections: ["Work"])
+  await model.load()
+  model.collection = "Work"
+  model.selecting = true
+  model.batchSelection = [note.id]
+  for theme in MiniThemeRegistry.builtIns.themes + [
+    System7Theme.definition, PlatinumTheme.definition, AquaTheme.definition,
+  ] {
+    for display in [
+      MiniDisplayContext(scale: 1, logicalSize: CGSize(width: 512, height: 384)),
+      MiniDisplayContext(scale: 2, logicalSize: CGSize(width: 640, height: 360)),
+    ] {
+      let width = min(440, display.logicalSize.width - 24)
+      for (view, height, controls) in [
+        (
+          AnyView(ScrapbookView(model: model)), CGFloat(240),
+          ["scrapbook.organise", "scrapbook.select", "scrapbook.search", "scrapbook.shelf"]
+        ),
+        (
+          AnyView(ScrapbookOrganisation(model: model)), CGFloat(1000),
+          ["filing.file", "filing.undo", "filing.done"]
+        ),
+      ] {
+        let evidence = LayoutEvidence()
+        let host = NSHostingView(
+          rootView: view.environment(\.miniTheme, theme).environment(
+            \.colorScheme, theme.colorScheme
+          ).environment(\.miniDisplay, display)
+            .frame(width: width, height: height).coordinateSpace(name: "mini-control-layout")
+            .onPreferenceChange(MiniControlFrames.self) { evidence.frames = $0 })
+        host.frame = CGRect(x: 0, y: 0, width: width, height: height)
+        host.layoutSubtreeIfNeeded()
+        try await Task.sleep(for: .milliseconds(80))
+        host.layoutSubtreeIfNeeded()
+        for id in controls {
+          let frame = try #require(evidence.frames[id], "Missing control \(id)")
+          #expect(frame.width > 10 && frame.height > 10)
+          if id == "scrapbook.shelf" { #expect(frame.height >= 40) }
+          #expect(frame.minX >= -1 && frame.maxX <= width + 1, "Clipped \(id): \(frame)")
+          if height == 240 { #expect(frame.minY >= -1 && frame.maxY <= height + 1) }
+        }
+      }
     }
   }
 }

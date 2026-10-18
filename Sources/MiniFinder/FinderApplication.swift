@@ -62,7 +62,11 @@ import SwiftUI
           RetroMenuItem(
             id: "undo-file", title: model.undoTitle,
             shortcut: RetroShortcut(key: "z", label: "⌘Z"), enabled: model.canUndo,
-            action: model.undoFileOperation)
+            action: model.undoFileOperation),
+          RetroMenuItem(
+            id: "redo-file", title: model.redoTitle,
+            shortcut: RetroShortcut(key: "z", modifiers: [.command, .shift], label: "⇧⌘Z"),
+            enabled: model.canRedo, action: model.redoFileOperation),
         ]),
       RetroMenu(
         id: "view", title: "View", width: 330,

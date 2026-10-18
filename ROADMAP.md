@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-The signed 0.12.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+The signed 0.13.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
 
 Version **0.10.0** adds saved Chooser services, optional CPU instruments and display polish.
 
@@ -113,9 +113,17 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Shared sheet responder restoration beyond Finder; versioned data fixtures and Calculator/Scrapbook source separation.
 - See [0.12 validation](docs/0.12_VALIDATION.md) for evidence and the continuing hardware/accessibility limits.
 
+## Shipped in 0.13.0
+
+- Scrapbook collection renaming and explicit multi-selection for filing, favourites and archiving, with a guarded session-only Undo Filing action. Removing a collection keeps its scraps and can be undone.
+- Finder session-only Redo for New Folder, Rename and same-volume Move. Fresh receipts check source/tree metadata and parent identity; occupied destinations are never replaced. Successful new operations clear Redo.
+- Optional finite Paper shuffle animation; shared sheet-dismissal focus coordination driven by native events rather than timed delays.
+- Separate Scrapbook transfer, filing, OCR coordination and shelf-row files; complete-library upgrade/failure fixtures, richer accessibility labels and all-theme compact-layout checks.
+- See [0.13 validation](docs/0.13_VALIDATION.md) for evidence and continuing hardware/accessibility limits.
+
 ## Further accessories and improvements
 
-- Finder cross-volume Move, conflict replacement, broader Undo/Redo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
+- Finder cross-volume Move, conflict replacement, multi-step Undo/Redo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
 - Broader end-to-end accessibility coverage and long physical Wokyis/display-change/sleep-wake sessions remain continuing validation work.
 - The [18 October Mini validation record](docs/WOKYIS_VALIDATION.md) records the 0.5-to-0.9 running-app upgrade, virtual-display mode/theme checks, keyboard-free recovery to the Wokyis console, physical 720p/1080p resolution round trips, display-sleep and DarkWake recovery, and two resulting layout fixes. Full system sleep remains unverified with active host workloads and keep-awake assertions; long soak and physical cable hot-plug remain open.
 - Additional live self-hosted provider installations require configured endpoints and suitable test accounts.

@@ -9,14 +9,17 @@ import SwiftUI
   public let defaultSize = CGSize(width: 760, height: 480)
   public let minimumSize = CGSize(width: 440, height: 240)
   private let model = ScrapbookModel()
-  public init() {}
+  private let playfulness: PlayfulnessSettings?
+  public init(playfulness: PlayfulnessSettings? = nil) { self.playfulness = playfulness }
   public func connectPaint(_ open: @escaping @MainActor (CGImage) throws -> Void) {
     model.openPaint = open
   }
   public func addCalculation(_ text: String) async throws { try await model.addCalculation(text) }
   public func addDrawing(_ image: CGImage) async throws { try await model.addDrawing(image) }
   public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
-  public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }
+  public func content() -> AnyView {
+    AnyView(ScrapbookView(model: model, playfulness: playfulness))
+  }
   public static let screensaver = MiniScreensaver(
     id: "scrapbook-slideshow", name: "Scrapbook Slideshow",
     description: "Your scrapbook pictures, one at a time, like a very patient projector.")
@@ -61,6 +64,9 @@ import SwiftUI
             action: model.chooseArchive),
           .separator("scrap-actions"),
           RetroMenuItem(
+            id: "undo-filing", title: "Undo Filing",
+            enabled: model.canChange && model.filingUndo != nil, action: model.undoFiling),
+          RetroMenuItem(
             id: "edit-scrap", title: "Edit Scrap…",
             enabled: model.canChange && model.selected != nil, action: model.edit),
           RetroMenuItem(
@@ -69,7 +75,7 @@ import SwiftUI
             enabled: model.canChange && model.selected != nil, action: model.copySelected),
           RetroMenuItem(
             id: "archive-scrap", title: model.showArchive ? "Restore Scrap" : "Archive Scrap",
-            enabled: model.canChange && model.selected != nil, action: model.archiveOrRestore),
+            enabled: model.canChange && !model.operationIDs.isEmpty, action: model.archiveOrRestore),
         ])
     ]
   }

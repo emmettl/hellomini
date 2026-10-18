@@ -21,6 +21,8 @@ struct ScrapbookOrganisation: View {
   @Environment(\.dismiss) private var dismiss
   @Bindable var model: ScrapbookModel
   @State private var name = ""
+  @State private var renamed = ""
+  @State private var destination: String?
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("Organise Scrapbook").font(theme.typography.title)
@@ -40,11 +42,36 @@ struct ScrapbookOrganisation: View {
         }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
       }
       if let collection = model.collection {
+        HStack {
+          TextField("Rename collection", text: $renamed).accessibilityLabel(
+            "New name for current collection")
+          Button("Rename") {
+            model.renameCollection(collection, to: renamed)
+            renamed = ""
+          }
+          .disabled(renamed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
         Button("Remove collection, keep scraps") { model.removeCollection(collection) }
         Text("Removing a collection returns its scraps to All collections.").font(
           theme.typography.small)
       }
-      if let selected = model.selected {
+      if model.selecting {
+        Divider()
+        Text("\(model.operationIDs.count) selected scraps").font(theme.typography.title)
+        Picker("File selected scraps in", selection: $destination) {
+          Text("Unfiled").tag(String?.none)
+          ForEach(model.collections, id: \.self) { Text($0).tag(Optional($0)) }
+        }
+        Group {
+          Button("File selected scraps") { model.fileSelection(in: destination) }.miniControlBounds(
+            "filing.file")
+          Button("Make selected favourites") { model.favouriteSelection(true) }
+          Button("Remove selected favourites") { model.favouriteSelection(false) }
+          Button(
+            model.showArchive ? "Restore selected scraps" : "Archive selected scraps",
+            action: model.archiveOrRestore)
+        }.disabled(model.operationIDs.isEmpty)
+      } else if let selected = model.selected {
         Divider()
         Text(selected.title).font(theme.typography.title).lineLimit(2)
         Picker(
@@ -61,11 +88,16 @@ struct ScrapbookOrganisation: View {
         }
       }
       if let error = model.error { Text(error).font(theme.typography.small) }
-      Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
+      Button("Undo Filing", action: model.undoFiling).disabled(model.filingUndo == nil)
+        .miniControlBounds("filing.undo")
+      Button("Done") { dismiss() }.keyboardShortcut(.cancelAction).miniControlBounds("filing.done")
     }
     .padding(12).miniFormWidth(400).foregroundStyle(theme.ink).background(theme.paper)
     .buttonStyle(RetroButtonStyle()).disabled(!model.canChange)
-    .onChange(of: model.collection) { model.selection = model.visible.first?.id }
+    .onChange(of: model.collection) {
+      model.batchSelection = []
+      model.selection = model.visible.first?.id
+    }
     .onChange(of: model.favouritesOnly) { model.selection = model.visible.first?.id }
   }
 }

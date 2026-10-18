@@ -15,6 +15,25 @@ final class FinderModel {
   private(set) var fileBusy = false
   private(set) var copiedBytes: Int64 = 0
   private(set) var undoReceipt: FileUndoReceipt?
+  private(set) var redoReceipt: FileRedoReceipt?
+  var redoTitle: String { redoReceipt?.title ?? "Redo" }
+  var canRedo: Bool { redoReceipt != nil && !fileBusy }
+  func redoFileOperation() {
+    guard canRedo, let receipt = redoReceipt else { return }
+    fileBusy = true
+    fileTask = Task {
+      defer { fileBusy = false }
+      do {
+        undoReceipt = try await reader.redo(receipt)
+        redoReceipt = nil
+        reload()
+      } catch {
+        self.error = error.localizedDescription
+        redoReceipt = nil
+        undoReceipt = nil
+      }
+    }
+  }
   var undoTitle: String { undoReceipt?.title ?? "Undo" }
   var canUndo: Bool { undoReceipt != nil && !fileBusy }
   func undoFileOperation() {
@@ -23,11 +42,12 @@ final class FinderModel {
     fileTask = Task {
       defer { fileBusy = false }
       do {
-        try await reader.undo(receipt)
+        redoReceipt = try await reader.undoWithRedo(receipt)
         undoReceipt = nil
         reload()
       } catch {
         self.error = error.localizedDescription
+        redoReceipt = nil
         undoReceipt = nil
       }
     }
@@ -71,6 +91,7 @@ final class FinderModel {
         let (_, receipt) = try await reader.performWithUndo(draft) { [weak self] bytes in
           Task { @MainActor [weak self] in self?.copiedBytes = bytes }
         }
+        redoReceipt = nil
         undoReceipt = receipt
         fileDraft = nil
         reload()

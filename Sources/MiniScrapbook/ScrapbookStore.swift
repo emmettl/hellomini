@@ -130,7 +130,16 @@ actor ScrapbookStore {
       guard (1...2).contains(document.version) else { throw ScrapbookError.unsupportedVersion }
       if document.version == 1 {
         let migration = directory.appendingPathComponent("scrapbook.v1.json")
-        if !FileManager.default.fileExists(atPath: migration.path) {
+        if FileManager.default.fileExists(atPath: migration.path) {
+          let info = try migration.resourceValues(forKeys: [
+            .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey,
+          ])
+          guard info.isRegularFile == true, info.isSymbolicLink != true,
+            (info.fileSize ?? Int.max) <= Self.indexLimit,
+            try JSONDecoder().decode(ScrapbookDocument.self, from: Data(contentsOf: migration))
+              .version == 1
+          else { throw ScrapbookError.invalidLibrary }
+        } else {
           try previous.write(to: migration, options: .withoutOverwriting)
         }
       }

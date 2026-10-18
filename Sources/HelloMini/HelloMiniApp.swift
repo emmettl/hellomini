@@ -144,6 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     effects: [
       MiniStartup.effect, ActivityMonitorApplication.effect, TeapotApplication.rotationEffect,
       CalculatorApplication.effect, CalculatorApplication.depthEffect,
+      ScrapbookApplication.filingEffect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.livingDither, DesktopEffects.physicalWindows, DesktopEffects.dockMagnification,
@@ -155,7 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   ])
   let aquarium: AquariumApplication
   let sounds: SystemSounds
-  let scrapbook = ScrapbookApplication()
+  lazy var scrapbook = ScrapbookApplication(playfulness: playfulness)
   let alarm: AlarmClockApplication
   let printMonitor: PrintMonitorApplication
   let communications: CommunicationsApplication

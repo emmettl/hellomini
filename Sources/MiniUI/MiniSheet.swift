@@ -25,7 +25,6 @@ private struct MiniSheetModifier: ViewModifier {
     .scrollIndicators(.visible)
     .frame(width: visibleWidth, height: visibleHeight)
     .background(theme.paper)
-    .background(MiniSheetFocus().frame(width: 0, height: 0))
     .scaleEffect(display.scale)
     .frame(width: visibleWidth * display.scale, height: visibleHeight * display.scale)
   }

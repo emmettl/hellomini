@@ -1,4 +1,5 @@
 import AppKit
+import MiniCore
 import MiniUI
 import SwiftUI
 
@@ -6,9 +7,10 @@ struct ScrapbookView: View {
   @Environment(\.miniTheme) private var theme
   @Environment(\.miniWindowActive) private var active
   @Bindable var model: ScrapbookModel
+  var playfulness: PlayfulnessSettings? = nil
   @State private var organising = false
   @FocusState private var searchFocused: Bool
-  @State private var focusTask: Task<Void, Never>?
+  @State private var focusRequest = 0
   @State private var width: CGFloat = 760
   private var narrow: Bool { width < 600 }
 
@@ -75,42 +77,31 @@ struct ScrapbookView: View {
     }
     .onDisappear {
       model.stopRecognition()
-      focusTask?.cancel()
+      focusRequest += 1
     }
-    .onChange(of: model.draft == nil) { _, closed in if closed { restoreSearchFocus() } }
-    .onChange(of: model.archivePreview == nil) { _, closed in if closed { restoreSearchFocus() } }
-    .onChange(of: organising) { _, open in if !open { restoreSearchFocus() } }
-    .onChange(of: active) { _, active in if !active { focusTask?.cancel() } }
+
+    .background(
+      MiniSheetFocusRestoration(request: focusRequest, active: active) {
+        guard model.draft == nil, model.archivePreview == nil, !organising else { return }
+        searchFocused = true
+      }.frame(width: 0, height: 0)
+    )
     .onChange(of: model.query) { _, _ in model.selection = model.visible.first?.id }
-    .sheet(isPresented: $organising) {
+    .sheet(isPresented: $organising, onDismiss: restoreSearchFocus) {
       ScrapbookOrganisation(model: model).environment(\.miniTheme, theme).miniSheet(width: 400)
     }
-    .sheet(item: $model.archivePreview) { preview in
+    .sheet(item: $model.archivePreview, onDismiss: restoreSearchFocus) { preview in
       ScrapbookTransferView(model: model, preview: preview).environment(\.miniTheme, theme)
         .miniSheet(width: 460)
     }
-    .sheet(item: $model.draft) { scrap in
+    .sheet(item: $model.draft, onDismiss: restoreSearchFocus) { scrap in
       ScrapEditor(model: model, scrap: scrap)
         .environment(\.miniTheme, theme).environment(\.colorScheme, theme.colorScheme)
         .miniSheet(width: 570)
     }
   }
 
-  private func restoreSearchFocus() {
-    focusTask?.cancel()
-    focusTask = Task { @MainActor in
-      do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
-      guard active, model.draft == nil, model.archivePreview == nil, !organising else { return }
-      searchFocused = true
-    }
-  }
-
-  private func shelfDetail(_ scrap: Scrap) -> String {
-    guard scrap.kind == .image else { return scrap.kind.title }
-    if model.reading == scrap.id { return "Image · reading text…" }
-    return scrap.recognizedText?.isEmpty == false
-      ? "Image · text searchable" : "Image · caption searchable"
-  }
+  private func restoreSearchFocus() { focusRequest += 1 }
 
   private func toolbar(short: Bool) -> some View {
     HStack(spacing: 8) {
@@ -123,6 +114,7 @@ struct ScrapbookView: View {
         model.showArchive ? (short ? "Shelf" : "Show Shelf") : (short ? "Archive" : "Show Archive")
       ) {
         model.showArchive.toggle()
+        model.batchSelection = []
         model.selection = model.visible.first?.id
       }
       .accessibilityLabel(model.showArchive ? "Show Shelf" : "Show Archive")
@@ -135,36 +127,33 @@ struct ScrapbookView: View {
         organising = true
       }
       .font(theme.typography.small).buttonStyle(RetroButtonStyle()).padding(6)
-      .accessibilityLabel("Organise Scrapbook")
+      .accessibilityLabel("Organise Scrapbook").miniControlBounds("scrapbook.organise")
+      HStack(spacing: 8) {
+        Button(model.selecting ? "Done (\(model.operationIDs.count))" : "Select…") {
+          model.selecting.toggle()
+          model.batchSelection = []
+        }.accessibilityLabel(
+          model.selecting ? "Done selecting, \(model.operationIDs.count) selected" : "Select scraps"
+        )
+        .miniControlBounds("scrapbook.select")
+        if model.selecting {
+          Button("All") { model.batchSelection = Set(model.visible.map(\.id)) }.accessibilityLabel(
+            "Select all visible scraps")
+        }
+      }.font(theme.typography.small).padding(4)
       TextField("Search scraps", text: $model.query)
-        .textFieldStyle(.plain).padding(8)
+        .textFieldStyle(.plain).padding(6)
         .background(theme.paper)
         .overlay(Rectangle().strokeBorder(theme.ink, lineWidth: 1))
-        .accessibilityLabel("Search scrapbook").focused($searchFocused).padding(10)
+        .accessibilityLabel("Search scrapbook").focused($searchFocused).padding(4)
+        .miniControlBounds("scrapbook.search")
       ScrollView {
         LazyVStack(spacing: 0) {
           ForEach(model.visible) { scrap in
-            Button {
-              model.selection = scrap.id
-            } label: {
-              VStack(alignment: .leading, spacing: 5) {
-                Text((scrap.isFavourite ? "★ " : "") + scrap.title).font(theme.typography.title)
-                  .lineLimit(2)
-                Text(shelfDetail(scrap))
-                  .font(theme.typography.small)
-              }
-              .padding(10).frame(maxWidth: .infinity, alignment: .leading)
-              .foregroundStyle(model.selection == scrap.id ? theme.selectionInk : theme.ink)
-              .background {
-                if model.selection == scrap.id { ThemeSurfaceView(theme.selection) }
-              }
-              .contentShape(Rectangle())
-            }.buttonStyle(.plain)
-              .accessibilityLabel(scrap.title + ", " + scrap.kind.title)
-              .accessibilityAddTraits(model.selection == scrap.id ? .isSelected : [])
+            ScrapbookShelfRow(model: model, scrap: scrap, playfulness: playfulness)
           }
         }
-      }
+      }.miniControlBounds("scrapbook.shelf")
     }
   }
 
@@ -228,6 +217,11 @@ struct ScrapbookView: View {
       }
       Spacer(minLength: 0)
       Button(scrap.archived ? "Restore" : "Archive", action: model.archiveOrRestore)
+        .accessibilityLabel(
+          (scrap.archived ? "Restore" : "Archive")
+            + (model.selecting ? " selected scraps" : " scrap")
+        )
+        .disabled(model.operationIDs.isEmpty)
     }
   }
 }

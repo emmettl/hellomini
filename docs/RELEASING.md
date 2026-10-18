@@ -24,6 +24,8 @@ The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-d
 
 **0.12.0** adds Scrapbook organisation, persistent Calculator history and handoff, optional Depth behind glass, shared sheet focus restoration and source cleanup. See [0.12 validation](0.12_VALIDATION.md), including schema migration and explicit remaining hardware/accessibility limits.
 
+**0.13.0** adds reversible Scrapbook batch filing and collection renaming, guarded Finder Redo, optional Paper shuffle and event-driven focus restoration. See [0.13 validation](0.13_VALIDATION.md) for exact evidence and continuing hardware/accessibility limits.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.
