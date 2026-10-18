@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.0 — 2026-10-19
+
+- Scrapbook named collections, favourites, title/date sorting and collection-scoped search. Portable backups retain organisation and empty collections; upgrading preserves the original version-1 index.
+- Desk Calculator retains the latest 50 expression calculations, reuses saved expressions and explicitly sends results to Scrapbook. Unreadable or newer history is preserved until an explicit reset.
+- Optional Depth behind glass: a themed, stippled perspective clockwork scene, with Reduce Motion, visibility, activity and sleep gates.
+- Shared sheet responder restoration, migration fixtures, and separate Calculator model/pane and Scrapbook editor files.
+
 ## 0.11.0 — 2026-10-19
 
 - Active-window keyboard/accessibility isolation and Finder sheet focus restoration.

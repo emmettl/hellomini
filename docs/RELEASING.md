@@ -22,6 +22,8 @@ The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-d
 
 **0.11.0** adds active-window keyboard/accessibility isolation, Finder sheet focus restoration, guarded session-only Finder Undo and optional Physical windows. See [0.11 validation](0.11_VALIDATION.md) for passing automated/live checks and the remaining spoken VoiceOver, full-system-sleep, cable hot-plug and soak limits.
 
+**0.12.0** adds Scrapbook organisation, persistent Calculator history and handoff, optional Depth behind glass, shared sheet focus restoration and source cleanup. See [0.12 validation](0.12_VALIDATION.md), including schema migration and explicit remaining hardware/accessibility limits.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.

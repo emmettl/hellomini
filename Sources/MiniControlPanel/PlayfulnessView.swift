@@ -37,27 +37,11 @@ struct PlayfulnessView: View {
         Text("macOS Reduce Motion is on. Automatic motion stays paused.")
           .font(theme.typography.small)
       }
-      Rectangle().frame(height: 1)
-      Text("On the drawing board").font(theme.typography.title)
-      VStack(alignment: .leading, spacing: 10) {
-        planned("Depth behind glass", "Tiny 3D worlds rendered in ink and stipple.")
-      }
-      Text("Each will get its own switch when it arrives. The selected theme will supply its look.")
-        .font(theme.typography.small)
+
     }
     .toggleStyle(PlayfulnessToggleStyle())
   }
 
-  private func planned(_ title: String, _ description: String) -> some View {
-    VStack(alignment: .leading, spacing: 3) {
-      HStack {
-        Text(title).font(theme.typography.body)
-        Spacer()
-        Text("Planned").font(theme.typography.small)
-      }
-      Text(description).font(theme.typography.small)
-    }
-  }
 }
 
 private struct PlayfulnessToggleStyle: ToggleStyle {

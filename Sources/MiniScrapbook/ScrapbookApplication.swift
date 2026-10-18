@@ -13,6 +13,7 @@ import SwiftUI
   public func connectPaint(_ open: @escaping @MainActor (CGImage) throws -> Void) {
     model.openPaint = open
   }
+  public func addCalculation(_ text: String) async throws { try await model.addCalculation(text) }
   public func addDrawing(_ image: CGImage) async throws { try await model.addDrawing(image) }
   public func captureDesktop(_ image: CGImage) async { await model.captureDesktop(image) }
   public func content() -> AnyView { AnyView(ScrapbookView(model: model)) }

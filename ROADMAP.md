@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-The signed 0.11.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+The signed 0.12.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
 
 Version **0.10.0** adds saved Chooser services, optional CPU instruments and display polish.
 
@@ -105,6 +105,14 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Finder Edit → Undo for the most recent New Folder, Rename or same-volume Move. Session-only receipts check item/tree metadata and parent identity; occupied original names and changed items are refused. New Folder Undo removes only an unchanged empty folder. Copy and Redo are outside this scope.
 - Extracted desktop state management and effect metadata into dedicated source files. Corrected historical/current-version documentation.
 
+## Shipped in 0.12.0
+
+- Scrapbook named collections, favourites and title/date sorting, with search scoped to the current collection. Removing a collection retains its scraps. Version-1 libraries retain a migration backup; portable archives preserve organisation.
+- Persistent, bounded Calculator expression history, expression reuse and explicit Send result to Scrapbook.
+- Optional Depth behind glass, a themed miniature perspective scene with motion, visibility and sleep gates.
+- Shared sheet responder restoration beyond Finder; versioned data fixtures and Calculator/Scrapbook source separation.
+- See [0.12 validation](docs/0.12_VALIDATION.md) for evidence and the continuing hardware/accessibility limits.
+
 ## Further accessories and improvements
 
 - Finder cross-volume Move, conflict replacement, broader Undo/Redo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
@@ -140,7 +148,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other continuing directions
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
-- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows shipped in 0.11.0; Depth behind glass remains a future effect, all optional through Playfulness.
+- **More spectacle:** Flying Toasters is implemented. Living dither is included in 0.9.0. Impossible instruments is implemented in 0.10.0. Physical windows shipped in 0.11.0; Depth behind glass ships in 0.12.0, all optional through Playfulness.
 - **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 

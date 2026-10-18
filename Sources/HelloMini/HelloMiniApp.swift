@@ -143,7 +143,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   let playfulness = PlayfulnessSettings(
     effects: [
       MiniStartup.effect, ActivityMonitorApplication.effect, TeapotApplication.rotationEffect,
-      CalculatorApplication.effect,
+      CalculatorApplication.effect, CalculatorApplication.depthEffect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.livingDither, DesktopEffects.physicalWindows, DesktopEffects.dockMagnification,
@@ -188,7 +188,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings: settings, playfulness: playfulness, themes: Self.themes,
         screensavers: screensavers),
       AboutApplication(), TeapotApplication(playfulness: playfulness), aquarium, scrapbook,
-      CalculatorApplication(playfulness: playfulness),
+      CalculatorApplication(
+        playfulness: playfulness,
+        sendToScrapbook: { [scrapbook, commands] text in
+          try await scrapbook.addCalculation(text)
+          commands.launchID = "scrapbook"
+        }),
       WorldClockApplication(playfulness: playfulness),
       PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
       DiskFirstAidApplication(),

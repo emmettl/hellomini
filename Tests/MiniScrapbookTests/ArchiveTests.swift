@@ -64,7 +64,7 @@ private func imageBytes() throws -> Data {
   let original = Scrap(kind: .note, title: "Original", text: "Keep this")
   try await store.save([original])
   var future = ScrapbookArchive(entries: [])
-  future.version = 2
+  future.version = 99
   await #expect(throws: ScrapbookArchiveError.self) {
     try await store.previewArchive(JSONEncoder().encode(future), existing: [original])
   }

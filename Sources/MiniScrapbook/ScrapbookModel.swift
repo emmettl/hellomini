@@ -15,6 +15,10 @@ import UniformTypeIdentifiers
   @ObservationIgnored private var recognitionPaused = false
   var openPaint: @MainActor (CGImage) throws -> Void = { _ in }
   var query = ""
+  private(set) var collections: [String] = []
+  var collection: String?
+  var favouritesOnly = false
+  var sort = ScrapSort.modified
   var showArchive = false
   var selection: UUID?
   var archivePreview: ScrapbookImportPreview?
@@ -44,11 +48,13 @@ import UniformTypeIdentifiers
   }
 
   var visible: [Scrap] {
-    scraps.filter { $0.archived == showArchive && $0.matches(query) }
-      .sorted {
-        $0.modified == $1.modified ? $0.id.uuidString < $1.id.uuidString : $0.modified > $1.modified
-      }
+    scraps.filter {
+      $0.archived == showArchive && $0.matches(query)
+        && (collection == nil || $0.collection == collection) && (!favouritesOnly || $0.isFavourite)
+    }
+    .sorted { sort.precedes($0, $1) }
   }
+
   var selected: Scrap? { visible.first { $0.id == selection } }
   var canChange: Bool { ready && !busy }
 
@@ -58,6 +64,7 @@ import UniformTypeIdentifiers
     defer { busy = false }
     do {
       scraps = try await store.load()
+      collections = await store.collections
       ready = true
       selection = visible.first?.id
       error = nil
@@ -83,6 +90,14 @@ import UniformTypeIdentifiers
       try await add(item)
       error = nil
     } catch { self.error = error.localizedDescription }
+  }
+
+  func addCalculation(_ text: String) async throws {
+    if !ready { await load() }
+    guard canChange else { throw CocoaError(.fileWriteUnknown) }
+    busy = true
+    defer { busy = false }
+    try await add(ScrapImport(scrap: Scrap(kind: .note, title: "Desk Calculator", text: text)))
   }
 
   func addDrawing(_ image: CGImage) async throws {
@@ -163,7 +178,7 @@ import UniformTypeIdentifiers
   func newNote() {
     guard canChange else { return }
     error = nil
-    draft = Scrap(kind: .note, title: "Untitled scrap", text: "")
+    draft = Scrap(kind: .note, title: "Untitled scrap", text: "", collection: collection)
   }
 
   func edit() {
@@ -182,6 +197,8 @@ import UniformTypeIdentifiers
       try await self.persist(next)
       self.scraps = next
       self.query = ""
+      self.collection = updated.collection
+      self.favouritesOnly = false
       self.showArchive = updated.archived
       self.selection = updated.id
       self.draft = nil
@@ -205,6 +222,47 @@ import UniformTypeIdentifiers
       self.selection = self.visible.first?.id
       self.notice =
         selected.archived ? "Restored to the shelf." : "Archived. You can restore it from Archive."
+    }
+  }
+
+  func organiseSelected(collection name: String?, favourite: Bool) {
+    guard let selected else { return }
+    run {
+      var next = self.scraps
+      guard let index = next.firstIndex(where: { $0.id == selected.id }),
+        name == nil || self.collections.contains(name!)
+      else { return }
+      next[index].collection = name
+      next[index].favourite = favourite
+      try await self.persist(next)
+      self.scraps = next
+      self.selection =
+        self.visible.contains(where: { $0.id == selected.id })
+        ? selected.id : self.visible.first?.id
+    }
+  }
+
+  func createCollection(_ raw: String) {
+    let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+    run {
+      let names = try ScrapbookStore.validatedCollections(self.collections + [name])
+      try await self.store.save(self.scraps, collections: names)
+      self.collections = names
+      self.collection = name
+      self.selection = self.visible.first?.id
+    }
+  }
+
+  func removeCollection(_ name: String) {
+    run {
+      var next = self.scraps
+      for i in next.indices where next[i].collection == name { next[i].collection = nil }
+      let names = self.collections.filter { $0 != name }
+      try await self.store.save(next, collections: names)
+      self.scraps = next
+      self.collections = names
+      self.collection = nil
+      self.selection = self.visible.first?.id
     }
   }
 
@@ -253,6 +311,8 @@ import UniformTypeIdentifiers
     scraps = next
     showArchive = false
     query = ""
+    collection = nil
+    favouritesOnly = false
     selection = item.scrap.id
     notice = "Added to the scrapbook. No extra glue required."
     if item.scrap.kind == .image { recognizePending() }
@@ -362,7 +422,7 @@ import UniformTypeIdentifiers
     panel.nameFieldStringValue = all ? "HelloMini-Scrapbook-Backup.json" : "HelloMini-Scraps.json"
     guard panel.runModal() == .OK, let url = panel.url else { return }
     run {
-      try await self.store.writeArchive(scraps, to: url)
+      try await self.store.writeArchive(scraps, to: url, includeEmptyCollections: all)
       self.notice = "Exported \(scraps.count) scraps, including their pictures."
     }
   }
@@ -381,6 +441,9 @@ import UniformTypeIdentifiers
   func confirmArchiveImport(_ preview: ScrapbookImportPreview) {
     run {
       self.scraps = try await self.store.importArchive(preview, existing: self.scraps)
+      self.collections = await self.store.collections
+      self.collection = nil
+      self.favouritesOnly = false
       self.recognitionSaveWarning = nil
       self.archivePreview = nil
       self.query = ""

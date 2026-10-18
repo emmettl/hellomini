@@ -15,6 +15,9 @@ struct Scrap: Identifiable, Codable, Equatable, Sendable {
   var created = Date()
   var modified = Date()
   var archived = false
+  var collection: String?
+  var favourite: Bool?
+  var isFavourite: Bool { favourite == true }
   /// Text found in an image scrap's picture: nil until read, empty when there was none.
   var recognizedText: String?
 
@@ -38,8 +41,9 @@ struct Scrap: Identifiable, Codable, Equatable, Sendable {
 }
 
 struct ScrapbookDocument: Codable, Sendable {
-  var version = 1
+  var version = 2
   var scraps: [Scrap]
+  var collections: [String]?
 }
 
 struct ScrapImport: Sendable {
@@ -49,7 +53,7 @@ struct ScrapImport: Sendable {
 
 enum ScrapbookError: LocalizedError {
   case invalidLibrary, unsupportedVersion, tooLarge, unsupportedFile, invalidLink, invalidTitle
-  case invalidImage
+  case invalidImage, invalidCollection
 
   var errorDescription: String? {
     switch self {
@@ -61,6 +65,7 @@ enum ScrapbookError: LocalizedError {
       "Choose a regular UTF-8 text file or a PNG, JPEG, TIFF, HEIC, or GIF image."
     case .invalidLink: "Enter one complete http:// or https:// web address."
     case .invalidTitle: "Give this scrap a title of up to 200 characters."
+    case .invalidCollection: "Use up to 100 collections with names of 1–80 characters on one line."
     case .invalidImage: "This image could not be read. Try exporting it as PNG or JPEG."
     }
   }
@@ -69,6 +74,7 @@ enum ScrapbookError: LocalizedError {
 /// File work and image conversion stay off the UI actor. The model serializes all mutations.
 actor ScrapbookStore {
   let directory: URL
+  private(set) var collections: [String] = []
   static let textLimit = 1_000_000
   static let imageLimit = 25_000_000
   static let indexLimit = 64_000_000
@@ -91,14 +97,17 @@ actor ScrapbookStore {
     do { document = try JSONDecoder().decode(ScrapbookDocument.self, from: data) } catch {
       throw ScrapbookError.invalidLibrary
     }
-    guard document.version == 1 else { throw ScrapbookError.unsupportedVersion }
+    guard (1...2).contains(document.version) else { throw ScrapbookError.unsupportedVersion }
     guard Set(document.scraps.map(\.id)).count == document.scraps.count else {
       throw ScrapbookError.invalidLibrary
     }
+    let names = (document.collections ?? []) + document.scraps.compactMap(\.collection)
+    collections = try Self.validatedCollections(names)
     return document.scraps
   }
 
-  func save(_ scraps: [Scrap], image: ScrapImport? = nil) throws {
+  func save(_ scraps: [Scrap], image: ScrapImport? = nil, collections names: [String]? = nil) throws
+  {
     for scrap in scraps {
       guard !scrap.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
         scrap.title.count <= 200
@@ -106,21 +115,47 @@ actor ScrapbookStore {
       guard scrap.text.utf8.count <= Self.textLimit else { throw ScrapbookError.tooLarge }
       if scrap.kind == .link && scrap.link == nil { throw ScrapbookError.invalidLink }
     }
+    let nextCollections = try Self.validatedCollections(
+      (names ?? collections) + scraps.compactMap(\.collection))
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-    let data = try encoder.encode(ScrapbookDocument(scraps: scraps))
+    let data = try encoder.encode(ScrapbookDocument(scraps: scraps, collections: nextCollections))
     guard data.count <= Self.indexLimit else { throw ScrapbookError.tooLarge }
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-    if let image, let bytes = image.image {
-      try bytes.write(to: imageURL(image.scrap.id), options: .atomic)
-    }
     let index = directory.appendingPathComponent("scrapbook.json")
     if FileManager.default.fileExists(atPath: index.path) {
       // A previous complete index remains available for manual recovery.
-      try Data(contentsOf: index).write(
+      let previous = try Data(contentsOf: index)
+      let document = try JSONDecoder().decode(ScrapbookDocument.self, from: previous)
+      guard (1...2).contains(document.version) else { throw ScrapbookError.unsupportedVersion }
+      if document.version == 1 {
+        let migration = directory.appendingPathComponent("scrapbook.v1.json")
+        if !FileManager.default.fileExists(atPath: migration.path) {
+          try previous.write(to: migration, options: .withoutOverwriting)
+        }
+      }
+      try previous.write(
         to: directory.appendingPathComponent("scrapbook.previous.json"), options: .atomic)
     }
+    if let image, let bytes = image.image {
+      try bytes.write(to: imageURL(image.scrap.id), options: .atomic)
+    }
     try data.write(to: index, options: .atomic)
+    collections = nextCollections
+  }
+
+  static func validatedCollections(_ names: [String]) throws -> [String] {
+    guard
+      names.allSatisfy({
+        !$0.isEmpty && $0.count <= 80 && $0 == $0.trimmingCharacters(in: .whitespacesAndNewlines)
+          && !$0.contains(where: \.isNewline)
+      })
+    else {
+      throw ScrapbookError.invalidCollection
+    }
+    let unique = Array(Set(names)).sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+    guard unique.count <= 100 else { throw ScrapbookError.invalidCollection }
+    return unique
   }
 
   func importFile(_ url: URL) throws -> ScrapImport {

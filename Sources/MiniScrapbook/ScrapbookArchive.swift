@@ -4,8 +4,9 @@ import ImageIO
 import UniformTypeIdentifiers
 
 struct ScrapbookArchive: Codable, Sendable {
-  var version = 1
+  var version = 2
   var entries: [Entry]
+  var collections: [String]?
   struct Entry: Codable, Sendable {
     var scrap: Scrap
     var image: Data?
@@ -18,6 +19,7 @@ struct ScrapbookImportPreview: Identifiable, Sendable {
   var entries: [ScrapbookArchive.Entry]
   var skipped: Int
   var renamedIDs: Int
+  var collections: [String] = []
 }
 enum ScrapbookArchiveError: LocalizedError {
   case invalid, tooLarge, changed
@@ -33,8 +35,9 @@ enum ScrapbookArchiveError: LocalizedError {
   }
 }
 extension ScrapbookStore {
-  func writeArchive(_ scraps: [Scrap], to url: URL) throws {
-    try archive(scraps).write(to: url, options: .atomic)
+  func writeArchive(_ scraps: [Scrap], to url: URL, includeEmptyCollections: Bool = true) throws {
+    try archive(scraps, includeEmptyCollections: includeEmptyCollections).write(
+      to: url, options: .atomic)
   }
   func previewArchive(at url: URL, existing: [Scrap]) throws -> ScrapbookImportPreview {
     let info = try url.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
@@ -43,7 +46,7 @@ extension ScrapbookStore {
     }
     return try previewArchive(Data(contentsOf: url), existing: existing)
   }
-  func archive(_ scraps: [Scrap]) throws -> Data {
+  func archive(_ scraps: [Scrap], includeEmptyCollections: Bool = true) throws -> Data {
     guard scraps.count <= ScrapbookArchive.entryLimit else { throw ScrapbookArchiveError.tooLarge }
     var entries: [ScrapbookArchive.Entry] = []
     var bytes = 0
@@ -55,7 +58,11 @@ extension ScrapbookStore {
       try Self.validate(entry)
       entries.append(entry)
     }
-    let data = try JSONEncoder().encode(ScrapbookArchive(entries: entries))
+    let data = try JSONEncoder().encode(
+      ScrapbookArchive(
+        entries: entries,
+        collections: includeEmptyCollections
+          ? collections : try Self.validatedCollections(scraps.compactMap(\.collection))))
     guard data.count <= ScrapbookArchive.limit else { throw ScrapbookArchiveError.tooLarge }
     return data
   }
@@ -65,17 +72,19 @@ extension ScrapbookStore {
     do { archive = try JSONDecoder().decode(ScrapbookArchive.self, from: data) } catch {
       throw ScrapbookArchiveError.invalid
     }
-    guard archive.version == 1 else { throw ScrapbookArchiveError.invalid }
+    guard (1...2).contains(archive.version) else { throw ScrapbookArchiveError.invalid }
     guard archive.entries.count <= ScrapbookArchive.entryLimit else {
       throw ScrapbookArchiveError.tooLarge
     }
+    let names = try Self.validatedCollections(
+      (archive.collections ?? []) + archive.entries.compactMap { $0.scrap.collection })
     var fingerprints = Set<String>()
     var ids = Set(existing.map(\.id))
     for scrap in existing {
       let bytes = scrap.kind == .image ? try imageData(scrap.id) : nil
       fingerprints.insert(try Self.fingerprint(.init(scrap: scrap, image: bytes)))
     }
-    var result = ScrapbookImportPreview(entries: [], skipped: 0, renamedIDs: 0)
+    var result = ScrapbookImportPreview(entries: [], skipped: 0, renamedIDs: 0, collections: names)
     for var entry in archive.entries {
       try Self.validate(entry)
       guard fingerprints.insert(try Self.fingerprint(entry)).inserted else {
@@ -113,7 +122,7 @@ extension ScrapbookStore {
           created.append(destination)
         }
       }
-      try save(next)
+      try save(next, collections: collections + preview.collections)
       return next
     } catch {
       for url in created { try? FileManager.default.removeItem(at: url) }
@@ -126,6 +135,7 @@ extension ScrapbookStore {
   }
   private static func validate(_ entry: ScrapbookArchive.Entry) throws {
     let scrap = entry.scrap
+    _ = try Self.validatedCollections(scrap.collection.map { [$0] } ?? [])
     guard !scrap.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
       scrap.title.count <= 200,
       scrap.text.utf8.count <= textLimit, (scrap.recognizedText?.count ?? 0) <= recognitionLimit,
@@ -153,6 +163,8 @@ extension ScrapbookStore {
       let title: String
       let text: String
       let archived: Bool
+      let collection: String?
+      let favourite: Bool
       let imageHash: String?
     }
     let imageHash = entry.image.map {
@@ -160,7 +172,8 @@ extension ScrapbookStore {
     }
     let content = Content(
       kind: entry.scrap.kind, title: entry.scrap.title, text: entry.scrap.text,
-      archived: entry.scrap.archived, imageHash: imageHash)
+      archived: entry.scrap.archived, collection: entry.scrap.collection,
+      favourite: entry.scrap.isFavourite, imageHash: imageHash)
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]
     return SHA256.hash(data: try encoder.encode(content)).map { String(format: "%02x", $0) }

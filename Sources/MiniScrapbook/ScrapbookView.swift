@@ -4,7 +4,11 @@ import SwiftUI
 
 struct ScrapbookView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniWindowActive) private var active
   @Bindable var model: ScrapbookModel
+  @State private var organising = false
+  @FocusState private var searchFocused: Bool
+  @State private var focusTask: Task<Void, Never>?
   @State private var width: CGFloat = 760
   private var narrow: Bool { width < 600 }
 
@@ -69,8 +73,18 @@ struct ScrapbookView: View {
       await model.load()
       model.resumeRecognition()
     }
-    .onDisappear { model.stopRecognition() }
+    .onDisappear {
+      model.stopRecognition()
+      focusTask?.cancel()
+    }
+    .onChange(of: model.draft == nil) { _, closed in if closed { restoreSearchFocus() } }
+    .onChange(of: model.archivePreview == nil) { _, closed in if closed { restoreSearchFocus() } }
+    .onChange(of: organising) { _, open in if !open { restoreSearchFocus() } }
+    .onChange(of: active) { _, active in if !active { focusTask?.cancel() } }
     .onChange(of: model.query) { _, _ in model.selection = model.visible.first?.id }
+    .sheet(isPresented: $organising) {
+      ScrapbookOrganisation(model: model).environment(\.miniTheme, theme).miniSheet(width: 400)
+    }
     .sheet(item: $model.archivePreview) { preview in
       ScrapbookTransferView(model: model, preview: preview).environment(\.miniTheme, theme)
         .miniSheet(width: 460)
@@ -79,6 +93,15 @@ struct ScrapbookView: View {
       ScrapEditor(model: model, scrap: scrap)
         .environment(\.miniTheme, theme).environment(\.colorScheme, theme.colorScheme)
         .miniSheet(width: 570)
+    }
+  }
+
+  private func restoreSearchFocus() {
+    focusTask?.cancel()
+    focusTask = Task { @MainActor in
+      do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+      guard active, model.draft == nil, model.archivePreview == nil, !organising else { return }
+      searchFocused = true
     }
   }
 
@@ -108,11 +131,16 @@ struct ScrapbookView: View {
 
   private var shelf: some View {
     VStack(spacing: 0) {
+      Button((model.collection ?? "All collections") + (model.favouritesOnly ? " · ★" : "") + "…") {
+        organising = true
+      }
+      .font(theme.typography.small).buttonStyle(RetroButtonStyle()).padding(6)
+      .accessibilityLabel("Organise Scrapbook")
       TextField("Search scraps", text: $model.query)
         .textFieldStyle(.plain).padding(8)
         .background(theme.paper)
         .overlay(Rectangle().strokeBorder(theme.ink, lineWidth: 1))
-        .accessibilityLabel("Search scrapbook").padding(10)
+        .accessibilityLabel("Search scrapbook").focused($searchFocused).padding(10)
       ScrollView {
         LazyVStack(spacing: 0) {
           ForEach(model.visible) { scrap in
@@ -120,7 +148,8 @@ struct ScrapbookView: View {
               model.selection = scrap.id
             } label: {
               VStack(alignment: .leading, spacing: 5) {
-                Text(scrap.title).font(theme.typography.title).lineLimit(2)
+                Text((scrap.isFavourite ? "★ " : "") + scrap.title).font(theme.typography.title)
+                  .lineLimit(2)
                 Text(shelfDetail(scrap))
                   .font(theme.typography.small)
               }
@@ -225,49 +254,5 @@ private struct ScrapImage: View {
         image = decoded
       } catch { self.error = "The saved image is unavailable. Its caption is still here." }
     }
-  }
-}
-
-private struct ScrapEditor: View {
-  @Environment(\.miniTheme) private var theme
-  @Environment(\.dismiss) private var dismiss
-  let model: ScrapbookModel
-  @State var scrap: Scrap
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      Text("A little something worth keeping.").font(theme.typography.display(21))
-      TextField("Title", text: $scrap.title).accessibilityLabel("Scrap title")
-        .textFieldStyle(.plain).padding(8)
-        .overlay(Rectangle().strokeBorder(theme.ink, lineWidth: 1))
-      if scrap.kind != .image {
-        HStack {
-          ForEach([ScrapKind.note, .command, .link], id: \.self) { kind in
-            Button((scrap.kind == kind ? "✓ " : "") + kind.title) { scrap.kind = kind }
-              .accessibilityLabel(kind.title + " scrap")
-              .accessibilityAddTraits(scrap.kind == kind ? .isSelected : [])
-          }
-        }.buttonStyle(RetroButtonStyle())
-      }
-      Text(scrap.kind == .image ? "Caption" : scrap.kind == .link ? "Web address" : "Contents")
-        .font(theme.typography.small)
-      TextEditor(text: $scrap.text)
-        .font(theme.typography.body).scrollContentBackground(.hidden).padding(6)
-        .background(theme.paper).overlay(Rectangle().strokeBorder(theme.ink, lineWidth: 1))
-        .accessibilityLabel("Scrap contents")
-      if let error = model.error { Text(error).font(theme.typography.small) }
-      HStack {
-        Text(
-          scrap.kind == .command ? "Kept as text. Ready to copy when needed." : "Saved on this Mac."
-        )
-        .font(theme.typography.small)
-        Spacer()
-        Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
-        Button("Save") { model.saveDraft(scrap) }.keyboardShortcut(.defaultAction)
-      }.buttonStyle(RetroButtonStyle())
-    }
-    .padding(22).miniFormWidth(570).frame(height: 420)
-    .foregroundStyle(theme.ink).background(theme.paper)
-    .disabled(model.busy).interactiveDismissDisabled(model.busy)
   }
 }
