@@ -4,6 +4,11 @@ run-name: Mac Mini · ${{ inputs.source_sha || 'latest main' }}
 on:
   workflow_dispatch:
     inputs:
+      upload_artifact:
+        description: "Upload a development ZIP (requires available Actions artifact storage)"
+        required: false
+        default: false
+        type: boolean
       source_sha:
         description: "Full commit SHA already on emmettl/hellomini main; leave empty for latest main"
         required: false
@@ -58,12 +63,13 @@ jobs:
         working-directory: ${{ steps.source.outputs.source_dir }}
         run: bash scripts/ci-package.sh
       - name: Upload app
+        if: github.event_name == 'workflow_dispatch' && inputs.upload_artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: Hello-Mini-macos-arm64-${{ steps.source.outputs.source_sha }}
           path: ${{ steps.source.outputs.source_dir }}/dist/Hello-Mini-macos-arm64.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 1
       - name: Record source revision
         env:
           SOURCE_SHA: ${{ steps.source.outputs.source_sha }}

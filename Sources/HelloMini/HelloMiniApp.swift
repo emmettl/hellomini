@@ -14,6 +14,7 @@ import MiniDesktop
 import MiniDiskFirstAid
 import MiniFinder
 import MiniMoose
+import MiniNetwork
 import MiniPaint
 import MiniPlatinumTheme
 import MiniPrintMonitor
@@ -144,7 +145,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.dockMagnification, DesktopEffects.dockLaunchBounce, DesktopEffects.genie,
-      TalkingMoose.effect, CommunicationsApplication.effect,
+      TalkingMoose.effect, CommunicationsApplication.effect, NetworkApplication.effect,
     ] + AquariumApplication.effects)
   let screensavers = ScreensaverSettings(savers: [
     AquariumApplication.screensaver, FlyingToasters.metadata, ScrapbookApplication.screensaver,
@@ -188,7 +189,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
       PuzzleApplication(picture: picture, playfulness: playfulness), ChooserApplication(),
       DiskFirstAidApplication(),
       WastebasketApplication(onEmpty: { [sounds] in sounds.play(.wastebasket) }),
-      printMonitor, communications,
+      printMonitor, communications, NetworkApplication(playfulness: playfulness),
       paint, ClipboardApplication(), KeyCapsApplication(), alarm,
     ]
   }()

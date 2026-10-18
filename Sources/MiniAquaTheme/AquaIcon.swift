@@ -180,6 +180,12 @@ struct AquaIcon: View {
             CGRect(x: 10 + (index % 3) * 27, y: 10 + (index / 3) * 27, width: 25, height: 25),
             colors[index % 4], 4)
         }
+      case .network:
+        line([CGPoint(x: 22, y: 48), CGPoint(x: 22, y: 16)], silver, 5)
+        line([CGPoint(x: 78, y: 48), CGPoint(x: 78, y: 16)], silver, 5)
+        panel(CGRect(x: 10, y: 44, width: 80, height: 38), silver, 8)
+        for x in [25, 43, 61] { oval(CGRect(x: x, y: 58, width: 8, height: 8), .green) }
+        panel(CGRect(x: 76, y: 58, width: 7, height: 10), dark, 1)
       case .chooser:
         oval(CGRect(x: 19, y: 12, width: 62, height: 62), blue)
         context.stroke(

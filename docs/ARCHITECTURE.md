@@ -97,3 +97,6 @@ The Dock and Finder icon uses the same pixel Macintosh artwork as the desktop. `
 ## Drawing, presets and portable scraps
 
 `MiniPaint` keeps a bounded monochrome bitmap and 20-step operation history, writes the current drawing atomically after each completed edit, and exports an original-resolution PNG. The host injects its Send to Scrapbook connection; the painting module does not import Scrapbook. Desktop presets belong to `MiniDesktop`, compose appearance values with a desktop-session snapshot, and minimise extra open windows instead of destroying their views. Scrapbook's actor owns backup encoding, validation, duplicate fingerprints and staged image writes; an explicit preview precedes the index commit, with rollback of only newly created images on failure.
+
+
+The `MiniNetwork` module owns its path monitor and a serial-queue TCP probe. Probe completion, cancellation, timeout, and stale callbacks are serialized; the main-actor model uses request IDs to discard late UI results. It sends no application payload and does not persist destinations or log entries. Finder metadata and bounded preview reads run on `DirectoryReader`. Desktop session recovery preserves original bytes before enabling layout writes again. Scrapbook recognition yields to user edits through busy-state transitions, with generation IDs invalidating cancelled work.

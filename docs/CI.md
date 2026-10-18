@@ -14,7 +14,7 @@ The configuration under `ci/private-build/` is copied to the root of `emmettl/he
 
 The dedicated runner uses the custom `hello-mini` label alongside `self-hosted`, `macOS`, and `ARM64`. It is registered at repository scope to the private build repository only. Its macOS user needs an active login session for the SwiftUI rendering tests and the runner's LaunchAgent. Xcode 27 must be available at `/Applications/Xcode.app`, which requires macOS 26.6 or later on the Mini; the workflow checks the selected toolchain before building.
 
-Run **Build on Mac Mini** from the private repository's Actions page. Leave the SHA empty to build the current public `main`, or supply a full commit SHA reachable from that branch. The workflow fetches only `main`, validates the commit before checkout, runs all tests including Metal, builds a release bundle, and uploads a private artifact. Builds are serialized, have a 30-minute timeout, and remove their temporary source checkout afterward. They do not install or launch Hello Mini or interrupt the existing app.
+Run **Build on Mac Mini** from the private repository's Actions page. Leave the SHA empty to build the current public `main`, or supply a full commit SHA reachable from that branch. The workflow fetches only `main`, validates the commit before checkout, runs all tests including Metal, builds a release bundle, and optionally uploads a private artifact. Builds are serialized, have a 30-minute timeout, and remove their temporary source checkout afterward. They do not install or launch Hello Mini or interrupt the existing app.
 
 From a machine with GitHub CLI access:
 
@@ -39,3 +39,5 @@ Artifacts carry an ad-hoc signature and are development builds. The source is MI
 Cloudflare Pages deploys the repository’s `website/` directory to [hellomini.app](https://hellomini.app) automatically from `main`. It runs no Swift build and does not publish application releases. See [website maintenance](../website/README.md) for configuration and validation.
 
 References: [GitHub runner security](https://docs.github.com/en/actions/reference/security/secure-use), [macOS runner images](https://github.com/actions/runner-images/blob/main/images/macos/xcode-27-arm64-Readme.md), and [adding a self-hosted runner](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners).
+
+Development artifact uploads are opt-in (`upload_artifact=true`) with one-day retention. Default CI still builds, verifies and archives the app, and records its source revision without consuming Actions artifact storage. Opt-in uploads fail visibly if account storage is full. Signed public release assets are uploaded separately to GitHub Releases. This does not change the account storage quota or delete existing artifacts.

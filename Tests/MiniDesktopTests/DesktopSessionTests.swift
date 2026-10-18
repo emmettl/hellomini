@@ -70,8 +70,11 @@ import Testing
     DesktopModel(applications: [app], initiallyOpen: [app.id], defaults: defaults).openIDs == [
       app.id
     ])
-  store.save(DesktopSession(version: 99, openIDs: [], windows: [:]))
+  defaults.set(
+    try JSONEncoder().encode(DesktopSession(version: 99, openIDs: [], windows: [:])),
+    forKey: DesktopSessionStore.key)
   #expect(store.load() == nil)
+  store.recover()
   store.save(
     DesktopSession(
       openIDs: [app.id],
@@ -302,4 +305,43 @@ import Testing
   #expect(
     DesktopModel(applications: [first, second], initiallyOpen: [], defaults: defaults).shadedIDs
       .isEmpty)
+}
+
+@Test @MainActor func unreadableSessionSurvivesEditsUntilExplicitRecovery() throws {
+  let suite = "SessionRecovery-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  for bytes in [Data("broken".utf8), Data(#"{"version":99,"openIDs":[],"windows":{}}"#.utf8)] {
+    defaults.set(bytes, forKey: DesktopSessionStore.key)
+    let app = SessionTestApp("a")
+    let model = DesktopModel(applications: [app], initiallyOpen: [app.id], defaults: defaults)
+    #expect(model.sessionRecoveryNeeded)
+    model.resetLayout()
+    model.close(app)
+    #expect(defaults.data(forKey: DesktopSessionStore.key) == bytes)
+    model.recoverSession()
+    #expect(!model.sessionRecoveryNeeded)
+    #expect(DesktopSessionStore(defaults: defaults).load() != nil)
+    let backups = defaults.dictionaryRepresentation().filter {
+      $0.key.hasPrefix("desktop.session.recovery.")
+    }
+    #expect(backups.values.contains { ($0 as? Data) == bytes })
+  }
+}
+
+@Test func recoveryAlsoPreservesNonDataPreferenceValues() throws {
+  let suite = "SessionRecoveryType-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let store = DesktopSessionStore(defaults: defaults)
+  defaults.set("unreadable preference", forKey: DesktopSessionStore.key)
+  #expect(store.recoveryNeeded)
+  store.save(DesktopSession(openIDs: [], windows: [:]))
+  #expect(defaults.string(forKey: DesktopSessionStore.key) == "unreadable preference")
+  store.recover()
+  #expect(
+    defaults.dictionaryRepresentation().contains {
+      $0.key.hasPrefix("desktop.session.recovery.")
+        && ($0.value as? String) == "unreadable preference"
+    })
 }

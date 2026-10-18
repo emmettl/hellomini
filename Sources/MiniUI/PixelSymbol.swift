@@ -1,6 +1,6 @@
 public enum PixelSymbol {
   case computer, disk, folder, document, activity, clock, settings, teapot, aquarium, scrapbook,
-    calculator, puzzle, chooser, wastebasket, printer, paint
+    calculator, puzzle, chooser, wastebasket, printer, paint, network
 
   public var rows: [String] {
     switch self {
@@ -24,6 +24,13 @@ public enum PixelSymbol {
         "  ############  ", "  #..........#  ", "   #.#.#.#..#   ", "   #.#.#.#..#   ",
         "   #.#.#.#..#   ", "   #.#.#.#..#   ", "    #.#.#..#    ", "    #.#.#..#    ",
         "    #.#.#..#    ", "    #......#    ", "     ######     ", "                ",
+      ]
+    case .network:
+      [
+        "                ", "   #        #   ", "   #        #   ", "   ##########   ",
+        "  #..........#  ", " #............# ", " #..##..##..#.# ", " #............# ",
+        "  ############  ", "     #    #     ", "     #    #     ", "   ##########   ",
+        "   #        #   ", "                ", "                ", "                ",
       ]
     case .chooser:
       [

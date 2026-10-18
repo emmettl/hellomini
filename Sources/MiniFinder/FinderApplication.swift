@@ -35,6 +35,13 @@ import SwiftUI
             shortcut: RetroShortcut(key: "o", modifiers: [.command, .shift], label: "⇧⌘O"),
             action: model.chooseFolder),
           RetroMenuItem(
+            id: "get-info", title: "Get Info…", shortcut: RetroShortcut(key: "i", label: "⌘I"),
+            enabled: model.selectedEntry != nil
+          ) { self.model.inspectSelection(preview: false) },
+          RetroMenuItem(id: "preview", title: "Preview…", enabled: model.selectedEntry != nil) {
+            self.model.inspectSelection(preview: true)
+          },
+          RetroMenuItem(
             id: "reveal", title: "Reveal in macOS Finder", action: model.revealSelection),
         ]),
       RetroMenu(
@@ -66,6 +73,11 @@ import SwiftUI
             id: "up", title: "Enclosing Folder",
             shortcut: RetroShortcut(key: "\u{F700}", label: "⌘↑"), enabled: model.history.canGoUp,
             action: model.goUp),
+          RetroMenuItem(
+            id: "favourite",
+            title: model.currentIsFavourite
+              ? "Remove Current Favourite" : "Add Current Folder to Favourites",
+            action: model.toggleFavourite),
           .separator("go-divider"),
           RetroMenuItem(
             id: "home", title: "Home",

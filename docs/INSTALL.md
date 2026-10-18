@@ -6,12 +6,14 @@ Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop
 
 1. Get the versioned macOS ARM64 ZIP from [hellomini.app](https://hellomini.app) or [GitHub Releases](https://github.com/emmettl/hellomini/releases/latest).
 2. Expand the ZIP and move **Hello Mini.app** to Applications.
-3. Open Hello Mini normally. The public release is Developer ID-signed and notarized by Apple; Xcode and a developer account are not required.
+3. Open the moved copy of Hello Mini normally. The public release is Developer ID-signed and notarized by Apple; Xcode and a developer account are not required.
+
+If first launch from Downloads stalls, quit that copy and move the app using Finder before reopening it. A direct translocated launch stalled on the 0.6 validation Mac, while the normally moved copy launched. Keep Gatekeeper enabled; removing quarantine or disabling security checks is not part of installation.
 
 The release also includes a SHA-256 checksum and build manifest. To verify a download, put the ZIP and its `.sha256` file in the same directory and run, for example:
 
 ```sh
-shasum -a 256 -c Hello-Mini-0.6.0-macos-arm64.zip.sha256
+shasum -a 256 -c Hello-Mini-0.7.0-macos-arm64.zip.sha256
 ```
 
 There is no Homebrew cask or automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.

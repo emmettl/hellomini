@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.6.0</string>
+	<string>0.7.0</string>
 	<key>CFBundleVersion</key>
-	<string>6</string>
+	<string>7</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
 	<key>NSBonjourServices</key>
@@ -30,7 +30,7 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Chooser discovers SSH, screen sharing, and web services on your local network when you choose Browse.</string>
+	<string>Chooser discovers local services when you choose Browse. Network connects to a host and TCP port only when you choose Call.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

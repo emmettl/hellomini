@@ -11,6 +11,17 @@ final class DesktopModel {
   private(set) var minimisedIDs: Set<String>
   private(set) var zoomedIDs: Set<String>
   private(set) var shadedIDs: Set<String>
+  var showSessionRecovery = false
+  private(set) var sessionRecoveryNeeded = false
+  func recoverSession() {
+    store.recover()
+    sessionRecoveryNeeded = false
+    windows = [:]
+    minimisedIDs = []
+    zoomedIDs = []
+    shadedIDs = []
+    persist()
+  }
   private var windows: [String: WindowPlacement]
   @ObservationIgnored private let store: DesktopSessionStore
   var visibleIDs: [String] { openIDs.filter { !minimisedIDs.contains($0) } }
@@ -24,6 +35,8 @@ final class DesktopModel {
     self.applications = applications
     store = DesktopSessionStore(defaults: defaults)
     let saved = store.load()
+    sessionRecoveryNeeded = store.recoveryNeeded
+    showSessionRecovery = store.recoveryNeeded
     windows = saved?.windows ?? [:]
     let knownIDs = Set(applications.map(\.id))
     var seen = Set<String>()
@@ -335,6 +348,14 @@ public struct DesktopView: View {
         commands?.launchID = nil
       }
     }
+    .alert("Saved desktop needs recovery", isPresented: $model.showSessionRecovery) {
+      Button("Keep for Later", role: .cancel) {}
+      Button("Back Up and Reset Layout") { model.recoverSession() }
+    } message: {
+      Text(
+        "The saved desktop is unreadable or from a newer version. Its original data is preserved and layout saving is paused. Reset backs up the original and starts saving the current desktop with default window positions. App documents are retained. You can return here from the Window menu."
+      )
+    }
     .sheet(isPresented: $showPresets) {
       DesktopPresetsView(store: presets, model: model, settings: settings)
         .environment(\.miniTheme, theme).miniSheet(width: 460)
@@ -527,6 +548,10 @@ public struct DesktopView: View {
             ) { model.launch(app) }
           } + [
             .separator("window-divider"),
+            RetroMenuItem(
+              id: "recover-session", title: "Recover Saved Desktop…",
+              enabled: model.sessionRecoveryNeeded
+            ) { model.showSessionRecovery = true },
             RetroMenuItem(id: "reset", title: "Reset Window Layout", action: model.resetLayout),
           ]
       ))

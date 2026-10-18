@@ -10,6 +10,8 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 **0.6.0** release source is dated 18 October 2026 (Europe/Zurich), with MiniPaint, desktop presets, Scrapbook transfers, picture round trips, desktop patterns from drawings, and explicitly added example scraps. Validation evidence is recorded in the GitHub release notes. Longer-session and physical Wokyis checks remain follow-ups.
 
+**0.7.0** release source is dated 18 October 2026 (Europe/Zurich), with Network, Finder inspection/favourites, saved-session recovery, event-driven Scrapbook OCR and CI/documentation maintenance. Exact validation and remaining hardware limitations are recorded in the release notes. Release packaging now extracts the ZIP into a fresh location and rechecks its signature, stapled ticket and Gatekeeper acceptance before creating the versioned archive.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.

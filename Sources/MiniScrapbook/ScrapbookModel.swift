@@ -6,7 +6,13 @@ import UniformTypeIdentifiers
 @MainActor @Observable final class ScrapbookModel {
   private(set) var scraps: [Scrap] = []
   private(set) var ready = false
-  private(set) var busy = false
+  private(set) var busy = false {
+    didSet { if !busy { recognizePending() } }
+  }
+  private(set) var recognitionSaveWarning: String?
+  @ObservationIgnored private var recognizedPending: [UUID: String] = [:]
+  @ObservationIgnored private var recognitionGeneration = UUID()
+  @ObservationIgnored private var recognitionPaused = false
   var openPaint: @MainActor (CGImage) throws -> Void = { _ in }
   var query = ""
   var showArchive = false
@@ -19,7 +25,6 @@ import UniformTypeIdentifiers
   @ObservationIgnored private let pasteboard: NSPasteboard
   @ObservationIgnored private let recognizer: @Sendable (Data) async throws -> String
   @ObservationIgnored private var recognitionTask: Task<Void, Never>?
-  @ObservationIgnored private var recognitionRequested = false
   /// The image scrap whose text is being read, if any.
   private(set) var reading: UUID?
 
@@ -174,7 +179,7 @@ import UniformTypeIdentifiers
       updated.modified = .now
       var next = self.scraps.filter { $0.id != updated.id }
       next.append(updated)
-      try await self.store.save(next)
+      try await self.persist(next)
       self.scraps = next
       self.query = ""
       self.showArchive = updated.archived
@@ -195,7 +200,7 @@ import UniformTypeIdentifiers
         }
         return entry
       }
-      try await self.store.save(next)
+      try await self.persist(next)
       self.scraps = next
       self.selection = self.visible.first?.id
       self.notice =
@@ -244,7 +249,7 @@ import UniformTypeIdentifiers
 
   private func add(_ item: ScrapImport) async throws {
     let next = scraps + [item.scrap]
-    try await store.save(next, image: item)
+    try await persist(next, image: item)
     scraps = next
     showArchive = false
     query = ""
@@ -253,46 +258,72 @@ import UniformTypeIdentifiers
     if item.scrap.kind == .image { recognizePending() }
   }
 
-  /// Reads text from image scraps one at a time, on this Mac, between the user's own edits.
-  func recognizePending() {
-    guard ready else { return }
-    recognitionRequested = true
-    guard recognitionTask == nil else { return }
-    recognitionTask = Task { [weak self] in
-      while let self, self.recognitionRequested {
-        self.recognitionRequested = false
-        await self.drainRecognition()
-      }
-      self?.recognitionTask = nil
-    }
+  private func persist(_ entries: [Scrap], image: ScrapImport? = nil) async throws {
+    try await store.save(entries, image: image)
+    recognitionSaveWarning = nil
   }
-
-  private func drainRecognition() async {
-    var attempted = Set<UUID>()
-    while let scrap = scraps.first(where: { $0.awaitingRecognition && !attempted.contains($0.id) })
-    {
-      attempted.insert(scrap.id)
-      reading = scrap.id
-      let text: String
-      do {
-        let data = try await store.imageData(scrap.id)
-        text = try await recognizer(data).trimmingCharacters(in: .whitespacesAndNewlines)
-      } catch {
-        // An unreadable picture is recorded as having no text rather than retried on every launch.
-        text = ""
+  func resumeRecognition() {
+    recognitionPaused = false
+    recognizePending()
+  }
+  func stopRecognition() {
+    recognitionPaused = true
+    recognitionGeneration = UUID()
+    recognitionTask?.cancel()
+    recognitionTask = nil
+    reading = nil
+  }
+  /// Completed results wait in memory until the current edit finishes; no polling or busy waiting.
+  func recognizePending() {
+    guard ready, !busy, !recognitionPaused, recognitionTask == nil,
+      scraps.contains(where: { $0.awaitingRecognition })
+    else { return }
+    let generation = UUID()
+    recognitionGeneration = generation
+    recognitionTask = Task { [weak self] in
+      guard let self else { return }
+      while !Task.isCancelled, self.recognitionGeneration == generation, !self.busy,
+        let scrap = self.scraps.first(where: { $0.awaitingRecognition })
+      {
+        self.reading = scrap.id
+        let text: String
+        if let pending = self.recognizedPending.removeValue(forKey: scrap.id) {
+          text = pending
+        } else {
+          do {
+            let data = try await self.store.imageData(scrap.id)
+            text = String(
+              try await self.recognizer(data).trimmingCharacters(in: .whitespacesAndNewlines)
+                .prefix(ScrapbookStore.recognitionLimit))
+          } catch {
+            guard !Task.isCancelled, self.recognitionGeneration == generation else { return }
+            text = ""
+          }
+        }
+        guard !Task.isCancelled, self.recognitionGeneration == generation else { return }
+        self.reading = nil
+        if self.busy {
+          self.recognizedPending[scrap.id] = text
+          break
+        }
+        guard
+          let index = self.scraps.firstIndex(where: { $0.id == scrap.id && $0.awaitingRecognition })
+        else { continue }
+        var next = self.scraps
+        next[index].recognizedText = text
+        self.busy = true
+        do { try await self.persist(next) } catch {
+          self.recognitionSaveWarning =
+            "Picture text is searchable in this session but could not be saved. The next successful library edit will save it."
+        }
+        self.scraps = next
+        self.busy = false
       }
-      reading = nil
-      while busy { try? await Task.sleep(for: .milliseconds(40)) }
-      guard let index = scraps.firstIndex(where: { $0.id == scrap.id }),
-        scraps[index].awaitingRecognition
-      else { continue }
-      var next = scraps
-      next[index].recognizedText = String(text.prefix(ScrapbookStore.recognitionLimit))
-      busy = true
-      // A failed write still helps search now; the text is saved with the next successful change.
-      try? await store.save(next)
-      scraps = next
-      busy = false
+      guard self.recognitionGeneration == generation else { return }
+      self.reading = nil
+      self.recognitionTask = nil
+      // An edit may have finished while the recognizer was returning.
+      self.recognizePending()
     }
   }
 
@@ -350,6 +381,7 @@ import UniformTypeIdentifiers
   func confirmArchiveImport(_ preview: ScrapbookImportPreview) {
     run {
       self.scraps = try await self.store.importArchive(preview, existing: self.scraps)
+      self.recognitionSaveWarning = nil
       self.archivePreview = nil
       self.query = ""
       self.showArchive = false

@@ -103,7 +103,19 @@ def release(args):
     run("xcrun", "stapler", "validate", str(app))
     run("codesign", "--verify", "--deep", "--strict", str(app))
     run("spctl", "--assess", "--type", "execute", "--verbose=4", str(app))
-    run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(archive))
+    # Verify the delivered archive after relocation, not only the build-directory app.
+    # Keep the versioned ZIP absent if extraction or any verification fails.
+    with tempfile.TemporaryDirectory(prefix="hello-mini-distribution-", dir=ROOT / "dist") as temporary:
+        candidate = Path(temporary) / archive.name
+        installed = Path(temporary) / "installed"
+        installed.mkdir()
+        run("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", str(app), str(candidate))
+        run("ditto", "-x", "-k", str(candidate), str(installed))
+        moved_app = installed / "Hello Mini.app"
+        run("codesign", "--verify", "--deep", "--strict", str(moved_app))
+        run("xcrun", "stapler", "validate", str(moved_app))
+        run("spctl", "--assess", "--type", "execute", "--verbose=4", str(moved_app))
+        candidate.replace(archive)
     write_checksums(archive, {**info, "signing": "Developer ID Application", "notarized": True})
     print(f"Ready for review: {archive}. No GitHub release or tag has been created.")
 

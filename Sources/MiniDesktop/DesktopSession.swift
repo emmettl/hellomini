@@ -24,6 +24,21 @@ struct DesktopSessionStore {
   let defaults: UserDefaults
   static let key = "desktop.session"
 
+  var recoveryNeeded: Bool {
+    guard let original = defaults.object(forKey: Self.key) else { return false }
+    guard let data = original as? Data else { return true }
+    guard let session = try? JSONDecoder().decode(DesktopSession.self, from: data),
+      session.version == 1
+    else { return true }
+    return false
+  }
+  /// Keep the original bytes, including unsupported future versions, until explicit recovery.
+  func recover() {
+    if let original = defaults.object(forKey: Self.key) {
+      defaults.set(original, forKey: "desktop.session.recovery." + UUID().uuidString)
+    }
+    defaults.removeObject(forKey: Self.key)
+  }
   func load() -> DesktopSession? {
     guard let data = defaults.data(forKey: Self.key),
       var session = try? JSONDecoder().decode(DesktopSession.self, from: data), session.version == 1
@@ -35,6 +50,7 @@ struct DesktopSessionStore {
   }
 
   func save(_ session: DesktopSession) {
+    guard !recoveryNeeded else { return }
     guard let data = try? JSONEncoder().encode(session) else { return }
     defaults.set(data, forKey: Self.key)
   }

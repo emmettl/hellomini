@@ -18,7 +18,7 @@ The desktop is designed around 1280 × 720, including small displays such as the
 
 ## A little look inside
 
-- **Useful:** Finder, Find File, Activity Monitor, Clock, Alarm Clock, World Clock, Key Caps, Clipboard, Scrapbook, Desk Calculator, Chooser, Disk First Aid, and Wastebasket.
+- **Useful:** Finder, Find File, Activity Monitor, Clock, Alarm Clock, World Clock, Key Caps, Clipboard, Scrapbook, Desk Calculator, Chooser, Disk First Aid, Network, MiniPaint, and Wastebasket.
 - **Questionably useful:** Print Monitor turns GitHub Actions and GitLab builds into imaginary print jobs. Failures jam the printer; successful builds can feed the fish.
 - **Gloriously unnecessary:** a Metal Utah Teapot, Aquarium fish that remember your build streaks, a sliding Puzzle made from the live desktop, a Talking Moose, and original Flying Toasters screensavers.
 - **Six appearances:** Classic, Paper, Midnight, System 7, Mac OS 8 Platinum with window shade, and early Aqua, complete with pinstripes, gel controls, traffic lights, and a dock with magnification and launch bounce.

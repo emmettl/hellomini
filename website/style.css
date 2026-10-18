@@ -44,3 +44,5 @@ footer{border-top:var(--line);background:white;padding:32px 5%;display:flex;gap:
   footer a{display:inline-flex;align-items:center;min-height:44px}
   footer p{margin-top:0}
 }
+
+.swatch.platinum { background: linear-gradient(135deg, #fff 0%, #c6c6c6 48%, #777 100%); }

@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.6.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.7.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -178,7 +178,7 @@ Turning off the feeding switch or Extra silliness consumes notifications without
 
 **Find File**, also available through Finder's **Find…** button or Command-F, searches indexed file names within your home folder or a chosen folder. It shows up to 200 results with explicit Open/Reveal actions. Spotlight indexing and macOS access permissions determine which files appear; this is not a full disk traversal. **Control Panel → Appearance → Desktop Pattern** supplies a saved 8 × 8 pixel editor with immediate desktop preview, Clear, and Reset to theme.
 
-Genie minimisation and other physical keyboard layouts remain on the roadmap.
+Genie minimisation is available in Aqua through Playfulness. Other physical keyboard layouts remain on the roadmap.
 
 ## MiniPaint
 
@@ -206,3 +206,22 @@ The **Scrapbook** menu adds four transfers:
 - **Import Backup…** reads either collection or library JSON and presents a preview before writing. Identical content is skipped, even if its identifier or dates differ. Conflicting identifiers are assigned new IDs so both scraps survive. Active and archived copies remain distinct. The preview lists counts and the first 20 incoming titles.
 
 Imports merge into the library; they never replace existing scraps. Unsupported or malformed backups are rejected. If the index cannot be saved, newly staged image files are removed and existing library files remain. Backups are limited to 2,000 scraps and 100 MB; each picture is a PNG up to 25 MB and 4096 × 4096 pixels, and each text scrap is up to 1 MB. Backup files contain the actual notes and pictures, so choose their destination accordingly. Cloud sync and scheduled backups are not included.
+
+
+## Network
+
+**Network** shows the current system connection path and active IPv4/IPv6 interface addresses. Interface details refresh when the path changes or when you choose Refresh. A connection path does not prove Internet access.
+
+Enter a hostname or IP address and a TCP port, then choose **Call**. A successful result reports TCP connection setup time, including name resolution. No application payload is sent, no TLS certificate is checked, and the result is not ICMP ping or a bandwidth measurement. Calls time out after five seconds; refusal and timeout do not establish that the machine is offline. Cancel stops the current call. The 20-entry call log lasts only for this session. Closing the accessory stops monitoring and cancels the call. Modem commentary can be disabled in Control Panel → Playfulness.
+
+## Finder inspection and favourites
+
+Select a file and choose **File → Get Info…** (Command-I) or **Preview…**, also available in its context menu and accessibility actions. Tab to a file to select it, Return opens it, and Space previews it. Get Info reads kind, file-entry size, location, dates, and POSIX permissions; folder contents are not recursively counted, and permissions are not an effective-access audit. Image previews use thumbnails up to 800 pixels and files up to 25 MB. Text previews read at most 64 KB. Other file types and symbolic links have explanatory placeholders; previews do not execute files.
+
+**Go → Add Current Folder to Favourites** saves up to 20 folder locations in Places. Choose Remove Current Favourite to remove the current location. Unavailable folders report their normal access error and remain available for later reconnection.
+
+## Saved desktop recovery
+
+Unreadable or newer-version desktop sessions are retained unchanged. A startup warning offers **Keep for Later** or **Back Up and Reset Layout**. Until recovery, app documents still work but window changes are not saved over the unreadable session. Return through **Window → Recover Saved Desktop…**. Recovery keeps a copy under `desktop.session.recovery.<UUID>` in Hello Mini preferences and resumes layout saving with default window positions. Older version-one sessions continue to load without migration.
+
+Scrapbook pauses text recognition when its window disappears and resumes on reopening. Results that arrive during an edit wait until it completes. If recognized text could not be saved, a visible warning distinguishes searchable text in this session from persisted text; the next successful library edit saves it.

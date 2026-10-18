@@ -10,12 +10,48 @@ final class FinderModel {
   var listView: Bool { didSet { defaults.set(listView, forKey: "finder.listView") } }
   var isLoading = false
   var error: String?
+  var inspection: FileInspection?
+  private(set) var favourites: [URL] = []
+  @ObservationIgnored private var inspectionTask: Task<Void, Never>?
+  var currentIsFavourite: Bool { favourites.contains(location) }
+  func toggleFavourite() {
+    if currentIsFavourite {
+      favourites.removeAll { $0 == location }
+    } else if favourites.count < 20 {
+      favourites.append(location)
+    } else {
+      error = "Keep up to 20 favourite folders. Remove one before adding another."
+    }
+    defaults.set(favourites.map(\.path), forKey: "finder.favourites")
+  }
+  func inspectSelection(preview: Bool) {
+    guard let entry = selectedEntry else { return }
+    inspect(entry, preview: preview)
+  }
+  func inspect(_ entry: FileEntry, preview: Bool) {
+    inspectionTask?.cancel()
+    inspectionTask = Task {
+      do {
+        let result = try await reader.inspect(entry.url, preview: preview)
+        guard !Task.isCancelled else { return }
+        inspection = result
+      } catch {
+        if !Task.isCancelled {
+          self.error = "Could not inspect file: " + error.localizedDescription
+        }
+      }
+    }
+  }
   private let reader = DirectoryReader()
   private var loadTask: Task<Void, Never>?
   @ObservationIgnored private let defaults: UserDefaults
 
   init(defaults: UserDefaults = .standard) {
     self.defaults = defaults
+    var seen = Set<String>()
+    favourites = (defaults.stringArray(forKey: "finder.favourites") ?? []).filter {
+      $0.hasPrefix("/") && seen.insert($0).inserted
+    }.prefix(20).map { URL(fileURLWithPath: $0).standardizedFileURL }
     let path = defaults.string(forKey: "finder.location")
     let location =
       path.flatMap { $0.hasPrefix("/") ? URL(fileURLWithPath: $0) : nil }

@@ -6,6 +6,7 @@ struct FinderView: View {
   @Bindable var model: FinderModel
   let findFile: () -> Void
   @State private var showingPlaces = false
+  @FocusState private var focusedEntry: URL?
   private let labelNames = ["None", "Gray", "Green", "Purple", "Blue", "Yellow", "Red", "Orange"]
   private let labelColors: [Color] = [
     .clear, .gray, .green, .purple, .blue, .yellow, .red, .orange,
@@ -100,6 +101,11 @@ struct FinderView: View {
     }
     .font(theme.typography.body)
     .onAppear { model.reload() }
+    .sheet(item: $model.inspection) { inspection in
+      FileInspectionView(inspection: inspection).environment(\.miniTheme, theme).miniSheet(
+        width: 400)
+    }
+    .onChange(of: focusedEntry) { _, value in if let value { model.selection = value } }
     .onChange(of: model.showHidden) { model.reload() }
   }
 
@@ -125,6 +131,15 @@ struct FinderView: View {
         url: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads"))
       Rectangle().frame(height: 1).padding(.vertical, 12).padding(.horizontal, 12)
       place("Macintosh HD", url: URL(fileURLWithPath: "/"), symbol: .disk)
+      if !model.favourites.isEmpty {
+        Text("FAVOURITES").font(theme.typography.small).padding(.horizontal, 12)
+        ForEach(model.favourites, id: \.self) { url in place(url.lastPathComponent, url: url) }
+      }
+      Button(
+        model.currentIsFavourite ? "Remove Favourite" : "Add Favourite",
+        action: model.toggleFavourite
+      )
+      .font(theme.typography.small).buttonStyle(.plain).padding(12)
       Spacer()
       Button("Other folder…", action: model.chooseFolder)
         .buttonStyle(.plain)
@@ -173,13 +188,32 @@ struct FinderView: View {
     .frame(height: 84, alignment: .top)
     .contentShape(Rectangle())
     .onTapGesture(count: 2) { model.open(entry) }
-    .onTapGesture { model.selection = entry.url }
+    .onTapGesture {
+      model.selection = entry.url
+      focusedEntry = entry.url
+    }
+    .focusable().focused($focusedEntry, equals: entry.url)
+    .onKeyPress(.return) {
+      model.open(entry)
+      return .handled
+    }
+    .onKeyPress(.space) {
+      model.inspect(entry, preview: true)
+      return .handled
+    }
     .contextMenu { entryMenu(entry) }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(entry.name)
     .accessibilityValue(entry.isBrowsable ? "Folder" : "File")
     .accessibilityAddTraits(.isButton)
-    .accessibilityAction { model.open(entry) }
+    .accessibilityAction {
+      model.selection = entry.url
+      focusedEntry = entry.url
+    }
+    .accessibilityAction(named: Text("Open")) { model.open(entry) }
+    .accessibilityAction(named: Text("Get Info")) { model.inspect(entry, preview: false) }
+    .accessibilityAction(named: Text("Preview")) { model.inspect(entry, preview: true) }
+    .accessibilityAddTraits(model.selection == entry.url ? .isSelected : [])
     .miniHelp(entry.name)
   }
 
@@ -208,16 +242,37 @@ struct FinderView: View {
     }
     .contentShape(Rectangle())
     .onTapGesture(count: 2) { model.open(entry) }
-    .onTapGesture { model.selection = entry.url }
+    .onTapGesture {
+      model.selection = entry.url
+      focusedEntry = entry.url
+    }
+    .focusable().focused($focusedEntry, equals: entry.url)
+    .onKeyPress(.return) {
+      model.open(entry)
+      return .handled
+    }
+    .onKeyPress(.space) {
+      model.inspect(entry, preview: true)
+      return .handled
+    }
     .contextMenu { entryMenu(entry) }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(entry.name)
     .accessibilityAddTraits(.isButton)
-    .accessibilityAction { model.open(entry) }
+    .accessibilityAction {
+      model.selection = entry.url
+      focusedEntry = entry.url
+    }
+    .accessibilityAction(named: Text("Open")) { model.open(entry) }
+    .accessibilityAction(named: Text("Get Info")) { model.inspect(entry, preview: false) }
+    .accessibilityAction(named: Text("Preview")) { model.inspect(entry, preview: true) }
+    .accessibilityAddTraits(model.selection == entry.url ? .isSelected : [])
   }
 
   @ViewBuilder private func entryMenu(_ entry: FileEntry) -> some View {
     Button("Open") { model.open(entry) }
+    Button("Get Info…") { model.inspect(entry, preview: false) }
+    Button("Preview…") { model.inspect(entry, preview: true) }
     Menu("Label") {
       ForEach(0...7, id: \.self) { index in
         Button((entry.labelNumber == index ? "✓ " : "") + labelNames[index]) {

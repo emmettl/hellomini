@@ -37,6 +37,9 @@ struct ScrapbookView: View {
         }
       }
       Rectangle().frame(height: 1)
+      if let warning = model.recognitionSaveWarning {
+        Text(warning).font(theme.typography.small).padding(8).accessibilityLabel(warning)
+      }
       if let error = model.error {
         HStack(alignment: .top) {
           Text(error).font(theme.typography.small).textSelection(.enabled)
@@ -62,7 +65,11 @@ struct ScrapbookView: View {
     } action: {
       width = $0
     }
-    .task { await model.load() }
+    .task {
+      await model.load()
+      model.resumeRecognition()
+    }
+    .onDisappear { model.stopRecognition() }
     .onChange(of: model.query) { _, _ in model.selection = model.visible.first?.id }
     .sheet(item: $model.archivePreview) { preview in
       ScrapbookTransferView(model: model, preview: preview).environment(\.miniTheme, theme)

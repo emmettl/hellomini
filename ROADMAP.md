@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
+Version **0.7.0** adds Network, Finder inspection and favourites, saved-session recovery, and reliability improvements. Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
@@ -59,11 +59,17 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Creative connections:** Scrapbook pictures open in MiniPaint with a monochrome preview and Undo; drawing selections become desktop patterns. Explicitly added example scraps include original fish artwork.
 
+## Shipped in 0.7.0
+
+- **Network:** System path status, active interface/IP details, and user-triggered TCP calls with cancellable five-second deadlines, setup times and a 20-entry session log. Optional modem commentary respects Playfulness.
+- **Finder depth:** Get Info, bounded image/text previews, and saved favourite folders. Broader file operations remain future work.
+- **Reliability:** Preserve unreadable saved desktop sessions with explicit backup/reset recovery. Scrapbook OCR uses event-driven scheduling with cancellation and visible persistence warnings. Development CI artifacts are opt-in with one-day retention so validation does not depend on account artifact storage.
+
 ## Further accessories and improvements
 
-- **Finder depth:** Get Info, lightweight previews, and saved favourite locations before broader file operations. Show real metadata inside period presentation.
-- **Network desk accessory:** Connection status, latency and reachability checks, and useful network details as a small modem or cable tester. Complements Chooser discovery and Communications telemetry.
-- **Print Monitor history and artifacts:** Server-side history searches, links to older attempts, and reviewed in-app artifact downloads. Keep the print-job metaphor and expose actual provider details.
+- **Finder file operations:** Deliberate rename, copy and move flows, with clear conflict handling.
+- **Print Monitor history and artifacts:** Server-side history searches, links to older attempts, and reviewed in-app artifact downloads.
+- **Desktop preset thumbnails:** Visual previews when choosing a desk.
 
 ## Other next priorities
 

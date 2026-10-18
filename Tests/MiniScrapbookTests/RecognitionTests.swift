@@ -113,3 +113,52 @@ private func picture(text: String? = nil, width: Int = 360, height: Int = 90) th
   let text = try await ScrapTextRecognizer.recognize(png, fast: true)
   #expect(text.uppercased().contains("HELLO"))
 }
+
+@Test @MainActor func failedRecognitionSaveIsVisibleAndNextEditPersistsText() async throws {
+  let root = try library()
+  defer { try? FileManager.default.removeItem(at: root) }
+  let index = root.appendingPathComponent("scrapbook.json")
+  let backup = root.appendingPathComponent("original.json")
+  let model = ScrapbookModel(directory: root) { _ in
+    try FileManager.default.moveItem(at: index, to: backup)
+    try FileManager.default.createDirectory(at: index, withIntermediateDirectories: false)
+    return "Text still in memory"
+  }
+  await model.captureDesktop(try picture())
+  try await waitFor { model.recognitionSaveWarning != nil && !model.busy }
+  #expect(model.scraps.first?.recognizedText == "Text still in memory")
+  try FileManager.default.removeItem(at: index)
+  try FileManager.default.moveItem(at: backup, to: index)
+  model.saveDraft(try #require(model.scraps.first))
+  try await waitFor { !model.busy }
+  #expect(model.recognitionSaveWarning == nil)
+  #expect(
+    try await ScrapbookStore(directory: root).load().first?.recognizedText == "Text still in memory"
+  )
+}
+private actor RecognitionGate {
+  var started = false
+  var continuation: CheckedContinuation<String, Never>?
+  func recognize() async -> String {
+    if started { return "Fresh result" }
+    started = true
+    return await withCheckedContinuation { continuation = $0 }
+  }
+  func release() {
+    continuation?.resume(returning: "Cancelled stale result")
+    continuation = nil
+  }
+}
+@Test @MainActor func cancellationDiscardsLateRecognitionAndResumeRestartsIt() async throws {
+  let root = try library()
+  defer { try? FileManager.default.removeItem(at: root) }
+  let gate = RecognitionGate()
+  let model = ScrapbookModel(directory: root) { _ in await gate.recognize() }
+  await model.captureDesktop(try picture())
+  while !(await gate.started) { try await Task.sleep(for: .milliseconds(10)) }
+  model.stopRecognition()
+  await gate.release()
+  #expect(model.scraps.first?.recognizedText == nil)
+  model.resumeRecognition()
+  try await waitFor { model.scraps.first?.recognizedText == "Fresh result" && !model.busy }
+}

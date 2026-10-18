@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 — 2026-10-18
+
+- **Network:** A modem-style accessory with system connection status, active interface addresses, explicit TCP reachability calls, setup times, cancellation, five-second deadlines and a bounded session log. Optional operator commentary lives in Playfulness.
+- **Finder:** Read-only Get Info, bounded text and image previews, and up to 20 saved favourite folders.
+- **Saved desktop recovery:** Preserve corrupt or newer sessions until explicit recovery; keep the original as a backup and resume saving with default geometry. Legacy sessions continue to load.
+- **Scrapbook reliability:** Event-driven OCR scheduling, cancellation on disappearance, stale-result protection, and a visible warning when searchable picture text could not be saved.
+- **Validation and distribution:** Rendered accessory layout checks across six themes, opt-in one-day CI development artifacts, and current website/user-guide information. Public releases continue to ship signed and notarized downloads separately.
+
 ## 0.6.0 — 2026-10-18
 
 - **MiniPaint:** A monochrome 320 × 200 drawing accessory with pencil, eraser, patterned flood fill, rectangular selection/move, bounded undo/redo, local autosave, PNG export, and Send to Scrapbook. Includes an original icon in pixel and Aqua styles.

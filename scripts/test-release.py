@@ -80,7 +80,10 @@ class ReleaseTests(unittest.TestCase):
     def test_gatekeeper_failure_never_creates_the_release_archive(self):
         self.complete_pipeline(gatekeeper_accepts=False)
 
-    def complete_pipeline(self, gatekeeper_accepts):
+    def test_relocated_archive_gatekeeper_failure_never_creates_release_archive(self):
+        self.complete_pipeline(gatekeeper_accepts=True, reject_relocated=True)
+
+    def complete_pipeline(self, gatekeeper_accepts, reject_relocated=False):
         app = self.root / "dist/Hello Mini.app/Contents"
         app.mkdir(parents=True)
         (app / "Info.plist").write_bytes(plistlib.dumps(self.info))
@@ -92,25 +95,26 @@ class ReleaseTests(unittest.TestCase):
                 return "arm64"
             if arguments[:3] == ("xcrun", "notarytool", "submit"):
                 return '{"id":"test-submission","status":"Accepted"}'
-            if arguments[0] == "spctl" and not gatekeeper_accepts:
+            if arguments[0] == "spctl" and (not gatekeeper_accepts or (reject_relocated and "installed" in arguments[-1])):
                 raise subprocess.CalledProcessError(1, arguments)
-            if arguments[0] == "ditto":
+            if arguments[:2] == ("ditto", "-c"):
                 Path(arguments[-1]).write_bytes(b"test archive")
             return ""
 
         args = argparse.Namespace(command="prepare", identity="A" * 40, notary_profile="test")
         with patch.object(release, "ROOT", self.root), patch.object(release, "run", command), \
                 patch.object(release, "preflight", return_value=(args.identity, release.metadata(self.info))):
-            if gatekeeper_accepts:
+            if gatekeeper_accepts and not reject_relocated:
                 release.release(args)
             else:
                 with self.assertRaises(subprocess.CalledProcessError):
                     release.release(args)
         archive = self.root / "dist/Hello-Mini-0.1.0-macos-arm64.zip"
-        self.assertEqual(archive.exists(), gatekeeper_accepts)
+        self.assertEqual(archive.exists(), gatekeeper_accepts and not reject_relocated)
         self.assertTrue(any(call[:3] == ("xcrun", "stapler", "validate") for call in calls))
-        if gatekeeper_accepts:
-            self.assertEqual(calls[-1][0], "ditto")
+        if gatekeeper_accepts and not reject_relocated:
+            self.assertEqual(calls[-1][0], "spctl")
+            self.assertIn("installed", calls[-1][-1])
             self.assertTrue(json.loads(archive.with_suffix(".json").read_text())["notarized"])
             subprocess.run(["shasum", "-a", "256", "-c", archive.name + ".sha256"],
                            cwd=archive.parent, check=True, capture_output=True)
