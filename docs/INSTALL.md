@@ -2,6 +2,14 @@
 
 Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
 
+## Homebrew
+
+```sh
+brew install --cask emmettl/tap/hellomini
+```
+
+This installs the signed, notarized release from [emmettl/tap](https://github.com/emmettl/homebrew-tap). To update, quit Hello Mini, then run `brew update` and `brew upgrade --cask emmettl/tap/hellomini`. Homebrew uninstall removes the app; saved data and Keychain tokens remain.
+
 ## Download and install
 
 1. Get the versioned macOS ARM64 ZIP from [hellomini.app](https://hellomini.app) or [GitHub Releases](https://github.com/emmettl/hellomini/releases/latest).
@@ -16,7 +24,7 @@ The release also includes a SHA-256 checksum and build manifest. To verify a dow
 shasum -a 256 -c Hello-Mini-0.8.0-macos-arm64.zip.sha256
 ```
 
-There is no Homebrew cask or automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.
+There is no in-app automatic updater yet. GitHub Actions artifacts are ad-hoc-signed development builds; use GitHub Releases for the notarized download.
 
 ## Build from source
 

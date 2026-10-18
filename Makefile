@@ -1,4 +1,4 @@
-.PHONY: build app run test test-release lint format check icons ci-test release-check release
+.PHONY: build app run test test-release lint format check icons ci-test release-check release release-tap
 
 CONFIGURATION ?= debug
 
@@ -35,6 +35,7 @@ ci-test:
 	python3 -m unittest discover -s examples/communications -p 'test_*.py'
 	python3 scripts/test-ci.py
 	python3 scripts/test-release.py
+	python3 scripts/test-update-homebrew-tap.py
 	python3 scripts/test-bundle-resources.py
 
 release-check:
@@ -44,3 +45,7 @@ release:
 	python3 scripts/release.py prepare
 
 check: lint test test-release ci-test build
+
+# Run only after publishing and verifying the stable GitHub release.
+release-tap:
+	python3 scripts/update-homebrew-tap.py "$(VERSION)"

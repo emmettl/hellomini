@@ -118,6 +118,8 @@ def release(args):
         candidate.replace(archive)
     write_checksums(archive, {**info, "signing": "Developer ID Application", "notarized": True})
     print(f"Ready for review: {archive}. No GitHub release or tag has been created.")
+    print(f"After publishing and verifying v{info['version']}, update Homebrew: "
+          f"make release-tap VERSION={info['version']}")
 
 
 def main():

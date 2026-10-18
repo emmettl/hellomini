@@ -60,4 +60,20 @@ Create a GitHub draft release targeting the manifest's exact source commit. Atta
 
 After publication, verify the release is public, the ZIP is downloadable, and [hellomini.app](https://hellomini.app) offers the expected version. The website reads GitHub’s latest stable release endpoint and updates its download link automatically. Check the changelog, installation guide, and roadmap for stale release status.
 
-A stable notarized download is now available; a Homebrew cask remains future work. A cask will need the published version, URL, SHA-256, app name, Apple-silicon requirement, and macOS 26 minimum. Add a Homebrew installation command to the public docs only once that distribution channel exists.
+## After publishing: update Homebrew
+
+The cask lives in [emmettl/homebrew-tap](https://github.com/emmettl/homebrew-tap), as `Casks/hellomini.rb`. After verifying the public release, run:
+
+```sh
+python3 scripts/update-homebrew-tap.py 0.8.0 --dry-run
+make release-tap VERSION=0.8.0
+brew update
+brew audit --cask --strict --online emmettl/tap/hellomini
+brew style emmettl/tap/hellomini
+```
+
+Use the newly published version, without `v`. The helper requires host `gh` credentials with write access to the tap. It refuses draft/prerelease versions, mismatched manifests/checksums, and downgrades; downloads the published ZIP and verifies its SHA-256 before committing through the GitHub Contents API. Updates use the current blob SHA so concurrent edits fail safely. Repeating an unchanged version is a no-op. `--dry-run` performs the same verification without writing. A failed tap update can be retried without rebuilding or republishing the app.
+
+`packaging/homebrew/hellomini.rb` is the bootstrap template; existing tap metadata is preserved on version updates. Keep its architecture, macOS minimum, URL and app name aligned if packaging changes. The cask deliberately has no `zap` stanza: uninstalling it retains Scrapbook data, preferences, backups and Keychain tokens. Check installation in a disposable app directory with `brew install --cask --appdir=/tmp/hellomini-brew-check emmettl/tap/hellomini`, then uninstall that test copy. Never overwrite an existing user installation during release validation.
+
+Release preparation remains local; it does not publish GitHub releases or update Homebrew. Updating the tap is the final distribution step after publication. Follow the [Homebrew Cask Cookbook](https://docs.brew.sh/Cask-Cookbook) when changing cask metadata.

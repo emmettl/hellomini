@@ -107,7 +107,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
-- **Distribution:** The MIT-licensed release is available as a signed, notarized GitHub download, linked from hellomini.app. Evaluate a Homebrew cask next; App Store distribution remains undecided. CI continues to produce development artifacts separately from public releases.
+- **Distribution:** The MIT-licensed release is available as a signed, notarized GitHub download, linked from hellomini.app. Homebrew installation is available through `emmettl/tap/hellomini`; App Store distribution remains undecided. CI continues to produce development artifacts separately from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
 See the [user guide](docs/USER_GUIDE.md) for what works today and [CI documentation](docs/CI.md) for the existing build pipelines.
