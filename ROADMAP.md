@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
+Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
@@ -51,7 +51,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Communications:** A vintage receiving station for modern telemetry. Configurable channels read a Prometheus-compatible query API; OpenTelemetry metrics can reach it through a compatible backend. The switchboard has callsigns, status lamps, an hour of strip-chart history, and a bounded session log. Test Lamps and an explicitly labelled simulation provide the nonsense. Freshness, original observation timestamps, disconnected state, and unknown data remain explicit. A read-only MotionStudies observer exporter and preset supply the first integration; deploying the exporter and metrics backend is a separate setup step. See the [setup guide](docs/COMMUNICATIONS.md).
 
-## Implemented for 0.6.0 — release candidate
+## Shipped in 0.6.0
 
 - **MiniPaint:** A small MacPaint-style bitmap accessory with pencil, eraser, fill, selection, and patterns. The first version has a 320 × 200 monochrome canvas, 20-step undo/redo, local autosave, PNG export and Send to Scrapbook.
 - **Desktop presets:** Save named combinations of theme, pattern, display mode, and window arrangement. A desk for work, another for unnecessary fish; switching minimises other open windows and preserves their contents.
@@ -71,7 +71,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
 - Continue live CI retry validation across providers and self-hosted installations, including token permissions and long-running pipelines.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
-- Add deliberate Finder file operations. Scrapbook export/import is implemented for 0.6.0.
+- Add deliberate Finder file operations. Scrapbook export/import is included in 0.6.0.
 - Decide the external binary plugin model when contributor needs are clearer.
 
 ## Shipped in 0.2.0

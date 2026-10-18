@@ -8,6 +8,8 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 **0.5.0** was published on 1 October 2026 (Europe/Zurich), with Communications and ambient-animation fixes. Hosted CI passed; physical-Mini format, test/Metal, build and bundle steps passed. The private workflow's artifact upload hit GitHub Actions storage quota; the separately uploaded signed/notarized release assets were verified and published successfully.
 
+**0.6.0** release source is dated 18 October 2026 (Europe/Zurich), with MiniPaint, desktop presets, Scrapbook transfers, picture round trips, desktop patterns from drawings, and explicitly added example scraps. Validation evidence is recorded in the GitHub release notes. Longer-session and physical Wokyis checks remain follow-ups.
+
 ## One-time signing setup
 
 The release machine needs a valid **Developer ID Application** certificate with its private key. An Apple Development certificate is not sufficient. Obtain the identity through your Apple Developer account/Xcode and install it in that machine's Keychain. Configure a `notarytool` Keychain profile interactively; avoid putting passwords in scripts or committing signing material.
