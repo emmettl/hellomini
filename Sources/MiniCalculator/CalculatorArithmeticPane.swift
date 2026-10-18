@@ -17,6 +17,7 @@ extension CalculatorView {
         Button("Clear") {
           calculation.expression = ""
           calculation.result = "0"
+          calculation.resultSource = "Cleared"
           calculation.error = nil
         }
       }.buttonStyle(RetroButtonStyle())
