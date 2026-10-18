@@ -25,6 +25,7 @@ struct ProjectManager: View {
         TextField("owner/project", text: $path).accessibilityLabel("CI project path")
           .onSubmit(add)
         Button("Add", action: add).disabled(model.busy || model.storageError != nil)
+          .miniControlBounds("projects.add")
       }
       Toggle("Self-hosted server", isOn: $customServer).font(theme.typography.small)
       if customServer {
@@ -50,6 +51,7 @@ struct ProjectManager: View {
                 .accessibilityLabel("Token for " + project.account)
               Button("Remove") { removing = project }.disabled(model.busy)
                 .accessibilityLabel("Remove " + project.account)
+                .miniControlBounds("projects.remove." + project.id)
             }
             Rectangle().frame(height: 1)
           }
@@ -67,9 +69,11 @@ struct ProjectManager: View {
         if model.busy { Text("Refreshing projects…").font(theme.typography.small) }
         Spacer()
         Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
+          .miniControlBounds("projects.done")
       }
     }
-    .buttonStyle(RetroButtonStyle()).padding(20).frame(width: 550)
+    .buttonStyle(RetroButtonStyle()).padding(20)
+    .frame(width: min(550, display.logicalSize.width - 24))
     .foregroundStyle(theme.ink).background(theme.paper)
     .sheet(item: $tokenProject) { project in
       ProjectTokenEditor(project: project).environment(\.miniTheme, theme).miniSheet(width: 470)

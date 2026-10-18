@@ -16,7 +16,7 @@ For **0.3.0**, physical Wokyis validation is explicitly deferred until the devic
 
 **0.9.0** adds Finder transfers, portable presets, Living dither and recovery guidance. Report actual accessibility/hardware validation in release notes; deterministic lifecycle gates do not establish a long physical sleep/wake soak. No GitLab test instance is available.
 
-The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-display checks from physical Wokyis coverage and records the manual-install/Homebrew upgrade trap. Check the running executable and display identity before starting hardware validation.
+The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-display checks from physical Wokyis coverage and records the manual-install/Homebrew upgrade trap. It also records physical resolution/display-sleep/DarkWake checks and post-0.9 layout fixes; full system sleep remains unverified. Check the running executable and display identity before starting hardware validation.
 
 ## One-time signing setup
 

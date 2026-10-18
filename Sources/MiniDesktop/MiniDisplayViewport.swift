@@ -83,21 +83,36 @@ private struct DisplayWindowSizing: NSViewRepresentable {
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
-      NotificationCenter.default.removeObserver(
-        self, name: NSWindow.didExitFullScreenNotification, object: nil)
+      NotificationCenter.default.removeObserver(self)
       if let window {
         NotificationCenter.default.addObserver(
           self, selector: #selector(leftFullScreen),
           name: NSWindow.didExitFullScreenNotification, object: window)
+        NotificationCenter.default.addObserver(
+          self, selector: #selector(screenChanged),
+          name: NSApplication.didChangeScreenParametersNotification, object: nil)
       }
       setMode(requestedMode)
     }
 
     @objc private func leftFullScreen() {
+      fitWindowToScreen()
       guard requestedMode || restoreNormalAfterFullScreen else { return }
       appliedMode = nil
       applyMode(restoringWindowedMode: restoreNormalAfterFullScreen)
       restoreNormalAfterFullScreen = false
+    }
+
+    @objc private func screenChanged() {
+      DispatchQueue.main.async { [weak self] in self?.fitWindowToScreen() }
+    }
+
+    private func fitWindowToScreen() {
+      guard let window, !window.styleMask.contains(.fullScreen), let screen = window.screen else {
+        return
+      }
+      window.setFrame(
+        fittedDisplayWindowFrame(window.frame, visible: screen.visibleFrame), display: true)
     }
 
     func setMode(_ enabled: Bool) {
@@ -153,11 +168,24 @@ private struct DisplayWindowSizing: NSViewRepresentable {
           width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         guard wasPurist || restoringWindowedMode else { return }
         if let normalFrame {
-          window.setFrame(window.constrainFrameRect(normalFrame, to: window.screen), display: true)
+          let restored =
+            window.screen.map {
+              fittedDisplayWindowFrame(normalFrame, visible: $0.visibleFrame)
+            } ?? normalFrame
+          window.setFrame(restored, display: true)
         } else {
           window.setContentSize(NSSize(width: 1280, height: 720))
         }
       }
     }
   }
+}
+
+func fittedDisplayWindowFrame(_ frame: CGRect, visible: CGRect) -> CGRect {
+  let size = CGSize(
+    width: min(frame.width, visible.width), height: min(frame.height, visible.height))
+  return CGRect(
+    x: min(max(frame.minX, visible.minX), visible.maxX - size.width),
+    y: min(max(frame.minY, visible.minY), visible.maxY - size.height),
+    width: size.width, height: size.height)
 }

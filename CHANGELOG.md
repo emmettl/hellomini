@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fit Print Monitor's Projects sheet to the logical desktop so Purist mode keeps its actions reachable.
+- Keep the native window on screen after display-resolution changes, full-screen exit and restoration from Purist mode.
+- Record physical Wokyis resolution, display-sleep and DarkWake recovery checks, with explicit full-sleep and soak limitations.
+
 ## 0.9.0 — 2026-10-18
 
 - **Finder transfers:** Bounded streaming copies with byte progress and cancellation, exclusive staged commits, source-change checks, metadata preservation and rejection of special files. Reviewed Move To performs an atomic move within one volume; cross-volume moves leave the source intact and require macOS Finder.

@@ -40,6 +40,7 @@ import SwiftUI
 
 private struct PrintMonitorView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniDisplay) private var display
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   let playfulness: PlayfulnessSettings
@@ -215,7 +216,7 @@ private struct PrintMonitorView: View {
     }
     .sheet(isPresented: $managing) {
       ProjectManager(model: model) { if model.paused { refreshManually() } }
-        .environment(\.miniTheme, theme).miniSheet(width: 550)
+        .environment(\.miniTheme, theme).miniSheet(width: min(550, display.logicalSize.width - 24))
     }
   }
   private func filters(compact: Bool) -> some View {

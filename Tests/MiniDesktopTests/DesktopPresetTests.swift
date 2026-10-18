@@ -98,7 +98,7 @@ import Testing
   #expect(store.presets.count == 2)
 }
 
-@Test func livingDitherStopsForReducedMotionOcclusionSleepAndInactiveScene() {
+@Test @MainActor func livingDitherStopsForReducedMotionOcclusionSleepAndInactiveScene() {
   #expect(LivingDither.animates(reduceMotion: false, visible: true, awake: true, active: true))
   #expect(!LivingDither.animates(reduceMotion: true, visible: true, awake: true, active: true))
   #expect(!LivingDither.animates(reduceMotion: false, visible: false, awake: true, active: true))

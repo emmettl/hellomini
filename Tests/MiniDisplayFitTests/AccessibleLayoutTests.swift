@@ -120,3 +120,35 @@ import Testing
     }
   }
 }
+
+@Test @MainActor func projectManagerActionsFitThePuristSheetWidth() async throws {
+  let suite = "ProjectSheetFrames-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let model = ProjectQueue(defaults: defaults, observer: CompletionObserver(notify: { _ in }))
+  try model.add(service: .github, path: "example/a-long-demonstration-project-name")
+  let project = try #require(model.projects.first)
+  for display in [
+    MiniDisplayContext(scale: 1, logicalSize: CGSize(width: 512, height: 384)),
+    MiniDisplayContext(scale: 2, logicalSize: CGSize(width: 640, height: 360)),
+  ] {
+    let width = min(550, display.logicalSize.width - 24)
+    let evidence = LayoutEvidence()
+    let host = NSHostingView(
+      rootView: ProjectManager(model: model, added: {})
+        .environment(\.miniDisplay, display)
+        .frame(width: width).coordinateSpace(name: "mini-control-layout")
+        .onPreferenceChange(MiniControlFrames.self) { evidence.frames = $0 })
+    host.frame = CGRect(x: 0, y: 0, width: width, height: 600)
+    host.layoutSubtreeIfNeeded()
+    try await Task.sleep(for: .milliseconds(100))
+    host.layoutSubtreeIfNeeded()
+    for id in ["projects.add", "projects.done", "projects.remove." + project.id] {
+      let frame = try #require(evidence.frames[id])
+      #expect(frame.width > 10)
+      #expect(
+        frame.minX >= -1 && frame.maxX <= width + 1,
+        "Project sheet action \(id) is clipped horizontally: \(frame)")
+    }
+  }
+}

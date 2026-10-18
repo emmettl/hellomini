@@ -22,7 +22,18 @@ Apple's physical-Escape method is therefore not required for this tested recover
 
 - The same Homebrew 0.9.0 process remained running across the virtual-display teardown and physical-display restoration. Its full-screen desktop and Print Monitor reflowed to the smaller physical display; the menu, window chrome, filters, project control and refresh controls were visible.
 - The old Dock item was confirmed to launch the manual 0.5.0 copy. That copy was quit through its menu, and the existing Homebrew process was activated. The final process check showed only `/Applications/Hello Mini.app/Contents/MacOS/HelloMini` running.
-- Classic and 2× were restored before recovery. This is a functional display-replacement/reconnection check, not a complete bundled-app audit, macOS resolution-change test, cable hot-plug test, or full sleep/wake cycle.
+- Standard and Purist were exercised on the physical console. Purist centred its 512 × 384 desktop with black margins; Print Monitor menus, filters, scrolling and project controls remained reachable. Teapot continued rendering and rotating in both modes.
+- Changed the actual Wokyis resolution from 1280 × 720 to 1920 × 1080 at 60 Hz and back, verifying each mode over SSH. Full-screen content reflowed and Metal rendering continued. Repeated the round trip with the development fixes below and verified that leaving full screen kept all native-window edges on screen.
+- Display sleep passed: `pmset displaysleepnow` at **21:23:20 CEST**, display-on at **21:23:32** after remote input, confirmed by `pmset -g log`. The Wokyis remained online at 1280 × 720; input and Teapot animation recovered.
+- A software system-sleep request at **21:32:50** entered **DarkWake**, with TCP keep-alive active. Logs recorded **DarkWake to FullWake from Deep Idle** due to HID activity at **21:33:38**, followed by display-on. Graphics, input, menu clock, Activity Monitor and subsequent Print Monitor refresh remained functional. This is a DarkWake recovery check, **not a full system-sleep pass**. Wake packets were sent, but this does not establish successful wake-on-LAN because the CPU did not fully sleep.
+
+### Issues found and fixed after 0.9.0
+
+These source changes are not part of the published 0.9.0 binary. An ad-hoc development bundle was tested separately in `/private/tmp/hellomini-wokyis-check`; the Homebrew installation was not replaced.
+
+- **Projects sheet clipped horizontally in Purist:** its fixed 550-point content width exceeded the 512-point desktop. The sheet and content now use the available logical width. On the Wokyis, Add, Token and Remove fit fully; vertical scrolling exposed a complete, working Done button. Regression geometry checks cover Purist and 2× logical sizes.
+- **Native window extended off screen after resolution changes:** leaving full screen could restore a frame from the larger display. Screen-parameter changes and full-screen exit now clamp the entire window to the current visible screen; restoring the pre-Purist frame uses the same constraint. The repeated physical resolution round trip passed. Tests cover oversized frames and screens with negative origins.
+- `make check` passed with these fixes, including layout, desktop lifecycle and release-mode Print Monitor checks. The Living dither lifecycle test now explicitly runs on the main actor, removing its isolation warning.
 
 ### Completed in the virtual-display session
 
@@ -33,7 +44,9 @@ Apple's physical-Escape method is therefore not required for this tested recover
 
 ### Test environment constraints
 
-The Mini runs CI infrastructure with `caffeinate` assertions on behalf of its Node runtime, and screen sharing itself holds a prevent-system-sleep assertion. No CI process was killed or keep-awake service disabled for these checks. A full sleep/wake result must be backed by power-management log evidence, rather than inferred from a black screen or reconnection.
+The Mini runs an active BombCAD CI job and a MotionStudies Node recorder with `caffeinate -is` assertions; screen sharing itself also holds a prevent-system-sleep assertion. No CI process was killed or keep-awake service disabled for these checks. A full sleep/wake result must be backed by power-management log evidence, rather than inferred from a black screen or reconnection.
+
+A full system-sleep cycle remains unverified: the software-sleep attempt reached DarkWake while those assertions were active. The user has confirmed a physical power-button wake fallback; that solves recovery availability but does not remove the active workloads or their assertions. Complete a full cycle during an idle maintenance window and require actual system-sleep/wake log evidence. Cable hot-plug, a comprehensive bundled-app/keyboard audit, comparison with 1.5×, and a multi-hour soak also remain separate follow-ups.
 
 Physical panel reading distance, ambient light, viewing angle and subjective legibility require a person at the Wokyis. A remotely enlarged screenshot cannot establish these.
 

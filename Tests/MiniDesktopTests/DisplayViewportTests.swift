@@ -80,3 +80,21 @@ import Testing
     #expect(layout.width <= 640 - 32 && layout.scrollWidth > 0)
   }
 }
+
+@Test func returningFromALargerDisplayKeepsTheEntireNativeWindowReachable() {
+  for visible in [
+    CGRect(x: 0, y: 24, width: 1280, height: 650),
+    CGRect(x: -1280, y: 24, width: 1280, height: 650),
+  ] {
+    for frame in [
+      CGRect(x: 320, y: 200, width: 1280, height: 720),
+      CGRect(x: -2000, y: -100, width: 960, height: 600),
+      CGRect(x: 40, y: 40, width: 512, height: 384),
+    ] {
+      let fitted = fittedDisplayWindowFrame(frame, visible: visible)
+      #expect(visible.contains(fitted))
+      #expect(fitted.width == min(frame.width, visible.width))
+      #expect(fitted.height == min(frame.height, visible.height))
+    }
+  }
+}
