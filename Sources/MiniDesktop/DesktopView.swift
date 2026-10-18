@@ -11,6 +11,15 @@ final class DesktopModel {
   private(set) var minimisedIDs: Set<String>
   private(set) var zoomedIDs: Set<String>
   private(set) var shadedIDs: Set<String>
+  var showBackups = false
+  var sessionBackups: [DesktopBackup] { store.backups() }
+  func restoreBackup(_ session: DesktopSession) {
+    guard session.version == 1 else { return }
+    store.recover()
+    sessionRecoveryNeeded = false
+    showSessionRecovery = false
+    apply(session)
+  }
   var showSessionRecovery = false
   private(set) var sessionRecoveryNeeded = false
   func recoverSession() {
@@ -356,8 +365,11 @@ public struct DesktopView: View {
         "The saved desktop is unreadable or from a newer version. Its original data is preserved and layout saving is paused. Reset backs up the original and starts saving the current desktop with default window positions. App documents are retained. You can return here from the Window menu."
       )
     }
+    .sheet(isPresented: $model.showBackups) {
+      DesktopRecoveryView(model: model).environment(\.miniTheme, theme).miniSheet(width: 420)
+    }
     .sheet(isPresented: $showPresets) {
-      DesktopPresetsView(store: presets, model: model, settings: settings)
+      DesktopPresetsView(store: presets, model: model, settings: settings, themes: themes)
         .environment(\.miniTheme, theme).miniSheet(width: 460)
     }
     .alert(
@@ -548,6 +560,9 @@ public struct DesktopView: View {
             ) { model.launch(app) }
           } + [
             .separator("window-divider"),
+            RetroMenuItem(id: "backups", title: "Saved Desktop Backups…") {
+              model.showBackups = true
+            },
             RetroMenuItem(
               id: "recover-session", title: "Recover Saved Desktop…",
               enabled: model.sessionRecoveryNeeded

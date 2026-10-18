@@ -2,7 +2,7 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
-Version **0.7.0** adds Network, Finder inspection and favourites, saved-session recovery, and reliability improvements. Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
+Version **0.8.0** deepens Print Monitor and Finder, adds preset window maps and backup recovery controls, and strengthens validation. Version **0.7.0** adds Network, Finder inspection and favourites, saved-session recovery, and reliability improvements. Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
 
@@ -65,11 +65,18 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - **Finder depth:** Get Info, bounded image/text previews, and saved favourite folders. Broader file operations remain future work.
 - **Reliability:** Preserve unreadable saved desktop sessions with explicit backup/reset recovery. Scrapbook OCR uses event-driven scheduling with cancellation and visible persistence warnings. Development CI artifacts are opt-in with one-day retention so validation does not depend on account artifact storage.
 
+## Shipped in 0.8.0
+
+- **Print Archive and artifacts:** Server-side exact branch history, older GitHub attempt links, job inspection, and explicit bounded artifact downloads for GitHub and GitLab.
+- **Finder operations:** New Folder, Rename and Copy To with review, exclusive destinations and bounded staged copies.
+- **Desktop recovery and previews:** Preset window-map thumbnails and saved layout inspection/export/restore controls.
+- **Validation:** Deterministic network failure/lifecycle tests, real control-frame assertions and provider/download regression coverage.
+
 ## Further accessories and improvements
 
-- **Finder file operations:** Deliberate rename, copy and move flows, with clear conflict handling.
-- **Print Monitor history and artifacts:** Server-side history searches, links to older attempts, and reviewed in-app artifact downloads.
-- **Desktop preset thumbnails:** Visual previews when choosing a desk.
+- Finder Move, conflict replacement and large-copy progress need separate careful flows.
+- Broader end-to-end accessibility coverage and long physical Wokyis/display-change/sleep-wake sessions remain continuing validation work.
+- Additional live self-hosted provider installations require configured endpoints and suitable test accounts.
 
 ## Other next priorities
 
@@ -77,7 +84,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
 - Continue live CI retry validation across providers and self-hosted installations, including token permissions and long-running pipelines.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
-- Add deliberate Finder file operations. Scrapbook export/import is included in 0.6.0.
+- Expand Finder operations deliberately. Scrapbook export/import is included in 0.6.0.
 - Decide the external binary plugin model when contributor needs are clearer.
 
 ## Shipped in 0.2.0

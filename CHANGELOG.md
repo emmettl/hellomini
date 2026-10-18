@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 — 2026-10-18
+
+- **Print Archive:** Browse up to 50 pages of server-side build history per project, with exact branch search, job inspection, artifact access, and links to earlier GitHub run attempts. Archive browsing does not replay build alerts or change live status.
+- **Artifact downloads:** Paginated GitHub run artifacts and GitLab job archives, reviewed new-file destinations, byte progress, cancellation, a 512 MB limit, ZIP-header checks and quarantine metadata. Cross-origin redirects strip credentials; HTTP redirects are refused. Archives are never opened or extracted automatically.
+- **Finder operations:** Reviewed New Folder, Rename and Copy To actions. Destinations are never replaced; copying stages output before commit, retains symlinks, and limits collections to 512 MB / 10,000 entries.
+- **Desktop previews and recovery:** Theme/window-map thumbnails for saved presets; inspect, export original bytes, and deliberately restore saved desktop backups while retaining open documents.
+- **Validation:** Deterministic probe deadlines/DNS/replacement/stale-event tests, primary-control geometry checks, provider fixtures, artifact redirect/commit checks and opt-in live GitHub history/download tests.
+
 ## 0.7.0 — 2026-10-18
 
 - **Network:** A modem-style accessory with system connection status, active interface addresses, explicit TCP reachability calls, setup times, cancellation, five-second deadlines and a bounded session log. Optional operator commentary lives in Playfulness.

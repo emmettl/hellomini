@@ -345,3 +345,23 @@ import Testing
         && ($0.value as? String) == "unreadable preference"
     })
 }
+
+@Test @MainActor func backupsCanBeInspectedAndRestoredWithoutClosingDocuments() throws {
+  let suite = "DesktopBackupRestore-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let app = SessionTestApp("a")
+  let other = SessionTestApp("b")
+  let store = DesktopSessionStore(defaults: defaults)
+  let original = DesktopSession(openIDs: [app.id], windows: [:])
+  store.save(original)
+  store.recover()
+  let model = DesktopModel(
+    applications: [app, other], initiallyOpen: [other.id], defaults: defaults)
+  let backup = try #require(model.sessionBackups.first { $0.session?.openIDs == [app.id] })
+  #expect(try JSONDecoder().decode(DesktopSession.self, from: backup.bytes) == original)
+  model.restoreBackup(try #require(backup.session))
+  #expect(model.openIDs.contains(other.id))
+  #expect(model.minimisedIDs.contains(other.id))
+  #expect(model.active?.id == app.id)
+}

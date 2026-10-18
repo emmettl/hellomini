@@ -11,9 +11,10 @@ public struct BuildRun: Identifiable, Sendable {
   public let url: URL
   public let createdAt: Date?
   public let workflow: String?
+  public let attempt: Int?
   public init(
     id: Int, title: String, branch: String, state: BuildState, url: URL, createdAt: Date? = nil,
-    workflow: String? = nil
+    workflow: String? = nil, attempt: Int? = nil
   ) {
     self.id = id
     self.title = title
@@ -22,9 +23,15 @@ public struct BuildRun: Identifiable, Sendable {
     self.url = url
     self.createdAt = createdAt
     self.workflow = workflow
+    self.attempt = attempt
   }
 }
 public protocol BuildProvider: Sendable {
+  func history(project: String, branch: String, page: Int, token: String?) async throws
+    -> BuildRunPage
+  func artifacts(project: String, runID: Int, page: Int, token: String?) async throws
+    -> BuildArtifactPage
+  func artifactRequest(project: String, artifactID: Int, token: String?) throws -> URLRequest
   func retryFailed(project: String, runID: Int, token: String) async throws
   func runs(project: String, token: String?) async throws -> [BuildRun]
   func jobs(project: String, runID: Int, page: Int, token: String?) async throws -> BuildJobPage

@@ -22,6 +22,15 @@ import SwiftUI
         id: "file", title: "File", width: 304,
         items: [
           RetroMenuItem(
+            id: "new-folder", title: "New Folder…", enabled: !model.fileBusy,
+            action: model.prepareNewFolder),
+          RetroMenuItem(
+            id: "rename", title: "Rename…", enabled: model.selectedEntry != nil && !model.fileBusy,
+            action: model.prepareRename),
+          RetroMenuItem(
+            id: "copy-to", title: "Copy To…",
+            enabled: model.selectedEntry != nil && !model.fileBusy, action: model.prepareCopy),
+          RetroMenuItem(
             id: "find-file", title: "Find File…", shortcut: RetroShortcut(key: "f", label: "⌘F"),
             action: findFile),
           RetroMenuItem(

@@ -51,6 +51,7 @@ public struct GitHubProvider: BuildProvider {
       let status: String
       let conclusion: String?
       let createdAt: String?
+      let runAttempt: Int?
     }
     struct Response: Decodable { let workflowRuns: [Run] }
     let decoder = JSONDecoder()
@@ -60,7 +61,7 @@ public struct GitHubProvider: BuildProvider {
       return BuildRun(
         id: run.id, title: run.name ?? "Workflow #\(run.id)", branch: run.headBranch ?? "—",
         state: state, url: URL(string: "\(server.website)/\(project)/actions/runs/\(run.id)")!,
-        createdAt: BuildHTTP.date(run.createdAt), workflow: run.name)
+        createdAt: BuildHTTP.date(run.createdAt), workflow: run.name, attempt: run.runAttempt)
     }
   }
   static func state(_ value: String) -> BuildState {

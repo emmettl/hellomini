@@ -131,7 +131,7 @@ struct InterfaceAddress: Identifiable, Sendable {
   public init(playfulness: PlayfulnessSettings) { self.playfulness = playfulness }
   public func content() -> AnyView { AnyView(NetworkView(model: model, playfulness: playfulness)) }
 }
-private struct NetworkView: View {
+struct NetworkView: View {
   @Environment(\.miniTheme) private var theme
   @Bindable var model: NetworkModel
   let playfulness: PlayfulnessSettings
@@ -176,14 +176,17 @@ private struct NetworkView: View {
         "Destination hostname or IP address"
       )
       .padding(5).background(theme.paper).overlay(Rectangle().stroke(theme.ink, lineWidth: 1))
-      .frame(minWidth: 100).disabled(model.checking)
+      .frame(minWidth: 100).disabled(model.checking).miniControlBounds("network.host")
       Text("Port").font(theme.typography.small)
-      TextField("Port", text: $model.port).accessibilityLabel("TCP port")
-        .padding(5).background(theme.paper).overlay(Rectangle().stroke(theme.ink, lineWidth: 1))
-        .frame(width: 58).disabled(model.checking)
+      TextField("Port", text: $model.port).accessibilityLabel("TCP port").miniControlBounds(
+        "network.port"
+      )
+      .padding(5).background(theme.paper).overlay(Rectangle().stroke(theme.ink, lineWidth: 1))
+      .frame(width: 58).disabled(model.checking)
       Button(model.checking ? "Cancel" : "Call") {
         if model.checking { model.cancel() } else { model.check() }
       }
+      .miniControlBounds("network.call")
       if !short { Button("Refresh", action: model.refreshAddresses) }
     }.textFieldStyle(.plain).buttonStyle(RetroButtonStyle()).onSubmit { model.check() }
   }

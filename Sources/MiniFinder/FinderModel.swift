@@ -11,6 +11,44 @@ final class FinderModel {
   var isLoading = false
   var error: String?
   var inspection: FileInspection?
+  var fileDraft: FileOperationDraft?
+  private(set) var fileBusy = false
+  private(set) var fileOperationError: String?
+  func prepareNewFolder() {
+    fileOperationError = nil
+    fileDraft = FileOperationDraft(
+      kind: .newFolder, source: nil, folder: location, name: "New Folder")
+  }
+  func prepareRename() {
+    guard let entry = selectedEntry else { return }
+    fileOperationError = nil
+    fileDraft = FileOperationDraft(
+      kind: .rename, source: entry.url, folder: location, name: entry.name)
+  }
+  func prepareCopy() {
+    guard let entry = selectedEntry else { return }
+    let panel = NSOpenPanel()
+    panel.canChooseDirectories = true
+    panel.canChooseFiles = false
+    panel.allowsMultipleSelection = false
+    panel.prompt = "Choose Copy Destination"
+    guard panel.runModal() == .OK, let destination = panel.url else { return }
+    fileOperationError = nil
+    fileDraft = FileOperationDraft(
+      kind: .copy, source: entry.url, folder: destination, name: entry.name)
+  }
+  func performFileOperation(_ draft: FileOperationDraft) {
+    guard !fileBusy else { return }
+    fileBusy = true
+    Task {
+      defer { fileBusy = false }
+      do {
+        _ = try await reader.perform(draft)
+        fileDraft = nil
+        reload()
+      } catch { fileOperationError = "Nothing was replaced. " + error.localizedDescription }
+    }
+  }
   private(set) var favourites: [URL] = []
   @ObservationIgnored private var inspectionTask: Task<Void, Never>?
   var currentIsFavourite: Bool { favourites.contains(location) }

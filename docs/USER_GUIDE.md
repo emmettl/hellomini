@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.7.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.8.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -225,3 +225,22 @@ Select a file and choose **File → Get Info…** (Command-I) or **Preview…**,
 Unreadable or newer-version desktop sessions are retained unchanged. A startup warning offers **Keep for Later** or **Back Up and Reset Layout**. Until recovery, app documents still work but window changes are not saved over the unreadable session. Return through **Window → Recover Saved Desktop…**. Recovery keeps a copy under `desktop.session.recovery.<UUID>` in Hello Mini preferences and resumes layout saving with default window positions. Older version-one sessions continue to load without migration.
 
 Scrapbook pauses text recognition when its window disappears and resumes on reopening. Results that arrive during an edit wait until it completes. If recognized text could not be saved, a visible warning distinguishes searchable text in this session from persisted text; the next successful library edit saves it.
+
+
+## Print Archive and build artifacts
+
+Select one project in Print Monitor, then choose **History…**. Search an exact branch or leave the field blank for all branches. **More** continues the last successful search even if the branch input has since changed; Search starts a new query. Up to 50 pages of 20 runs are available. Jobs opens in-app job inspection. GitHub **Open Attempt** links to prior attempts on the server. Browsing history never changes the live queue, retries builds, feeds fish or replays alerts. **Live Queue** or Escape returns to monitoring.
+
+**Artifacts…** is available for live and historic runs. It lists GitHub run artifacts or GitLab pipeline job archives, including retried jobs, with up to five pages of 100 records. Expired GitHub artifacts are labelled and disabled; a server may still reject a listed archive as missing, expired, or inaccessible. Choose Download, review the source/run and a new ZIP filename, then save. Existing files are never replaced. Progress reports received bytes and a total when supplied. Cancel stops the transfer; interrupted temporary downloads are discarded. Downloads are limited to 512 MB, checked for a ZIP header, marked with normal macOS quarantine metadata, and never opened or extracted automatically. A ZIP header does not establish that its contents are safe. Cross-origin HTTPS redirects discard authentication and cookies; HTTP redirects are refused. Self-hosted object-storage redirects requiring a separately authenticated origin are not supported.
+
+## Finder file operations
+
+**File → New Folder…**, **Rename…**, and **Copy To…** show a review sheet with the name and destination. Rename and Copy are also in file context menus. Copy first asks for a destination folder. Confirm performs the operation off the UI actor. Existing destinations, including symbolic links, are never replaced. Case-only rename on a case-insensitive volume may report a conflict; use macOS Finder for that operation.
+
+Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. There is no operation Undo or large-copy progress in this release; use macOS Finder for Move, replacement and larger collections.
+
+## Desktop window maps and backup controls
+
+Desktop Presets shows a small theme and window-arrangement map for the selected preset. It does not capture or store screenshots of document contents.
+
+**Window → Saved Desktop Backups…** lists the current saved layout and preserved recovery records. Inspect the summary and first 2 KB, or **Export Original…** to retain all original bytes. **Restore Layout…** requires confirmation, backs up the current saved data and restores a compatible version-one layout, minimising other windows while retaining their contents. Unreadable and newer-version backups remain exportable but cannot be restored by this version.

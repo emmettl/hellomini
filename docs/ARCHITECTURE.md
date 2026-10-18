@@ -100,3 +100,8 @@ The Dock and Finder icon uses the same pixel Macintosh artwork as the desktop. `
 
 
 The `MiniNetwork` module owns its path monitor and a serial-queue TCP probe. Probe completion, cancellation, timeout, and stale callbacks are serialized; the main-actor model uses request IDs to discard late UI results. It sends no application payload and does not persist destinations or log entries. Finder metadata and bounded preview reads run on `DirectoryReader`. Desktop session recovery preserves original bytes before enabling layout writes again. Scrapbook recognition yields to user edits through busy-state transitions, with generation IDs invalidating cancelled work.
+
+
+Build history and artifact metadata extend the provider protocol with conservative defaults for other providers. Each provider derives download endpoints from its validated server/project and numeric artifact identifier rather than trusting remote URLs. `ArtifactDownload` uses a dedicated ephemeral session, strips all headers on cross-origin redirects, bounds received bytes, validates ZIP headers and applies quarantine before committing to a new path. Finder operations stage bounded copies and use exclusive rename on commit. Network probe transports/deadlines are injectable for deterministic failure tests. Control-frame preferences expose geometry only for targeted regression assertions.
+
+Provider references: [GitHub artifacts](https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28), [GitLab job artifacts](https://docs.gitlab.com/api/job_artifacts/), and [GitLab jobs](https://docs.gitlab.com/api/jobs/).

@@ -24,8 +24,9 @@ struct FinderView: View {
         if compact {
           Button(showingPlaces ? "Hide Places" : "Places") { showingPlaces.toggle() }
         }
-        Button("Find…", action: findFile)
-        Button("Back", action: model.goBack).disabled(!model.history.canGoBack)
+        Button("Find…", action: findFile).miniControlBounds("finder.find")
+        Button("Back", action: model.goBack).miniControlBounds("finder.back").disabled(
+          !model.history.canGoBack)
         Button("Up", action: model.goUp).disabled(!model.history.canGoUp)
         if !compact { location }
         Spacer(minLength: 0)
@@ -101,6 +102,10 @@ struct FinderView: View {
     }
     .font(theme.typography.body)
     .onAppear { model.reload() }
+    .sheet(item: $model.fileDraft) { draft in
+      FileOperationView(model: model, draft: draft).environment(\.miniTheme, theme).miniSheet(
+        width: 400)
+    }
     .sheet(item: $model.inspection) { inspection in
       FileInspectionView(inspection: inspection).environment(\.miniTheme, theme).miniSheet(
         width: 400)
@@ -271,6 +276,14 @@ struct FinderView: View {
 
   @ViewBuilder private func entryMenu(_ entry: FileEntry) -> some View {
     Button("Open") { model.open(entry) }
+    Button("Rename…") {
+      model.selection = entry.url
+      model.prepareRename()
+    }.disabled(model.fileBusy)
+    Button("Copy To…") {
+      model.selection = entry.url
+      model.prepareCopy()
+    }.disabled(model.fileBusy)
     Button("Get Info…") { model.inspect(entry, preview: false) }
     Button("Preview…") { model.inspect(entry, preview: true) }
     Menu("Label") {

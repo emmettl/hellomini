@@ -113,6 +113,7 @@ struct DesktopPresetsView: View {
   let store: DesktopPresetStore
   let model: DesktopModel
   let settings: AppearanceSettings
+  let themes: MiniThemeRegistry
   @State private var name = ""
   @State private var selection: UUID?
   @State private var confirmReplace = false
@@ -133,6 +134,8 @@ struct DesktopPresetsView: View {
             "\(selected.session.openIDs.count) windows · \(selected.themeID) · \(selected.purist ? "Purist" : selected.tiny ? "2×" : "Standard")"
           )
           .font(theme.typography.small)
+          PresetThumbnail(
+            preset: selected, theme: themes.definition(for: selected.themeID) ?? theme)
           HStack {
             Button("Use this desk") {
               if store.apply(selected, model: model, settings: settings) { dismiss() }
@@ -182,5 +185,39 @@ struct DesktopPresetsView: View {
         selection = nil
       }
     }
+  }
+}
+
+struct PresetThumbnail: View {
+  let preset: DesktopPreset
+  let theme: MiniThemeDefinition
+  var body: some View {
+    let desktop =
+      preset.purist
+      ? CGSize(width: 512, height: 384)
+      : preset.tiny ? CGSize(width: 640, height: 360) : CGSize(width: 1280, height: 720)
+    ZStack(alignment: .topLeading) {
+      ThemeSurfaceView(theme.desktop)
+      Canvas { context, size in
+        let sx = size.width / desktop.width
+        let sy = size.height / desktop.height
+        for id in preset.session.openIDs where !(preset.session.minimisedIDs ?? []).contains(id) {
+          guard let placement = preset.session.windows[id] else { continue }
+          let rect = CGRect(
+            x: max(0, min(size.width - 12, placement.origin.x * sx)),
+            y: max(8, min(size.height - 10, placement.origin.y * sy)),
+            width: min(size.width, placement.size.width * sx),
+            height: min(size.height - 8, placement.size.height * sy))
+          context.fill(Path(rect), with: .color(theme.paper))
+          context.stroke(Path(rect), with: .color(theme.ink), lineWidth: 1)
+          context.fill(
+            Path(CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: 5)),
+            with: .color(theme.accent))
+        }
+      }
+    }.frame(width: 280, height: 140).clipped().overlay(Rectangle().stroke(theme.ink))
+      .accessibilityLabel(
+        "Window map for " + preset.name
+          + ". Theme and window positions; document contents are not captured.")
   }
 }

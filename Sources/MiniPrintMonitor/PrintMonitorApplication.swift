@@ -45,6 +45,8 @@ private struct PrintMonitorView: View {
   let playfulness: PlayfulnessSettings
   let model: ProjectQueue
   @State private var managing = false
+  @State private var history: CIProject?
+  @State private var artifacts: ProjectBuild?
   @State private var inspecting: ProjectBuild?
   @State private var clearing: ProjectBuild?
   @State private var retry = PaperJamRetry()
@@ -78,6 +80,9 @@ private struct PrintMonitorView: View {
               Text(project.label).tag(project.id)
             }
           }.accessibilityLabel("Build queue")
+          if model.selectedProjects.count == 1, let project = model.selectedProjects.first {
+            Button("History…") { history = project }.buttonStyle(RetroButtonStyle())
+          }
           Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
         }
         if compact {
@@ -162,6 +167,7 @@ private struct PrintMonitorView: View {
                       .disabled(retry.busy).accessibilityLabel(
                         "Retry failed jobs for " + build.run.title)
                   }
+                  Button("Artifacts…") { artifacts = build }.buttonStyle(RetroButtonStyle())
                   Button("Jobs…") { inspecting = build }
                     .accessibilityLabel(
                       "Inspect jobs for " + build.run.title + " #" + String(build.run.id)
@@ -193,6 +199,12 @@ private struct PrintMonitorView: View {
     }
     .onDisappear { manualRefreshTask?.cancel() }
 
+    .sheet(item: $history) { project in
+      BuildHistoryView(project: project).environment(\.miniTheme, theme).miniSheet(width: 480)
+    }
+    .sheet(item: $artifacts) { build in
+      ArtifactListView(build: build).environment(\.miniTheme, theme).miniSheet(width: 480)
+    }
     .sheet(item: $clearing) { build in
       ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme).miniSheet(
         width: 520)
