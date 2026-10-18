@@ -49,7 +49,7 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration,
 - **Bevelled edges:** Rounded screen corners and the inset bevel remain visible in full screen.
 - **State and recovery:** Tiny-screen and Purist modes are mutually exclusive. Changes retain running apps and saved window placements; disabling the active mode returns to Standard.
 
-The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. The published 0.4.0 build has been checked on the physical Wokyis. The 0.10 development scope adds a saved 1.5× comparison option alongside the default 2×; subjective panel legibility still needs comparison at the device. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
+The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining work. The published 0.4.0 build has been checked on the physical Wokyis. The 0.10 development scope adds a saved 1.5× comparison option alongside the default 2×; the physical comparison found 1.5× too small for the user and supports retaining 2× as the Wokyis default. The full bundled-app/keyboard/graphics audit, minimum-size visual checks, native-menu activation verification, and longer display-change/sleep/wake testing remain follow-ups. Native OS panels and menus retain system sizing.
 
 ## Shipped in 0.5.0
 
@@ -94,7 +94,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Optional Impossible instruments in Activity Monitor, driven by real CPU samples with bounded decorative particles and motion/visibility/sleep gates.
 - A saved 1.5× interface-scale comparison option; existing installs keep 2×. Purist remains exact.
 - Shared responsive sheet content widths, including token, build details, retry, recovery, inspection and Scrapbook dialogs; the physical-validation window-recovery and Projects-sheet fixes are included.
-- Expanded populated Chooser control geometry, persistence, scale and lifecycle regression coverage. Comprehensive live VoiceOver, full system sleep, long soak and physical reading-distance comparison remain explicitly unverified.
+- Expanded populated Chooser control geometry, persistence, scale and lifecycle regression coverage. Comprehensive live VoiceOver, full system sleep, long soak remain explicitly unverified; the physical reading-distance comparison supports 2× over 1.5× for this setup.
 
 ## Further accessories and improvements
 

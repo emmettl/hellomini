@@ -58,3 +58,7 @@ Physical panel reading distance, ambient light, viewing angle and subjective leg
 4. Change an available macOS display resolution and restore it. Record both modes and check recovery of window chrome, controls and Metal rendering. Cable removal/reconnection is a separate physical test.
 5. Exercise display sleep and full system sleep separately. Record actual sleep/wake events and verify graphics movement, input, clocks, refresh and saved state after wake. Arrange a reliable wake path before sleeping a remote CI host.
 6. Restore the starting theme, mode and window arrangement; record duration and number of cycles. A short functional check is not a multi-hour soak.
+
+## 0.10 development follow-up
+
+The [0.10 validation record](0.10_VALIDATION.md) adds the physical 1.5× versus 2× reading comparison, compact Projects-sheet and keyboard navigation checks, and the 23:04:15–23:05:10 display-sleep cycle. The user found 1.5× too small, supporting the existing 2× default. Full system sleep and spoken VoiceOver remain unverified.
