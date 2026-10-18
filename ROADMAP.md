@@ -88,7 +88,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - Living dither, off by default, with Reduce Motion, occlusion, scene and sleep gates.
 - Dated recovery backups and clearer guidance; transfer, portability and lifecycle regression tests.
 
-## 0.10.0 release scope
+## 0.10.0 — released
 
 - Chooser saved service destinations, explicit ports, duplicate handling, and stale-discovery protection.
 - Optional Impossible instruments in Activity Monitor, driven by real CPU samples with bounded decorative particles and motion/visibility/sleep gates.
