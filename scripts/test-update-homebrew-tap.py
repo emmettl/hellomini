@@ -17,7 +17,7 @@ class TapTests(unittest.TestCase):
         updated = tap.updated_cask(original, "0.9.0", "a" * 64)
         self.assertIn('version "0.9.0"', updated)
         self.assertIn('sha256 "' + 'a' * 64 + '"', updated)
-        self.assertIn('depends_on macos: ">= :tahoe"', updated)
+        self.assertIn('depends_on macos: :tahoe', updated)
         with self.assertRaises(ValueError):
             tap.updated_cask(original + '\n  version "1.0.0"', "0.9.0", "a" * 64)
 
