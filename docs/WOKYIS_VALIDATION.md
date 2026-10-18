@@ -8,7 +8,21 @@ Before connecting, `system_profiler SPDisplaysDataType` reported the physical Wo
 
 The initial screen-sharing session subsequently reported only a **Screen Sharing Virtual Display**, 3840 × 2160 pixels / 1920 × 1080 logical points. Results from that session establish behaviour on the Mini with a virtual display, not physical Wokyis legibility.
 
-The saved Screen Sharing connection used High Performance mode. It was changed to Standard in the connection's Edit sheet. Ending the session through the Mini's screen-sharing menu restored the Wokyis at 1280 × 720, as verified over SSH. Reconnecting with Standard nevertheless resumed the virtual display; changing the saved connection alone did not establish console-session coverage. Apple documents pressing Escape on the host's physical keyboard to end High Performance mode. Verify the reported display again after reconnecting instead of relying on the viewer's connection-type label.
+The saved Screen Sharing connection used High Performance mode. Earlier attempts to change it and reconnect still resumed a virtual display. A keyboard-free recovery was subsequently verified over SSH:
+
+1. Close the viewer before reconnecting so it cannot immediately resume the old session.
+2. Identify the logged-in user's `ScreensharingAgent` process with `ps`, and send `SIGTERM` to that specific process. Do not terminate `WindowServer`, `loginwindow`, or unrelated processes. `launchctl kill` refused permission on this host, but a normal signal to the user-owned agent succeeded without sudo.
+3. Confirm `system_profiler SPDisplaysDataType` reports the Wokyis again.
+4. In Screen Sharing's saved connection, choose Edit, select **Standard**, and use **Connect** directly. The saved entry was found to show High Performance again, so verify the selection rather than assuming an earlier change persisted.
+5. After reconnecting, verify the host display identity again. This connection retained the Wokyis at **1280 × 720, 60 Hz**, with no virtual display reported and no “Locked” label in the viewer.
+
+Apple's physical-Escape method is therefore not required for this tested recovery path. No administrator password, logout, reboot, or CI-service restart was needed.
+
+### Completed on the Wokyis console after recovery
+
+- The same Homebrew 0.9.0 process remained running across the virtual-display teardown and physical-display restoration. Its full-screen desktop and Print Monitor reflowed to the smaller physical display; the menu, window chrome, filters, project control and refresh controls were visible.
+- The old Dock item was confirmed to launch the manual 0.5.0 copy. That copy was quit through its menu, and the existing Homebrew process was activated. The final process check showed only `/Applications/Hello Mini.app/Contents/MacOS/HelloMini` running.
+- Classic and 2× were restored before recovery. This is a functional display-replacement/reconnection check, not a complete bundled-app audit, macOS resolution-change test, cable hot-plug test, or full sleep/wake cycle.
 
 ### Completed in the virtual-display session
 

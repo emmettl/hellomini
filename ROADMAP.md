@@ -92,7 +92,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - Finder cross-volume Move, conflict replacement, Undo and copies beyond the current 512 MB/10,000-entry bound need separate careful flows.
 - Broader end-to-end accessibility coverage and long physical Wokyis/display-change/sleep-wake sessions remain continuing validation work.
-- The [18 October Mini validation record](docs/WOKYIS_VALIDATION.md) records the 0.5-to-0.9 running-app upgrade, virtual-display mode/theme checks, and the console-session and wake-path constraints on completing physical lifecycle checks.
+- The [18 October Mini validation record](docs/WOKYIS_VALIDATION.md) records the 0.5-to-0.9 running-app upgrade, virtual-display mode/theme checks, keyboard-free recovery to the Wokyis console, and the remaining wake-path constraints on completing physical lifecycle checks.
 - Additional live self-hosted provider installations require configured endpoints and suitable test accounts.
 
 ## Other next priorities
