@@ -1,5 +1,10 @@
 # Changelog
 
+## Distribution update — 2026-10-18
+
+- Added the existing signed, notarized 0.8.0 release to `emmettl/tap/hellomini`; no new app binary or version was released.
+- Added checksum/manifest-verified tap updates to the release process, plus Homebrew install/update instructions and the website command. Strict online audit, style and isolated installation checks passed.
+
 ## 0.8.0 — 2026-10-18
 
 - **Print Archive:** Browse up to 50 pages of server-side build history per project, with exact branch search, job inspection, artifact access, and links to earlier GitHub run attempts. Archive browsing does not replay build alerts or change live status.

@@ -44,3 +44,5 @@ Development artifact uploads are opt-in (`upload_artifact=true`) with one-day re
 
 
 Opt-in live GitHub coverage uses `HELLO_MINI_LIVE_GITHUB_TOKEN` and `HELLO_MINI_LIVE_GITHUB_RUN` with `swift test --filter liveGitHubHistoryAndArtifactDownload`. The fixture project is emmettl/hellomini; choose a run with a non-expired artifact and a read-capable token. Supply credentials through the host Keychain/environment, never source or CI logs. The test downloads a quarantined archive to a temporary folder without extracting it and removes it afterward. Normal CI skips live credentials and exercises both providers through fixtures. A self-hosted fixture origin is not evidence of a live Enterprise/GitLab installation.
+
+Public distribution also includes `emmettl/tap/hellomini`. After a stable GitHub release is published and verified, the maintainer runs `make release-tap VERSION=X.Y.Z` using host `gh` credentials. The helper verifies the published ZIP and release manifest before updating the tap; CI does not receive tap-write credentials or publish cask updates. See [the Homebrew release step](RELEASING.md#after-publishing-update-homebrew).

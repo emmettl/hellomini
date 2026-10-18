@@ -2,6 +2,8 @@
 
 Hello Mini's guiding principle is **quintessential idiocy**: useful little applications, period-looking interfaces, and modern capabilities that would have been utterly impossible on the original hardware. Silliness is part of the product, not an apology for it. Applications can sit anywhere on the stupid/useful axis; they do not all need a practical excuse.
 
+The signed 0.8.0 release is also available through [Homebrew](docs/INSTALL.md#homebrew): `brew install --cask emmettl/tap/hellomini`. Tap integration and the post-publication update process are complete.
+
 Version **0.8.0** deepens Print Monitor and Finder, adds preset window maps and backup recovery controls, and strengthens validation. Version **0.7.0** adds Network, Finder inspection and favourites, saved-session recovery, and reliability improvements. Version **0.6.0** adds MiniPaint, desktop presets, portable Scrapbooks, and creative connections between them. Version [0.5.0](https://github.com/emmettl/hellomini/releases/tag/v0.5.0) adds Communications, a telemetry receiving station, and improves long-running ambient animation. Version [0.4.0](https://github.com/emmettl/hellomini/releases/tag/v0.4.0) fixes tiny-screen mode after testing on the Wokyis, and adds the Platinum theme with window shade, genie minimise, Scrapbook text recognition and slideshow, build-streak fish, and Talking Moose. The published build has since been checked on the Wokyis and looks fine. Version [0.3.0](https://github.com/emmettl/hellomini/releases/tag/v0.3.0) introduced **tiny-screen mode**. The [website](https://hellomini.app) is live, and all nine original roadmap applications have working first versions.
 
 ## Applications
@@ -20,7 +22,7 @@ Each application should work as a small, coherent application while contributing
 | **Aquarium** | Offer an ambient view of machine activity, usable as a desk accessory and an After Dark–inspired screensaver. | CPU load changes the current, network traffic becomes bubbles, and completed builds feed the fish. Sometimes the fish are having a difficult afternoon. |
 | **Puzzle** | Supply a pleasantly unnecessary sliding-tile puzzle. | The tiles contain a live view of the desktop. Almost no practical justification is required. |
 
-The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads, additional CI providers, standalone macOS screensaver packaging, and cloud sync are not included in 0.3.0. Scrapbook OCR, the Scrapbook Slideshow, build-streak fish, Talking Moose, genie minimise, and the Platinum theme are included in 0.4.0.
+The [user guide](docs/USER_GUIDE.md) describes shipped behaviour, configuration, and limits. In-app artifact downloads shipped in 0.8.0. Additional CI providers, standalone macOS screensaver packaging, and cloud sync remain future work. Scrapbook OCR, the Scrapbook Slideshow, build-streak fish, Talking Moose, genie minimise, and the Platinum theme shipped in 0.4.0.
 
 ## Shared design commitments
 
@@ -72,6 +74,11 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 - **Desktop recovery and previews:** Preset window-map thumbnails and saved layout inspection/export/restore controls.
 - **Validation:** Deterministic network failure/lifecycle tests, real control-frame assertions and provider/download regression coverage.
 
+## Completed distribution work — 18 October 2026
+
+- **Homebrew tap:** `emmettl/tap/hellomini` installs the signed, notarized 0.8.0 app, with Apple silicon and macOS 26 requirements. Strict online audit, style, isolated installation, signature, stapled-ticket and Gatekeeper checks passed.
+- **Release maintenance:** The [release process](docs/RELEASING.md#after-publishing-update-homebrew) includes a verified, repeatable tap update after publishing each stable release. Installation/update guidance and the website include the Homebrew route. Uninstall retains application data and Keychain tokens.
+
 ## Further accessories and improvements
 
 - Finder Move, conflict replacement and large-copy progress need separate careful flows.
@@ -81,7 +88,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 ## Other next priorities
 
 - Continue longer-session, sleep/wake, display-change, and saved-state upgrade testing for subsequent releases. The signed 0.1.0 download has been tested on the physical Mini.
-- Validate Print Monitor against users' self-hosted installations, then consider server-side history searches and in-app artifact downloads. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
+- Validate Print Monitor history, artifact downloads and retries against users' self-hosted installations. History and downloads shipped in 0.8.0; live GitLab/self-hosted coverage remains incomplete. Saved projects, combined queues, recent-build filters, job/failure details, and configurable server origins are implemented.
 - Continue live CI retry validation across providers and self-hosted installations, including token permissions and long-running pipelines.
 - System 7 and early Aqua are implemented as independent theme modules. Purist mode offers a fixed 512 × 384 desktop across themes. Refine era-specific controls as the shared framework grows.
 - Expand Finder operations deliberately. Scrapbook export/import is included in 0.6.0.
@@ -107,7 +114,7 @@ The [scope and design](docs/TINY_SCREEN_MODE.md) record validation and remaining
 
 - **Themes:** System 7, Mac OS 8–inspired Platinum with window shade, and Mac OS X 10.0–inspired Aqua are available, including pinstripes, gel controls, original smooth icons, working Aqua traffic lights for close, minimise, and zoom, and a dock with running indicators and minimised-window restoration. More era-specific controls can follow without duplicating application behavior.
 - **More spectacle:** Flying Toasters is implemented. Living dither, Impossible instruments, Physical windows, and Depth behind glass remain future effects, all optional through Playfulness.
-- **Distribution:** The MIT-licensed release is available as a signed, notarized GitHub download, linked from hellomini.app. Homebrew installation is available through `emmettl/tap/hellomini`; App Store distribution remains undecided. CI continues to produce development artifacts separately from public releases.
+- **Distribution:** App Store distribution remains undecided. GitHub downloads and the Homebrew tap are implemented (see completed distribution work above); CI development artifacts remain separate from public releases.
 - **Compatibility:** macOS 26 remains the baseline; consider macOS 15 only if it does not hinder selective adoption of newer features.
 
 See the [user guide](docs/USER_GUIDE.md) for what works today and [CI documentation](docs/CI.md) for the existing build pipelines.

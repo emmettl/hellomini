@@ -62,6 +62,8 @@ After publication, verify the release is public, the ZIP is downloadable, and [h
 
 ## After publishing: update Homebrew
 
+This distribution channel was added on 18 October 2026 for the already-published 0.8.0 binary. Strict online audit, style, isolated Homebrew installation, signature, stapled-ticket and Gatekeeper checks passed; no replacement app release was needed.
+
 The cask lives in [emmettl/homebrew-tap](https://github.com/emmettl/homebrew-tap), as `Casks/hellomini.rb`. After verifying the public release, run:
 
 ```sh
