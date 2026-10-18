@@ -1,3 +1,4 @@
+import AppKit
 import MiniCore
 import MiniUI
 import Observation
@@ -10,8 +11,13 @@ import SwiftUI
   public let defaultSize = CGSize(width: 820, height: 524)
   public let minimumSize = CGSize(width: 420, height: 230)
   private let model = ActivityModel()
-  public init() {}
-  public func content() -> AnyView { AnyView(ActivityView(model: model)) }
+  private let playfulness: PlayfulnessSettings?
+  public static let effect = MiniPlayfulEffect(
+    id: "activity.impossibleInstruments", name: "Impossible instruments",
+    description: "A needlessly elaborate CPU gauge stirs a swarm of ink particles.",
+    enabledByDefault: false)
+  public init(playfulness: PlayfulnessSettings? = nil) { self.playfulness = playfulness }
+  public func content() -> AnyView { AnyView(ActivityView(model: model, playfulness: playfulness)) }
 
   public var menus: [RetroMenu] {
     [
@@ -86,7 +92,13 @@ private final class ActivityModel {
 
 private struct ActivityView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniWindowVisible) private var visible
+  @Environment(\.scenePhase) private var phase
+  @State private var awake = true
+  @State private var exposed = true
   @Bindable var model: ActivityModel
+  let playfulness: PlayfulnessSettings?
+  private var sampling: Bool { !model.paused && visible && exposed && awake && phase == .active }
 
   var body: some View {
     GeometryReader { geometry in
@@ -96,7 +108,22 @@ private struct ActivityView: View {
         short: geometry.size.height < 300)
     }
     .font(theme.typography.body)
-    .task(id: model.paused) { if !model.paused { await model.observe() } }
+    .onReceive(
+      NotificationCenter.default.publisher(for: NSWindow.didChangeOcclusionStateNotification)
+    ) { note in
+      if let window = note.object as? NSWindow,
+        window.identifier?.rawValue == "desktop" || window.title == "Hello Mini"
+      {
+        exposed = window.occlusionState.contains(.visible)
+      }
+    }
+    .task(id: sampling) { if sampling { await model.observe() } }
+    .onReceive(
+      NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.screensDidSleepNotification)
+    ) { _ in awake = false }
+    .onReceive(
+      NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.screensDidWakeNotification)
+    ) { _ in awake = true }
   }
 
   private func layout(compact: Bool, short: Bool) -> some View {
@@ -120,9 +147,17 @@ private struct ActivityView: View {
       // Very short windows, such as tiny-screen mode with the Aqua dock, keep the process list.
       if !short {
         VStack(alignment: .leading, spacing: compact ? 3 : 5) {
-          CPUHistory(values: model.history).frame(height: compact ? 22 : 48)
+          if playfulness?.allows(ActivityMonitorApplication.effect.id) == true {
+            ImpossibleInstrument(cpu: model.latest?.cpu, running: sampling)
+              .frame(height: compact ? 44 : 88)
+          } else {
+            CPUHistory(values: model.history).frame(height: compact ? 22 : 48)
+          }
           HStack {
-            Text(compact ? "CPU · last 2 minutes" : "CPU · last 2 minutes · 0–100%")
+            Text(
+              playfulness?.allows(ActivityMonitorApplication.effect.id) == true
+                ? "CPU · real reading, decorative particles · 0–100%"
+                : (compact ? "CPU · last 2 minutes" : "CPU · last 2 minutes · 0–100%"))
             Spacer()
             if !compact { Text("Load averages: 1 / 5 / 15 min") }
           }.font(theme.typography.small)
@@ -172,8 +207,12 @@ private struct ActivityView: View {
       }
       Rectangle().frame(height: 1)
       HStack {
-        Text(model.error ?? (model.paused ? "Paused" : "Live · every 2 seconds"))
-          .lineLimit(1).miniHelp(model.error ?? "Sampling stops when this window is closed.")
+        Text(
+          model.error
+            ?? (model.paused
+              ? "Paused" : sampling ? "Live · every 2 seconds" : "Paused while inactive")
+        )
+        .lineLimit(1).miniHelp(model.error ?? "Sampling stops when this window is closed.")
         Spacer()
         if !compact, let date = model.latest?.date {
           Text("Updated \(date.formatted(.dateTime.hour().minute().second()))")

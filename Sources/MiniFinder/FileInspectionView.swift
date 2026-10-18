@@ -25,6 +25,6 @@ struct FileInspectionView: View {
         Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
       }
       .buttonStyle(RetroButtonStyle())
-    }.padding(12).frame(width: 400).foregroundStyle(theme.ink).background(theme.paper)
+    }.padding(12).miniFormWidth(400).foregroundStyle(theme.ink).background(theme.paper)
   }
 }

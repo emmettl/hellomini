@@ -150,7 +150,7 @@ struct JobDetailsView: View {
         Spacer()
         Button("Done") { dismiss() }.buttonStyle(RetroButtonStyle()).keyboardShortcut(.cancelAction)
       }
-    }.padding(20).frame(width: 580).foregroundStyle(theme.ink).background(theme.paper)
+    }.padding(20).miniFormWidth(580).foregroundStyle(theme.ink).background(theme.paper)
       .task { await model.load(reset: true) }
       .onDisappear { request?.cancel() }
   }

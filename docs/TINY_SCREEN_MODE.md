@@ -1,6 +1,8 @@
-# Tiny-screen mode — 0.3.0 scope and design
+# Tiny-screen mode — design and implementation
 
-Status: 0.3.0 ships the initial 2× implementation. Release approved on 13 September 2026 with physical Wokyis testing deferred until the device arrives. Standard mode remains the initial default; 2× is the opt-in tiny-screen preset. The original design targets below guide follow-up work.
+Current development: 0.10 adds a saved 1.5× comparison option alongside the existing 2× default. It has been inspected on a development display; physical Wokyis legibility comparison remains pending. Shared form sizing now clamps sheet content to the logical desktop width.
+
+Historical status: 0.3.0 ships the initial 2× implementation. Release approved on 13 September 2026 with physical Wokyis testing deferred until the device arrives. Standard mode remains the initial default; 2× is the opt-in tiny-screen preset. The original design targets below guide follow-up work.
 
 [Roadmap](../ROADMAP.md) · [Current architecture](ARCHITECTURE.md) · [Current user guide](USER_GUIDE.md)
 

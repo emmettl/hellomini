@@ -528,7 +528,7 @@ public struct DesktopView: View {
         RetroMenuItem(id: "desktop-presets", title: "Desktop Presets…") { showPresets = true })
       appMenus[index].items.append(
         RetroMenuItem(
-          id: "tiny-screen", title: "Tiny-screen Mode — 2×", checked: settings.tinyScreenMode
+          id: "tiny-screen", title: "Tiny-screen Mode", checked: settings.tinyScreenMode
         ) { settings.setTinyScreenMode(!settings.tinyScreenMode) })
       appMenus[index].items.append(
         RetroMenuItem(

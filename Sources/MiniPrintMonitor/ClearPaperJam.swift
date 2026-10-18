@@ -126,7 +126,7 @@ struct ClearPaperJam: View {
           dismiss()
         }
       }.buttonStyle(RetroButtonStyle())
-    }.padding(20).frame(width: 520).foregroundStyle(theme.ink).background(theme.paper)
+    }.padding(20).miniFormWidth(520).foregroundStyle(theme.ink).background(theme.paper)
       .interactiveDismissDisabled(retry.busy)
       .onAppear { retry.resetMessage() }
       .onDisappear { retry.stop() }

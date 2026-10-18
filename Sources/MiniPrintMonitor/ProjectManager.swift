@@ -127,7 +127,7 @@ private struct ProjectTokenEditor: View {
         Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)
       }.buttonStyle(RetroButtonStyle())
       if let error { Text(error).font(theme.typography.small) }
-    }.padding(20).frame(width: 470).foregroundStyle(theme.ink).background(theme.paper)
+    }.padding(20).miniFormWidth(470).foregroundStyle(theme.ink).background(theme.paper)
       .onDisappear { token = "" }
   }
   private func update(_ action: () throws -> Void) {

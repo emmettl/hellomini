@@ -94,3 +94,15 @@ import Testing
   #expect(AppearanceSettings(defaults: defaults).tinyScreenMode)
   #expect(!AppearanceSettings(defaults: defaults).puristMode)
 }
+
+@Test @MainActor func intermediateScalePersistsWithoutChangingMode() throws {
+  let name = "appearance-scale-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: name))
+  defer { defaults.removePersistentDomain(forName: name) }
+  let settings = AppearanceSettings(defaults: defaults)
+  #expect(settings.tinyScreenScale == 2)
+  settings.setTinyScreenScale(1.5)
+  settings.setTinyScreenScale(.nan)
+  #expect(AppearanceSettings(defaults: defaults).tinyScreenScale == 1.5)
+  #expect(!settings.tinyScreenMode)
+}

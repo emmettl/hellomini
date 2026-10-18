@@ -14,7 +14,7 @@ private struct MiniSheetModifier: ViewModifier {
     let visibleHeight = min(contentHeight, max(1, display.logicalSize.height - 32))
     ScrollView([.horizontal, .vertical]) {
       content
-        .frame(width: width)
+        .frame(width: visibleWidth)
         .fixedSize(horizontal: false, vertical: true)
         .onGeometryChange(for: CGFloat.self) {
           $0.size.height
@@ -33,5 +33,19 @@ private struct MiniSheetModifier: ViewModifier {
 extension View {
   public func miniSheet(width: CGFloat) -> some View {
     modifier(MiniSheetModifier(width: width))
+  }
+}
+
+/// Use inside a sheet instead of a fixed frame so the form reflows before scrolling.
+private struct MiniFormWidth: ViewModifier {
+  @Environment(\.miniDisplay) private var display
+  let preferred: CGFloat
+  func body(content: Content) -> some View {
+    content.frame(width: min(preferred, max(1, display.logicalSize.width - 24)))
+  }
+}
+extension View {
+  public func miniFormWidth(_ preferred: CGFloat) -> some View {
+    modifier(MiniFormWidth(preferred: preferred))
   }
 }

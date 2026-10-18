@@ -7,16 +7,18 @@ public struct MiniDisplayViewport<Content: View>: View {
   @State private var nativeChromeHeight: CGFloat = 0
   let puristMode: Bool
   let tinyScreenMode: Bool
+  let tinyScreenScale: CGFloat
   let windowChromeChanged: @MainActor (CGFloat) -> Void
   @ViewBuilder let content: () -> Content
 
   public init(
-    puristMode: Bool, tinyScreenMode: Bool = false,
+    puristMode: Bool, tinyScreenMode: Bool = false, tinyScreenScale: CGFloat = 2,
     windowChromeChanged: @escaping @MainActor (CGFloat) -> Void = { _ in },
     @ViewBuilder content: @escaping () -> Content
   ) {
     self.puristMode = puristMode
     self.tinyScreenMode = tinyScreenMode
+    self.tinyScreenScale = tinyScreenScale
     self.windowChromeChanged = windowChromeChanged
     self.content = content
   }
@@ -24,7 +26,8 @@ public struct MiniDisplayViewport<Content: View>: View {
   public var body: some View {
     GeometryReader { geometry in
       let layout = DisplayViewportLayout(
-        available: geometry.size, puristMode: puristMode, tinyScreenMode: tinyScreenMode)
+        available: geometry.size, puristMode: puristMode, tinyScreenMode: tinyScreenMode,
+        tinyScreenScale: tinyScreenScale)
       content()
         .environment(
           \.miniDisplay, MiniDisplayContext(scale: layout.scale, logicalSize: layout.logical)
@@ -55,8 +58,8 @@ struct DisplayViewportLayout {
   let logical: CGSize
   let presented: CGSize
 
-  init(available: CGSize, puristMode: Bool, tinyScreenMode: Bool) {
-    scale = tinyScreenMode && !puristMode ? 2 : 1
+  init(available: CGSize, puristMode: Bool, tinyScreenMode: Bool, tinyScreenScale: CGFloat = 2) {
+    scale = tinyScreenMode && !puristMode ? (tinyScreenScale == 1.5 ? 1.5 : 2) : 1
     presented = puristMode ? CGSize(width: 512, height: 384) : available
     logical = CGSize(width: presented.width / scale, height: presented.height / scale)
   }

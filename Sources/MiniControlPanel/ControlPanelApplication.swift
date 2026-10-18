@@ -45,7 +45,7 @@ import SwiftUI
           } + [
             .separator("display-mode"),
             RetroMenuItem(
-              id: "tiny-screen", title: "Tiny-screen Mode — 2×", checked: settings.tinyScreenMode
+              id: "tiny-screen", title: "Tiny-screen Mode", checked: settings.tinyScreenMode
             ) {
               self.settings.setTinyScreenMode(!self.settings.tinyScreenMode)
             },
@@ -124,12 +124,23 @@ private struct ControlPanelView: View {
   }
 
   private var tinyScreenToggle: some View {
-    Toggle(
-      "Tiny-screen mode — 2×",
-      isOn: Binding(get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) })
-    )
-    .toggleStyle(.checkbox)
-    .miniHelp("Make the whole interface twice as large. Turn it off here or in the View menu.")
+    VStack(alignment: .leading, spacing: 8) {
+      Toggle(
+        "Tiny-screen mode",
+        isOn: Binding(get: { settings.tinyScreenMode }, set: { settings.setTinyScreenMode($0) })
+      )
+      .toggleStyle(.checkbox)
+      .miniHelp("Enlarge the whole interface. Turn it off here or in the View menu.")
+      Picker(
+        "Interface scale",
+        selection: Binding(
+          get: { settings.tinyScreenScale }, set: { settings.setTinyScreenScale($0) })
+      ) {
+        Text("1.5× — more room").tag(1.5)
+        Text("2× — larger controls").tag(2.0)
+      }
+      Text("1.5× may soften pixel edges; 2× keeps integer scaling.").font(theme.typography.small)
+    }
   }
 
   private var puristToggle: some View {

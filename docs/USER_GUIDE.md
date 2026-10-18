@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.8.0** app. Later work is tracked separately in the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
+This guide describes the **0.9.0** app plus the implemented **0.10 development scope** (saved Chooser services, 1.5× comparison scale, and Impossible instruments). The latter features are not in the published 0.9.0 binary; see the [roadmap](../ROADMAP.md). Version 0.5.0 includes [Communications](COMMUNICATIONS.md), a telemetry receiving station.
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -16,7 +16,7 @@ Aqua adds working red **Close**, yellow **Minimise**, and green **Zoom** control
 
 ### Tiny-screen mode
 
-Enable **Control Panel → Appearance → Tiny-screen mode — 2×**, or **View → Tiny-screen Mode**, to make text, icons, controls, and window chrome twice as large. The setting works across all six themes, applies immediately, and survives relaunch. It is off by default. The native macOS View menu also offers the toggle.
+Enable **Control Panel → Appearance → Tiny-screen mode**, or **View → Tiny-screen Mode**, to enlarge text, icons, controls, and window chrome. Appearance offers **1.5× — more room** and **2× — larger controls**. The default remains 2×; 1.5× can soften pixel edges. At 1280 × 720, these provide approximately 853 × 480 and 640 × 360 logical points respectively. The scale is a global saved preference; portable desktop presets retain their tiny-screen on/off choice and use the destination installation’s selected scale. The setting works across all six themes, applies immediately, and survives relaunch. It is off by default. The native macOS View menu also offers the toggle.
 
 The available desktop stays filled, with half as much logical width and height: a 1280 × 720 content area becomes roughly 640 × 360 before menus and the Aqua dock. Finder offers a **Places** toggle and puts the path on a separate line in narrow windows. Print Monitor collapses filters and stacks build rows; scroll to reach more jobs and details. Control Panel puts display settings first, on one line when they fit, and shows smaller theme cards with an always-visible scrollbar. Every bundled app fits the tiny desktop: crowded toolbars shorten their labels or wrap onto a second row, secondary notes move into help, and long lists scroll inside the window. Activity Monitor switches to a compact summary, and very short windows hide its CPU graph so the process list stays visible. The Aqua dock uses a slimmer shelf.
 
@@ -120,7 +120,7 @@ Unit conversion covers distance, mass, temperature, and binary byte multiples. T
 
 ## Chooser, Disk First Aid, and Wastebasket
 
-**Chooser** browses Bonjour advertisements for SSH, Screen Sharing, HTTP, or HTTPS only after **Browse**. Select a resolved service or type a hostname/IP address, then **Connect** opens the matching macOS handler. It does not scan ports or initiate connections automatically. Discovery stops when the window closes. macOS may request Local Network access; discovery errors stay visible in Chooser.
+**Chooser** browses Bonjour advertisements for SSH, Screen Sharing, HTTP, or HTTPS only after **Browse**. Select a resolved service or type a hostname/IP address and optional port (1–65535), then **Connect** opens the matching macOS handler. **Save** stores up to 40 service/host/port destinations locally, without passwords. Select a saved service to populate the connection controls; **Connect** is still explicit. **Forget** removes only that saved address. Duplicate destinations are skipped. It does not scan ports or initiate connections automatically. Chooser’s Connections menu provides Save Service (Command-S), Connect, and Browse/Stop Browsing actions. Discovery stops when the window closes. macOS may request Local Network access; discovery errors stay visible in Chooser.
 
 **Disk First Aid** lists mounted volumes, capacity, free space, format, and write availability. **Inspect** reads the volume's available SMART information using `diskutil info`; unsupported devices say that health is not reported. APFS volumes can share free space, so volume totals should not be summed. This is read-only inspection with no repair controls.
 
@@ -252,3 +252,7 @@ Desktop Presets shows a small theme and window-arrangement map for the selected 
 **Desktop Presets → Export… / Import…** transfers a bounded JSON collection. Import first shows names, themes and window maps. Confirming skips identical presets and preserves conflicts as separately named desks, up to 20 total; it does not apply a desk or change open documents. Missing themes are labelled and cannot be applied until installed.
 
 **Control Panel → Playfulness → Living dither** enables an optional ink-dot field around windows. It is off by default and shares the master switch. Reduce Motion keeps it static; animation pauses when the desktop is inactive, covered or the display sleeps. It visualises no system or document data.
+
+### Impossible instruments (0.10 development)
+
+**Control Panel → Playfulness → Impossible instruments** replaces Activity Monitor’s CPU history graphic with an elaborate dial and a bounded swarm of ink particles. It is off by default and respects Extra silliness. The CPU percentage remains a real sample across all cores; particles are decoration. Small windows keep the numeric summary and process list, omitting the instrument when space is too short. Reduce Motion keeps the drawing static. Sampling and animation pause while updates are paused, the window is hidden/covered, the desktop scene is inactive, or the display sleeps. There is no additional telemetry service or network traffic.

@@ -98,3 +98,14 @@ import Testing
     }
   }
 }
+
+@Test func intermediateScaleOffersMoreLogicalRoomAndPuristRemainsExact() {
+  let size = CGSize(width: 1280, height: 720)
+  let layout = DisplayViewportLayout(
+    available: size, puristMode: false, tinyScreenMode: true, tinyScreenScale: 1.5)
+  #expect(layout.scale == 1.5 && layout.logical.height == 480)
+  #expect(abs(layout.logical.width - 853.333333) < 0.001)
+  let purist = DisplayViewportLayout(
+    available: size, puristMode: true, tinyScreenMode: true, tinyScreenScale: 1.5)
+  #expect(purist.scale == 1 && purist.logical == CGSize(width: 512, height: 384))
+}

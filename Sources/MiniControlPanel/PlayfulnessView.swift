@@ -40,7 +40,6 @@ struct PlayfulnessView: View {
       Rectangle().frame(height: 1)
       Text("On the drawing board").font(theme.typography.title)
       VStack(alignment: .leading, spacing: 10) {
-        planned("Impossible instruments", "CPU activity made visible as swarms of particles.")
         planned("Physical windows", "Windows that fold away like little sheets of paper.")
         planned("Depth behind glass", "Tiny 3D worlds rendered in ink and stipple.")
       }

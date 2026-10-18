@@ -266,7 +266,7 @@ private struct ScrapEditor: View {
         Button("Save") { model.saveDraft(scrap) }.keyboardShortcut(.defaultAction)
       }.buttonStyle(RetroButtonStyle())
     }
-    .padding(22).frame(width: 570, height: 420)
+    .padding(22).miniFormWidth(570).frame(height: 420)
     .foregroundStyle(theme.ink).background(theme.paper)
     .disabled(model.busy).interactiveDismissDisabled(model.busy)
   }

@@ -31,6 +31,7 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
   public private(set) var theme: MiniTheme
   public private(set) var puristMode: Bool
   public private(set) var tinyScreenMode: Bool
+  public private(set) var tinyScreenScale: Double
   public private(set) var balloonHelp: Bool
   public private(set) var customPattern: DesktopPattern?
   public let availableThemes: [MiniTheme]
@@ -43,6 +44,7 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
     precondition(!themes.isEmpty, "At least one theme is required")
     precondition(Set(themes.map(\.id)).count == themes.count, "Theme IDs must be unique")
     self.defaults = defaults
+    tinyScreenScale = defaults.double(forKey: "appearance.tinyScreenScale") == 1.5 ? 1.5 : 2
     balloonHelp = defaults.bool(forKey: "appearance.balloonHelp")
     customPattern = defaults.data(forKey: "appearance.desktopPattern").flatMap {
       DesktopPattern(rows: Array($0))
@@ -72,6 +74,12 @@ public struct MiniTheme: Identifiable, Hashable, Sendable {
     if enabled { setTinyScreenMode(false) }
     puristMode = enabled
     defaults.set(enabled, forKey: Self.puristKey)
+  }
+
+  public func setTinyScreenScale(_ scale: Double) {
+    guard scale == 1.5 || scale == 2 else { return }
+    tinyScreenScale = scale
+    defaults.set(scale, forKey: "appearance.tinyScreenScale")
   }
 
   public func setTinyScreenMode(_ enabled: Bool) {

@@ -42,6 +42,7 @@ struct HelloMiniApp: App {
     Window("Hello Mini", id: "desktop") {
       MiniDisplayViewport(
         puristMode: settings.puristMode, tinyScreenMode: settings.tinyScreenMode,
+        tinyScreenScale: settings.tinyScreenScale,
         windowChromeChanged: { displayWindowChromeHeight = $0 }
       ) {
         StartupView(
@@ -141,7 +142,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   let commands = DesktopCommands()
   let playfulness = PlayfulnessSettings(
     effects: [
-      MiniStartup.effect, TeapotApplication.rotationEffect, CalculatorApplication.effect,
+      MiniStartup.effect, ActivityMonitorApplication.effect, TeapotApplication.rotationEffect,
+      CalculatorApplication.effect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.livingDither, DesktopEffects.dockMagnification,
@@ -180,7 +182,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
     return [
       FinderApplication(findFile: { [commands] in commands.launch("find-file") }),
-      FindFileApplication(), ActivityMonitorApplication(), ClockApplication(),
+      FindFileApplication(), ActivityMonitorApplication(playfulness: playfulness),
+      ClockApplication(),
       ControlPanelApplication(
         settings: settings, playfulness: playfulness, themes: Self.themes,
         screensavers: screensavers),

@@ -33,3 +33,11 @@ import Testing
   )
   #expect(rows.map(\.id) == [5])
 }
+
+@Test @MainActor func impossibleInstrumentsStopWithoutVisibleLiveSamples() {
+  #expect(ImpossibleInstrument.animates(running: true, reduceMotion: false, cpu: 42))
+  #expect(!ImpossibleInstrument.animates(running: false, reduceMotion: false, cpu: 42))
+  #expect(!ImpossibleInstrument.animates(running: true, reduceMotion: true, cpu: 42))
+  #expect(!ImpossibleInstrument.animates(running: true, reduceMotion: false, cpu: nil))
+  #expect(!ImpossibleInstrument.animates(running: true, reduceMotion: false, cpu: .nan))
+}

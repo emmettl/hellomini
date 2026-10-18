@@ -8,6 +8,7 @@ import MiniUI
 import SwiftUI
 import Testing
 
+@testable import MiniChooser
 @testable import MiniFinder
 @testable import MiniNetwork
 @testable import MiniPrintMonitor
@@ -28,10 +29,13 @@ import Testing
   defaults.set(root.path, forKey: "finder.location")
   let settings = PlayfulnessSettings(defaults: defaults, effects: [])
   let finder = FinderModel(defaults: defaults)
+  let chooser = ChooserModel(defaults: defaults)
+  chooser.manualHost = "a-very-long-demonstration-hostname.example.invalid"
   let network = NetworkModel()
   network.host = "a-very-long-demonstration-hostname.example.invalid"
   network.port = "65535"
   let views: [(AnyView, [String])] = [
+    (AnyView(ChooserView(model: chooser)), ["chooser.save", "chooser.connect"]),
     (AnyView(FinderView(model: finder, findFile: {})), ["finder.find", "finder.back"]),
     (
       AnyView(NetworkView(model: network, playfulness: settings)),

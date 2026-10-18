@@ -87,7 +87,7 @@ struct DesktopRecoveryView: View {
         Spacer()
         Button("Done") { dismiss() }.keyboardShortcut(.cancelAction)
       }
-    }.padding(12).frame(width: 420).foregroundStyle(theme.ink).background(theme.paper).buttonStyle(
+    }.padding(12).miniFormWidth(420).foregroundStyle(theme.ink).background(theme.paper).buttonStyle(
       RetroButtonStyle()
     )
     .confirmationDialog(

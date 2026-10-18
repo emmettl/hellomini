@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## Unreleased — 0.10.0 scope
+
+- **Chooser:** Save up to 40 service/host/port destinations, skip duplicates, forget addresses and connect explicitly through macOS handlers; stale discovery callbacks cannot repopulate a stopped search.
+- **Impossible instruments:** Opt-in CPU dial and decorative particles in Activity Monitor, retaining real numeric readings and pausing with visibility, scene, display sleep and Reduce Motion controls.
+- **Display polish:** Saved 1.5× comparison scale alongside default 2×, with unchanged Purist dimensions; responsive shared form widths for cramped sheets.
 
 - Fit Print Monitor's Projects sheet to the logical desktop so Purist mode keeps its actions reachable.
 - Keep the native window on screen after display-resolution changes, full-screen exit and restoration from Purist mode.

@@ -1,6 +1,6 @@
 # Installing Hello Mini
 
-Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
+Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing (with a 1.5× comparison preset in 0.10 development) within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
 
 ## Homebrew
 

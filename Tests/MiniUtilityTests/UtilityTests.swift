@@ -73,3 +73,35 @@ import Testing
     try GitHubProvider.decode(Data("{}".utf8), project: "owner/app")
   }
 }
+
+@Test @MainActor func chooserSavedServicesRoundTripAndRejectInvalidPorts() throws {
+  let name = "chooser-test-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: name))
+  defer { defaults.removePersistentDomain(forName: name) }
+  let model = ChooserModel(defaults: defaults)
+  model.manualHost = "mini.local"
+  model.manualPort = "2222"
+  model.save()
+  model.save()
+  #expect(model.saved.count == 1)
+  let restored = ChooserModel(defaults: defaults)
+  let destination = try #require(restored.saved.first)
+  restored.use(destination)
+  #expect(restored.kind == .ssh && restored.manualPort == "2222")
+  for port in ["bad", "0", "65536", "-1"] {
+    restored.manualPort = port
+    restored.save()
+    #expect(restored.saved.count == 1)
+  }
+  restored.forget(destination.id)
+  #expect(ChooserModel(defaults: defaults).saved.isEmpty)
+}
+
+@Test @MainActor func chooserIgnoresOldDiscoveryCallbacks() {
+  let model = ChooserModel()
+  let stale = NetServiceBrowser()
+  model.netServiceBrowser(
+    stale, didFind: NetService(domain: "local.", type: "_ssh._tcp.", name: "stale"),
+    moreComing: false)
+  #expect(model.services.isEmpty)
+}
