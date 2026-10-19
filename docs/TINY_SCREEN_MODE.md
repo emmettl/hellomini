@@ -1,100 +1,27 @@
-# Tiny-screen mode — design and implementation
+# Tiny-screen mode
 
-Current implementation: 0.10 adds a saved 1.5× comparison option alongside the existing 2× default. The physical Wokyis comparison on 18 October found 2× readable and 1.5× too small for the user at their normal viewing distance, supporting retention of the 2× default. See [0.10 validation](0.10_VALIDATION.md). Shared form sizing now clamps sheet content to the logical desktop width.
+Tiny-screen mode enlarges Hello Mini's text, controls, icons, menus and window chrome together. It is intended for physically small displays, including the 1280 × 720 Wokyis. A screenshot that fits the panel does not establish comfortable reading at desk distance.
 
-Historical status: 0.3.0 ships the initial 2× implementation. Release approved on 13 September 2026 with physical Wokyis testing deferred until the device arrives. Standard mode remains the initial default; 2× is the opt-in tiny-screen preset. The original design targets below guide follow-up work.
+[User controls](USER_GUIDE.md#tiny-screen-mode) · [Architecture](ARCHITECTURE.md#display-presentation) · [Validation](VALIDATION.md)
 
-[Roadmap](../ROADMAP.md) · [Current architecture](ARCHITECTURE.md) · [Current user guide](USER_GUIDE.md)
+## Presentation policy
 
-## Implementation progress
+Standard mode uses 1× presentation. Tiny-screen mode is an opt-in saved setting with a default 2× scale and an optional 1.5× comparison preset. Purist mode is mutually exclusive and retains its fixed 512 × 384 logical canvas. Existing saved 2× choices remain unchanged when upgrading.
 
-The first implementation includes a saved 2× setting in Control Panel, the desktop View menu, and the native View menu; mutually exclusive Purist mode; a shared `miniDisplay` environment; and logical layout plus presentation scaling at the host boundary. Desktop, startup, screensavers, and custom sheets use that policy. An inset bevel and rounded screen corners are drawn inside the app, including in full screen.
+The host divides the available desktop dimensions by the selected scale and lays out windows in those logical coordinates, then scales the result for presentation. A 1280 × 720 desktop becomes 640 × 360 logical points at 2×. The shared `miniDisplay` environment conveys scale and logical size; themes and accessories do not multiply their own font or control sizes.
 
-Finder now moves its path onto a separate line in narrow windows and provides a Places toggle. Compact list rows prioritise filenames. Print Monitor collapses filters and stacks build rows in compact windows, with the whole queue scrollable; roomy windows retain their fixed toolbar. Control Panel brings the display toggles to the top in tiny-screen mode. Other oversized app content retains the shell's minimum-content scrolling fallback. This is an initial implementation, not completion of the full app/workflow audit below.
+Desktop, startup, screensavers and custom sheets share this policy. Sheets live in separate native windows, so `miniSheet(width:)` applies the scale once and bounds a scrolling viewport to the logical desktop. Native macOS menus, alerts and file panels retain system sizing. An inset bevel and rounded screen corners remain visible in full screen.
 
-Testing on the Wokyis in September 2026 confirmed that the mode is necessary and found two problems. Control Panel's theme strip embedded an AppKit scroll view with its own SwiftUI host. Under the 2× transform it drew at the enlarged size but resolved clicks at 1×, so selections drifted further from the pointer towards the right. The strip is now pure SwiftUI, with a themed scrollbar. Most other bundled apps declared minimum sizes larger than the tiny desktop, so whole windows scrolled and their toolbars disappeared. Every bundled app now reflows for narrow and short windows. A regression test checks each minimum size against tiny-screen and Purist desktops in every theme. The Aqua dock reserves 56 rather than 88 points on desktops shorter than 480 points. The published 0.4.0 build was then checked on the Wokyis and looks fine. The 0.10 physical comparison supports 2× for this setup; longer workflow, full-system-sleep, hot-plug and soak checks remain follow-up work.
+## Layout and interaction
 
-Validation completed on the development Mac: `make check` (105 debug tests, 13 release tests, lint, build/release tooling checks, and build); a local app build; visual checks of all five themes at 2×; native-sheet text entry and overflow; full-screen transitions; relaunch persistence; and a 512 × 384 Purist-mode transition. Automated checks cover conflicting/legacy preferences, logical display sizing, actual rendered enlargement/corners, and reachable window chrome with both launcher styles at 1280 × 720 and 960 × 600 host sizes.
+Finder uses a separate path line and Places toggle in narrow windows; Print Monitor stacks filters/build rows and scrolls compact content. Control Panel prioritises appearance controls. Accessories reflow for small dimensions, with minimum-content scrolling as a fallback. The Aqua dock reserves a smaller area on short desktops. The theme strip is pure SwiftUI so enlarged drawing and pointer hit areas use the same coordinates.
 
-Follow-up validation after 0.3.0: physical Wokyis reading tests and the 1.5× comparison, the full bundled-app and keyboard/graphics workflow matrix, minimum-size visual checks, and longer display-change/sleep/wake testing. The native View-menu items were inspected, but their activation could not be verified through the UI automation tool, which returned stale element IDs; Control Panel and desktop-menu activation were verified. Native OS menus, alerts, and file panels remain OS-sized. Screenshots from a development monitor do not establish physical legibility on the Wokyis.
+Changes must keep window chrome, menus, essential actions, keyboard navigation and overflow reachable without shrinking essential text back down. Keep saved geometry in logical coordinates and preserve open documents when switching display modes. Test native sheets, help placement, captures, graphics and full-screen transitions as well as the main desktop.
 
-## Goal
+## Evidence and remaining checks
 
-Make Hello Mini readable and comfortable to operate on the physically small Wokyis display at normal desk distance. Fitting the existing interface into 1280 × 720 does not establish legibility: the theme framework currently uses body text around 13 points and secondary text around 11 points, alongside small controls and detailed application views.
+The [physical reading comparison](0.10_VALIDATION.md) found 2× readable and 1.5× too small for the user at their normal viewing distance. That supports 2× for the tested setup, rather than a universal legibility claim. The [Wokyis record](WOKYIS_VALIDATION.md) distinguishes physical resolution/display-sleep checks from virtual-display observations.
 
-Enlarge all Hello Mini UI together: text, icons, controls and their hit areas, rows, window chrome, menus, status indicators, scroll controls, and help. Show less information at once when necessary. Keep essential labels and actions readable, including errors, empty states, and disabled states.
+Automated coverage checks display preferences, presentation geometry, window chrome and compact controls across all six themes. Dated release records document the workflows actually checked. Spoken VoiceOver, the complete accessory keyboard/graphics matrix, full system sleep/wake, cable hot-plug and a multi-hour soak remain open; see [validation status](VALIDATION.md).
 
-## User experience
-
-- Add **Tiny-screen mode** to **Control Panel → Appearance** and the native **View** menu. Changes apply immediately and persist across relaunches. Keep the View-menu escape route accessible even when the desktop is crowded.
-- Keep the setting independent of theme selection and available with Classic, Paper, Midnight, System 7, and Aqua. Theme changes retain the selected mode and running application state.
-- Begin evaluation at **2×**. Compare **1.5×** on hardware before choosing the shipping default. Avoid a continuous slider in the initial scope; expose a second preset only if testing demonstrates a useful tradeoff.
-- Keep standard mode as the initial default for new and existing installations. Offer tiny-screen mode explicitly; resolution alone cannot identify a physically tiny monitor or viewing distance. Automatic detection and per-display profiles can follow later.
-- Keep the current window/full-screen behaviour when enabling tiny-screen mode: it uses the available content area. Unlike Purist mode, it does not shrink the native window to a small fixed canvas.
-- Preserve the desktop's bevelled edges when entering full screen, including in tiny-screen mode. Keep this edge treatment visible within the available display bounds so it is not lost or clipped at the screen boundary.
-- Make Standard, Tiny-screen, and Purist mutually exclusive effective modes. Enabling either special mode disables the other; disabling the active special mode returns to Standard. Preserve existing Purist preferences during migration.
-
-The main tradeoff is workspace size. Assuming an available content area of 1280 × 720 macOS points, the candidates are:
-
-| Presentation scale | Logical workspace before shell chrome | Existing 13-point body text appears at |
-| --- | --- | --- |
-| 1×, Standard | 1280 × 720 | 13 points |
-| 1.5×, candidate | approximately 853 × 480 | 19.5 points |
-| 2×, starting candidate | 640 × 360 | 26 points |
-
-These are presentation sizes, not a change to the panel resolution. Actual logical space depends on macOS display scaling and the native window's available area. The menu bar and Aqua dock further reduce application space. Hardware testing must establish whether 2× is sufficient and comfortable at the user's actual desk distance.
-
-## Architecture and the theme API
-
-Use a shared display policy, integrated with the theme framework. The selected era should determine visual styling; the display policy should determine how large that interface appears.
-
-The preferred first implementation is to lay out the desktop in a smaller logical coordinate space and apply one presentation scale at the host boundary. Derive logical size from available content size divided by that scale. This covers existing fixed-size application controls and custom theme renderers consistently. A visual transform on the current full-size layout alone would crop the desktop, so the layout proposal and presentation must change together.
-
-Keep SwiftUI text and vector content live through the transform. Do not implement the desktop as an enlarged screenshot. Prototype native view embedding, text input, scrolling, and Metal rendering early: these are implementation risks, not capabilities established by this design.
-
-| Owner | Proposed responsibility |
-| --- | --- |
-| `MiniCore` / `AppearanceSettings` | Persist the effective display mode independently of the theme ID; define migration and mutual exclusion. |
-| `MiniDesktop` / `MiniDisplayViewport` | Resolve logical size and presentation scale, map coordinates, constrain windows, and present desktop/startup/screensavers consistently. |
-| `MiniUI` | Expose a read-only display/layout context for responsive views and custom renderers. Add shared semantic metrics for recurring control sizes as the layout audit identifies them. |
-| `MiniThemeDefinition` and theme modules | Supply typography, artwork, and base dimensions in logical units. Consume shared metrics where needed; avoid applying presentation scale again. |
-| Application modules | Reflow content for available logical width and height, retain essential actions, and provide deliberate overflow for content that cannot fit. |
-
-The proposed context should communicate effective mode, presentation scale, and available logical size; exact API names remain an implementation decision. Prefer available-size decisions for reflow so improvements also help ordinary small windows and Purist mode. Custom theme renderers must preserve enlarged hit areas, focus/accessibility semantics, and action callbacks.
-
-Fonts in `ThemeTypography` are already constructed `Font` values, and theme dimensions only cover part of the UI. Changing those fonts alone would miss many fixed frames, icons, controls, and application layouts. Broadly replacing the theme API is unnecessary for the first release; extend it where a concrete shared sizing need appears, keeping existing theme registrations working.
-
-## Layout and interaction requirements
-
-At 2×, even the full logical desktop is only 640 × 360. Finder and Print Monitor currently declare minimum window widths of 640, before allowing for desktop margins, and minimum heights of 400 and 420. Existing minimum-content scrolling is a useful fallback, but it is not sufficient for the main workflows.
-
-- **Shell:** Keep title bars, close/minimise/zoom controls, resize grips, menus, and status reachable. Revisit the existing compact menu behaviour, which switches to smaller typography below 800 logical points. Recover space by reducing secondary content and providing overflow instead of reducing essential type sizes. Keep keyboard menu selection visible.
-- **Launchers:** Audit both the desktop rail and Aqua dock. Every app and minimised window must remain reachable by pointer and keyboard, with clear overflow controls. Evaluate the dock's vertical cost before settling the 2× layout.
-- **Control Panel:** Keep the mode toggle and pane navigation visible or immediately reachable; stack settings and constrain previews. The user must be able to reverse the mode without navigating a wide, clipped form.
-- **Print Monitor and Finder:** Prioritise primary rows and actions, wrap or stack toolbars, and move secondary columns/details into reachable detail views. Keep CI failures, filenames, and action labels legible. Avoid requiring horizontal scrolling for their primary tasks.
-- **All other apps:** Audit content, dialogs, editors, tab strips, numerical displays, error messages, and empty states. Allow vertical scrolling for long content and horizontal scrolling where the content intrinsically requires it, such as images or wide data. Do not silently shrink UI to satisfy existing minimum sizes.
-- **Coordinates and state:** Use one logical desktop space for drag/resize, zoom, hit testing, anchors, help placement, and visibility calculations. Verify native view/event conversions separately. Mode changes temporarily constrain displayed geometry without overwriting saved placements; deliberate drag/resize continues to save normally. Preserve app instances, drafts, selection, and focus where the focused control remains available.
-- **Graphics and capture:** Keep startup and screensavers inside the same presentation policy. Check Metal drawable sizing and pointer interaction, and define the output size for desktop captures explicitly. Preserve graphics pause/visibility and Reduce Motion behaviour.
-
-Native macOS file dialogs, context menus, system tooltips, the system pointer, and the system menu bar remain OS-managed. In-app presentation scaling cannot guarantee their enlargement. Inspect these flows on the device and record any remaining limitation; if an essential workflow is unusable, resolve it before claiming that workflow is supported in tiny-screen mode.
-
-## Original delivery and acceptance targets
-
-1. **Prototype the presentation boundary.** Verify 1.5× and 2× geometry, input, native controls, Metal, and mode transitions. Use Control Panel, Print Monitor, Finder, and Aqua chrome to expose problems early. Reassess the host-scale approach if native integration fails.
-2. **Implement the shared setting and responsive layouts.** Wire persistence, recovery, shell overflow, and theme/layout context; complete the primary workflows and then the full app audit.
-3. **Validate and document the release.** Add meaningful geometry, persistence/migration, and interaction regression checks. Visually inspect all five themes at standard and candidate tiny sizes, windowed and full screen. Check Purist behaviour remains intact.
-
-The original acceptance targets below remain the validation checklist. For 0.3.0, the initial implementation is accepted for release; outstanding checks above remain follow-up work rather than claims of completed validation.
-
-- On the physical Wokyis, record the panel/macOS display setting, chosen scale, ambient conditions, and measured normal viewing distance. Read menus, CI status/failure details, filenames, clocks, and settings comfortably without leaning in. Choose the default from this evaluation, not from screenshots alone.
-- Complete launching/restoring apps, dragging/resizing windows, keyboard menu navigation, scrolling, editing text, changing themes, and turning the mode off. No essential action may be trapped outside the visible area.
-- Across all themes and bundled apps, essential text and controls remain legible, overflow is usable, and custom icons/chrome stay crisp enough at the chosen scale.
-- Compare windowed and full-screen presentation to verify that the desktop's bevelled edges remain visible and intact, including after toggling tiny-screen mode and exiting/re-entering full screen.
-- Test relaunch, mode switches, display changes, full-screen entry/exit, and sleep/wake. Preserve app data and saved geometry, and check focus, help anchoring, capture output, and graphics lifecycle.
-- Retain the standard 1280 × 720 experience and the existing fixed 512 × 384 Purist mode. Update the user guide and changelog only when behaviour is implemented and verified.
-
-External theme/plugin distribution, new themes, OS-wide scaling, automatic physical-display detection, and unrelated accessories are outside this feature's 0.3.0 scope.
-
-## 0.9 hardware/lifecycle follow-up
-
-See the dated [Wokyis validation record](WOKYIS_VALIDATION.md) for the actual display identity, upgrade path, mode transitions and test limits. A screen-sharing virtual display is recorded separately from the physical Wokyis; remote screenshots do not establish panel legibility.
+For affected changes, check Standard, 1.5×, 2× and Purist modes; minimum window sizes; windowed/full-screen transitions; relaunch persistence; and Reduce Motion. Physical tests should record display identity, resolution, scale and viewing conditions. Remote screenshots cannot replace a reading-distance check.

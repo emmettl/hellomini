@@ -1,30 +1,8 @@
 # Releasing Hello Mini
 
-Hello Mini uses the MIT license. The first public release is [0.1.0 (build 1)](https://github.com/emmettl/hellomini/releases/tag/v0.1.0), published on 13 September 2026. It is Developer ID-signed, notarized, and has been tested from a browser download on the physical Mini. The steps below apply to subsequent releases. Build CI remains separate from distribution: public checks and the private Mini runner use ad-hoc signing and have no distribution credentials.
+Public releases are Developer ID-signed, notarized and uploaded to [GitHub Releases](https://github.com/emmettl/hellomini/releases). The Homebrew tap is updated only after the stable release is public and its assets are verified. Build CI is separate: it uses ad-hoc signing and holds no distribution credentials.
 
-For **0.3.0**, physical Wokyis validation is explicitly deferred until the device arrives. Release notes must preserve that limitation; development-Mac testing and automated checks do not establish legibility on the device.
-
-**0.4.0** was published on 15 September 2026. Its tiny-screen fixes came from testing on the Wokyis, and the published build was then checked on the device and looks fine.
-
-**0.5.0** was published on 1 October 2026 (Europe/Zurich), with Communications and ambient-animation fixes. Hosted CI passed; physical-Mini format, test/Metal, build and bundle steps passed. The private workflow's artifact upload hit GitHub Actions storage quota; the separately uploaded signed/notarized release assets were verified and published successfully.
-
-**0.6.0** release source is dated 18 October 2026 (Europe/Zurich), with MiniPaint, desktop presets, Scrapbook transfers, picture round trips, desktop patterns from drawings, and explicitly added example scraps. Validation evidence is recorded in the GitHub release notes. Longer-session and physical Wokyis checks remain follow-ups.
-
-**0.7.0** release source is dated 18 October 2026 (Europe/Zurich), with Network, Finder inspection/favourites, saved-session recovery, event-driven Scrapbook OCR and CI/documentation maintenance. Exact validation and remaining hardware limitations are recorded in the release notes. Release packaging now extracts the ZIP into a fresh location and rechecks its signature, stapled ticket and Gatekeeper acceptance before creating the versioned archive.
-
-**0.8.0** source is dated 18 October 2026 (Europe/Zurich). Validation evidence and remaining hardware/self-hosted coverage limits are recorded in its GitHub release notes.
-
-**0.9.0** adds Finder transfers, portable presets, Living dither and recovery guidance. Report actual accessibility/hardware validation in release notes; deterministic lifecycle gates do not establish a long physical sleep/wake soak. No GitLab test instance is available.
-
-The [dated Mini validation record](WOKYIS_VALIDATION.md) distinguishes virtual-display checks from physical Wokyis coverage and records the manual-install/Homebrew upgrade trap. It also records physical resolution/display-sleep/DarkWake checks and post-0.9 layout fixes; full system sleep remains unverified. Check the running executable and display identity before starting hardware validation.
-
-**0.10.0** adds saved Chooser services, optional CPU instruments, a 1.5× comparison preset, responsive sheets and display-window recovery fixes. The physical comparison supports retaining 2× on the Wokyis. See [0.10 validation](0.10_VALIDATION.md) for evidence and remaining VoiceOver, full-system-sleep and soak gaps.
-
-**0.11.0** adds active-window keyboard/accessibility isolation, Finder sheet focus restoration, guarded session-only Finder Undo and optional Physical windows. See [0.11 validation](0.11_VALIDATION.md) for passing automated/live checks and the remaining spoken VoiceOver, full-system-sleep, cable hot-plug and soak limits.
-
-**0.12.0** adds Scrapbook organisation, persistent Calculator history and handoff, optional Depth behind glass, shared sheet focus restoration and source cleanup. See [0.12 validation](0.12_VALIDATION.md), including schema migration and explicit remaining hardware/accessibility limits.
-
-**0.13.0** adds reversible Scrapbook batch filing and collection renaming, guarded Finder Redo, optional Paper shuffle and event-driven focus restoration. See [0.13 validation](0.13_VALIDATION.md) for exact evidence and continuing hardware/accessibility limits.
+Record release-specific evidence in a dated validation document and link it from the release notes. The [validation index](VALIDATION.md) and [physical Wokyis record](WOKYIS_VALIDATION.md) distinguish actual hardware tests from remote/automated checks. Check the running executable and display identity before hardware validation; report untested VoiceOver, sleep/wake, hot-plug and soak work explicitly.
 
 ## One-time signing setup
 
@@ -52,12 +30,12 @@ make release
 
 `release-check` performs local preflight checks; the profile's credentials are verified only during submission. `release` requires a clean checkout, runs the checks, builds the app, verifies arm64 metadata, signs it with a timestamp and hardened runtime, submits it to Apple, validates the stapled ticket and signature, and checks Gatekeeper acceptance. It stops on errors and will not overwrite a versioned archive. No GitHub tag, upload, or publication happens automatically.
 
-Output uses the version from `Support/Info.plist`. For example, 0.1.0 produced:
+Output uses the version from `Support/Info.plist`:
 
 ```text
-dist/Hello-Mini-0.1.0-macos-arm64.zip
-dist/Hello-Mini-0.1.0-macos-arm64.zip.sha256
-dist/Hello-Mini-0.1.0-macos-arm64.json
+dist/Hello-Mini-<version>-macos-arm64.zip
+dist/Hello-Mini-<version>-macos-arm64.zip.sha256
+dist/Hello-Mini-<version>-macos-arm64.json
 ```
 
 The manifest records version, build, source commit, architecture, minimum OS, checksum, and signing/notarization status. The checksum names only the downloaded ZIP, so it can be verified from the download directory. License and third-party notices are included inside the application.
@@ -70,23 +48,22 @@ Extract the final ZIP to a fresh location and test that copy. Before publication
 
 Create a GitHub draft release targeting the manifest's exact source commit. Attach the ZIP, checksum, and manifest, and use the changelog as the release notes. Review the draft before publishing the version tag. Public app releases are never published automatically by pushes or PRs. Installing an app build on the Mini is separate from running its build CI.
 
-After publication, verify the release is public, the ZIP is downloadable, and [hellomini.app](https://hellomini.app) offers the expected version. The website reads GitHub’s latest stable release endpoint and updates its download link automatically. Check the changelog, installation guide, and roadmap for stale release status.
+After publication, verify the release is public, the ZIP is downloadable, and [hellomini.app](https://hellomini.app) offers the expected version. The website reads GitHub’s latest stable release endpoint and updates its download link automatically. Update the changelog, dated validation record and [validation index](VALIDATION.md). Review installation, user guide and roadmap claims against the released behaviour; keep the README a version-independent project overview.
 
 ## After publishing: update Homebrew
-
-This distribution channel was added on 18 October 2026 for the already-published 0.8.0 binary. Strict online audit, style, isolated Homebrew installation, signature, stapled-ticket and Gatekeeper checks passed; no replacement app release was needed.
 
 The cask lives in [emmettl/homebrew-tap](https://github.com/emmettl/homebrew-tap), as `Casks/hellomini.rb`. After verifying the public release, run:
 
 ```sh
-python3 scripts/update-homebrew-tap.py 0.8.0 --dry-run
-make release-tap VERSION=0.8.0
+RELEASE_VERSION="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Support/Info.plist)"
+python3 scripts/update-homebrew-tap.py "$RELEASE_VERSION" --dry-run
+make release-tap VERSION="$RELEASE_VERSION"
 brew update
 brew audit --cask --strict --online emmettl/tap/hellomini
 brew style emmettl/tap/hellomini
 ```
 
-Use the newly published version, without `v`. The helper requires host `gh` credentials with write access to the tap. It refuses draft/prerelease versions, mismatched manifests/checksums, and downgrades; downloads the published ZIP and verifies its SHA-256 before committing through the GitHub Contents API. Updates use the current blob SHA so concurrent edits fail safely. Repeating an unchanged version is a no-op. `--dry-run` performs the same verification without writing. A failed tap update can be retried without rebuilding or republishing the app.
+Run from the checkout used for the published release; confirm `RELEASE_VERSION` matches that release, without `v`. The helper requires host `gh` credentials with write access to the tap. It refuses draft/prerelease versions, mismatched manifests/checksums, and downgrades; downloads the published ZIP and verifies its SHA-256 before committing through the GitHub Contents API. Updates use the current blob SHA so concurrent edits fail safely. Repeating an unchanged version is a no-op. `--dry-run` performs the same verification without writing. A failed tap update can be retried without rebuilding or republishing the app.
 
 `packaging/homebrew/hellomini.rb` is the bootstrap template; existing tap metadata is preserved on version updates. Keep its architecture, macOS minimum, URL and app name aligned if packaging changes. The cask deliberately has no `zap` stanza: uninstalling it retains Scrapbook data, preferences, backups and Keychain tokens. Check installation in a disposable app directory with `brew install --cask --appdir=/tmp/hellomini-brew-check emmettl/tap/hellomini`, then uninstall that test copy. Never overwrite an existing user installation during release validation.
 

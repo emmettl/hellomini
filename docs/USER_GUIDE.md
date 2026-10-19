@@ -1,6 +1,6 @@
 # Using Hello Mini
 
-This guide describes the **0.11.0** app. See the [roadmap](../ROADMAP.md) for release status. Communications setup is documented [separately](COMMUNICATIONS.md).
+This guide describes the released app. See the [changelog](../CHANGELOG.md) for release history and [roadmap](../ROADMAP.md) for future work. Communications setup is documented [separately](COMMUNICATIONS.md).
 
 [Install or update](INSTALL.md) · [Desktop](#desktop-and-keyboard-controls) · [Appearance](#appearance-and-aqua-dock) · [Print Monitor](#print-monitor) · [Scrapbook](#scrapbook) · [Screensavers](#screensavers)
 
@@ -30,7 +30,7 @@ The available desktop stays filled, with half as much logical width and height: 
 
 Custom sheets, startup, and screensavers share the enlargement. Native macOS menus, alerts, and file panels keep their system sizing. Bevelled screen edges and rounded corners remain visible in full screen. Tiny-screen and Purist modes are mutually exclusive: enabling one disables the other. Turning the active mode off returns to standard sizing. Display-mode changes retain running app state and do not overwrite saved window placements.
 
-The published 0.4.0 build has been checked on the physical Wokyis and looks fine. The 0.10 physical comparison found 1.5× too small at the user’s normal viewing distance; 2× remains the recommended setting for that Wokyis setup. Longer sessions remain follow-up work.
+The [physical reading comparison](0.10_VALIDATION.md) found 1.5× too small at the user’s normal viewing distance, supporting 2× for that Wokyis setup. See [validation status](VALIDATION.md) for the remaining hardware/accessibility checks.
 
 ### Purist mode
 
@@ -160,7 +160,7 @@ Public projects can work without a token. Each saved project's **Token…** acti
 
 ### Jobs and failures
 
-**Jobs…** opens an on-demand job sheet for a build. It shows job states, completed durations, GitHub steps and failed-step names, or GitLab stages, reported failure reasons, and allowed failures. **Open job logs** opens the job on its provider; **Build & artifacts** opens the run page. Refresh checks the latest job attempts again, while Load more jobs fetches another page of up to 100 (500 jobs maximum). Failed requests keep previously loaded jobs visible, and closing the sheet cancels its requests. GitLab trigger jobs and child pipelines remain on the provider page. Raw logs and artifacts are not downloaded inside Hello Mini. The printer feeds imaginary paper while builds run and reports a paper jam when any visible project's latest matching build failed; real run states remain visible. **Control Panel → Playfulness → Print Monitor paper** and Reduce Motion stop its animation.
+**Jobs…** opens an on-demand job sheet for a build. It shows job states, completed durations, GitHub steps and failed-step names, or GitLab stages, reported failure reasons, and allowed failures. **Open job logs** opens the job on its provider; **Build & artifacts** opens the run page. Refresh checks the latest job attempts again, while Load more jobs fetches another page of up to 100 (500 jobs maximum). Failed requests keep previously loaded jobs visible, and closing the sheet cancels its requests. GitLab trigger jobs and child pipelines remain on the provider page. Raw job logs remain on the provider page; **Artifacts…** supports reviewed ZIP downloads as described in [Print Archive and build artifacts](#print-archive-and-build-artifacts). The printer feeds imaginary paper while builds run and reports a paper jam when any visible project's latest matching build failed; real run states remain visible. **Control Panel → Playfulness → Print Monitor paper** and Reduce Motion stop its animation.
 
 ## Build-time lunch
 
@@ -174,7 +174,7 @@ The first successful refresh for each project after launch or re-adding it estab
 
 Turning off the feeding switch or Extra silliness consumes notifications without feeding; re-enabling it does not replay missed meals.
 
-## Desktop accessories and polish in 0.2.0
+## Desktop accessories and polish
 
 **Control Panel → Playfulness → System sounds** controls original synthesised startup, jam, feeding, cleanup, and alarm cues. Extra silliness and normal macOS output volume/mute apply. The menu bar printer reports the latest build across every saved project, independent of visible queue filters; hover for refresh errors or pause state. Click it to open Print Monitor. The thermometer reports thermal state rather than degrees. Aqua dock tiles show attention badges, optionally magnify on hover, and bounce twice when an application is newly opened from the dock or a menu. **Control Panel → Playfulness → Dock launch bounce** controls the cue; Reduce Motion, inactive desktops, and screensavers suppress it. Restoring a saved session or activating an already-open app does not bounce.
 
@@ -247,7 +247,7 @@ Select one project in Print Monitor, then choose **History…**. Search an exact
 
 **File → New Folder…**, **Rename…**, and **Copy To…** show a review sheet with the name and destination. Rename and Copy are also in file context menus. Copy first asks for a destination folder. Confirm performs the operation off the UI actor. Existing destinations, including symbolic links, are never replaced. Case-only rename on a case-insensitive volume may report a conflict; use macOS Finder for that operation.
 
-Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. Copy progress and cancellation are available in 0.9.0, alongside atomic same-volume Move To. New Folder, Rename and same-volume Move have guarded session-only Undo/Redo; use macOS Finder for cross-volume moves, replacement and larger collections.
+Copies keep the source and preserve symbolic links as links. They are staged in a temporary directory next to the destination and committed only after a successful copy; failed staging is removed. Collections are limited to 512 MB and 10,000 entries. Recursive destinations inside a source directory are rejected. Copies show progress and support cancellation; Move To is atomic within one volume. New Folder, Rename and same-volume Move have guarded session-only Undo/Redo; use macOS Finder for cross-volume moves, replacement and larger collections.
 
 ## Desktop window maps and backup controls
 
@@ -255,7 +255,7 @@ Desktop Presets shows a small theme and window-arrangement map for the selected 
 
 **Window → Saved Desktop Backups…** lists the current saved layout and preserved recovery records. Inspect the summary and first 2 KB, or **Export Original…** to retain all original bytes. **Restore Layout…** requires confirmation, backs up the current saved data and restores a compatible version-one layout, minimising other windows while retaining their contents. Unreadable and newer-version backups remain exportable but cannot be restored by this version.
 
-### 0.9 desktop tools
+### Portable desks and desktop effects
 
 **Finder Copy To…** streams up to 512 MB / 10,000 entries, displays bytes copied and supports Cancel. Cancellation or source-change errors remove the staged copy and retain the source. Permissions, timestamps and extended attributes are preserved; symbolic links remain links. Existing destinations are never replaced. **Move To…** uses an atomic same-volume move. Cross-volume moves are refused without deleting the source; use macOS Finder for those.
 
@@ -263,7 +263,7 @@ Desktop Presets shows a small theme and window-arrangement map for the selected 
 
 **Control Panel → Playfulness → Living dither** enables an optional ink-dot field around windows. It is off by default and shares the master switch. Reduce Motion keeps it static; animation pauses when the desktop is inactive, covered or the display sleeps. It visualises no system or document data.
 
-### Impossible instruments (0.10.0)
+### Impossible instruments
 
 **Control Panel → Playfulness → Impossible instruments** replaces Activity Monitor’s CPU history graphic with an elaborate dial and a bounded swarm of ink particles. It is off by default and respects Extra silliness. The CPU percentage remains a real sample across all cores; particles are decoration. Small windows keep the numeric summary and process list, omitting the instrument when space is too short. Reduce Motion keeps the drawing static. Sampling and animation pause while updates are paused, the window is hidden/covered, the desktop scene is inactive, or the display sleeps. There is no additional telemetry service or network traffic.
 

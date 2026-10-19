@@ -10,7 +10,7 @@ Applications live in SwiftPM targets, depending on `MiniCore` and the shared `Mi
 
 `MiniDesktop` saves a versioned session in local app preferences, keyed by stable application IDs. Geometry is committed when a drag or resize ends; tracking uses a fixed desktop coordinate space and does not write preferences on every pointer update. Application-specific preferences remain inside their own modules. `MiniApplication.minimumSize` defaults to the app's default size, and apps with flexible content can provide smaller limits. Finder currently stores its last folder as a local path; an eventual App Sandbox distribution will need scoped-bookmark access restoration as part of that packaging work.
 
-An application can expose more than one desk accessory: `MiniClock` supplies Clock, Alarm Clock, and World Clock. `MiniAccessories` supplies Clipboard and Key Caps; `MiniFinder` owns Finder, labels, and Spotlight-backed Find File. `MiniScreensaver` hosts Aquarium and Flying Toasters. `MiniStorage` supports Disk First Aid and Wastebasket. `MiniBuildCore` defines provider and completion contracts; `MiniGitHubCI` and `MiniGitLabCI` implement them, and `MiniPrintMonitor` presents the queues. The target graph in [Package.swift](../Package.swift) is authoritative.
+An application can expose more than one desk accessory: `MiniClock` supplies Clock, Alarm Clock, and World Clock. `MiniAccessories` supplies Clipboard and Key Caps; `MiniFinder` owns Finder, labels, and Spotlight-backed Find File. `MiniScreensaver` hosts Aquarium, Flying Toasters and Scrapbook Slideshow. `MiniStorage` supports Disk First Aid and Wastebasket. `MiniBuildCore` defines provider and completion contracts; `MiniGitHubCI` and `MiniGitLabCI` implement them, and `MiniPrintMonitor` presents the queues. The target graph in [Package.swift](../Package.swift) is authoritative.
 
 Keep application-to-application connections injected by `HelloMini`. For example, Print Monitor emits a completion callback and the executable connects it to Aquarium, without either application importing the other. All modules are currently bundled into one executable.
 
@@ -18,7 +18,7 @@ Keep application-to-application connections injected by `HelloMini`. For example
 
 Themes are registered values with stable string IDs, rather than a closed enum. `HelloMiniApp` owns the `MiniThemeRegistry` and gives its metadata to `AppearanceSettings`, and the same registry to the desktop and Control Panel. Control Panel discovers every registered theme automatically and its scrollable previews use the real shared renderers. The appearance strip has a persistent horizontal scrollbar, independent of macOS overlay-scrollbar preferences. The existing `classic`, `paper`, and `midnight` preference IDs are preserved; unavailable themes fall back to Classic (or the first registered theme) without erasing the saved preference.
 
-`MiniSystem7Theme` and `MiniAquaTheme` each depend on `MiniCore` and `MiniUI`, export a `MiniThemeDefinition`, and are added by the executable to the shared registry. No application or desktop behavior needs an era-specific switch. Definitions provide:
+`MiniSystem7Theme`, `MiniPlatinumTheme` and `MiniAquaTheme` each depend on `MiniCore` and `MiniUI`, export a `MiniThemeDefinition`, and are added by the executable to the shared registry. No application or desktop behavior needs an era-specific switch. Definitions provide:
 
 - Semantic foreground, background, accent, and selection colors; body, small, title, and display fonts. Optional desktop text colors, label surfaces, and text shadows allow readable labels over a coloured wallpaper without changing window content.
 - Solid, gradient, dotted, pinstriped, bundled-image, and custom SwiftUI surfaces.
@@ -43,11 +43,11 @@ theme.typography.body = .system(size: 13)
 
 Declare module assets with SwiftPM `resources: [.process("Resources")]` and reference them inside that module with `.image(name: "Texture.png", bundle: .module, tiled: true)` or a custom renderer. The app bundler copies resource bundles of local targets belonging to the executable, excluding test targets, into `Contents/Resources` before signing. Use `MiniResourceBundle.resolve(named: "HelloMini_YourTarget", developmentBundle: .module)` inside the module to resolve the bundle in both signed app builds and SwiftPM runs; pass that resolved bundle to image and file loaders. SwiftPM's generated accessor alone expects bundles at the app root, which macOS code signing rejects. Bundled fonts can be registered by their owning module and supplied as `Font.custom` values. External package/plugin loading and distribution remain future work.
 
-`MiniUITests` exercises an unshipped color theme with pinstripes, gradients, rounded frames, custom renderers, and a bundled image; it also checks actual rendered pixels for each surface type. The shipped System 7 and Aqua modules test selection persistence, rendered active/inactive chrome, and coloured/selected icons. Aqua additionally checks traffic-light colour ordering, disabled controls, gel-button states, periodic pinstripes, and distinct artwork for all 15 semantic icons. Desktop tests cover minimise/focus restoration, zoom geometry across display sizes, and compatibility with existing saved sessions. Both shipped theme modules use original artwork and system fonts rather than bundling Apple artwork or fonts.
+`MiniUITests` exercises an unshipped color theme with pinstripes, gradients, rounded frames, custom renderers, and a bundled image; it also checks actual rendered pixels for each surface type. The shipped System 7 and Aqua modules test selection persistence, rendered active/inactive chrome, and coloured/selected icons. Aqua additionally checks traffic-light colour ordering, disabled controls, gel-button states, periodic pinstripes, and distinct artwork for all 15 semantic icons. Desktop tests cover minimise/focus restoration, zoom geometry across display sizes, and compatibility with existing saved sessions. The era-specific theme modules use original artwork and system fonts rather than bundling Apple artwork or fonts.
 
 ## Display presentation
 
-`AppearanceSettings` persists tiny-screen mode independently of the theme and makes it mutually exclusive with Purist mode. `MiniDisplayViewport` lays out content at half the available width and height, then presents it at 2×. Standard mode remains 1× and Purist mode remains a fixed 512 × 384 canvas. The existing desktop coordinate space, window constraints, and minimum-content scrolling continue to operate in logical points. Switching display modes does not commit new window placements.
+`AppearanceSettings` persists tiny-screen mode independently of the theme and makes it mutually exclusive with Purist mode. `MiniDisplayViewport` divides the available dimensions by the selected scale (2× by default, optionally 1.5×), then scales that logical layout for presentation. Standard mode remains 1× and Purist mode remains a fixed 512 × 384 canvas. The existing desktop coordinate space, window constraints, and minimum-content scrolling continue to operate in logical points. Switching display modes does not commit new window placements.
 
 `MiniUI.MiniDisplayContext`, exposed as `@Environment(\.miniDisplay)`, communicates presentation scale and logical desktop size. Themes keep their existing fonts and dimensions; neither theme renderers nor app views should multiply them by this scale. Applications use available layout size to reflow content. Native sheets escape the desktop transform, so custom sheet content uses `miniSheet(width:)` once per sheet to enlarge its content and bound its scrolling viewport. Native system panels, alerts, and menus retain OS sizing.
 
@@ -106,23 +106,23 @@ Build history and artifact metadata extend the provider protocol with conservati
 
 Provider references: [GitHub artifacts](https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28), [GitLab job artifacts](https://docs.gitlab.com/api/job_artifacts/), and [GitLab jobs](https://docs.gitlab.com/api/jobs/).
 
-## 0.9 transfers and desktop effects
+## Transfers and desktop effects
 
 Finder copies stream regular files in 256 KB chunks into an owned staging directory, checking cancellation and limits during transfer. Special files are refused, symlinks remain links, and metadata is copied without following symlinks. Source identity/size/modification changes fail before the exclusive commit. Move uses `RENAME_EXCL`; an `EXDEV` failure leaves the source intact instead of attempting copy-and-delete. No destination replacement is implemented.
 
 Preset transfer reuses the versioned, bounded document validation and requires explicit import review. Imports never apply layouts, replace existing presets or close documents. Living dither uses a bounded Canvas grid at up to 12 Hz, with no hit testing or accessibility nodes, and pauses for Reduce Motion, inactive scenes, desktop occlusion and display sleep.
 
 
-## 0.12 organisation, history and presentation
+## Organisation, history and presentation
 
 Scrapbook schema 2 adds optional collection/favourite metadata and a bounded named-collection list. Schema 1 remains readable; the first successful migration retains its original index as scrapbook.v1.json. Save validation refuses unknown versions before writing images or replacing the index. Portable archive schema 2 retains empty collections and organisation; schema 1 imports remain supported. Content fingerprints include organisation so imports do not silently discard differing filing/favourite choices.
 
 CalculatorApplication owns a persistent CalculatorModel with a versioned, bounded 50-entry expression history. Pane views and conversion/plot helpers live in separate source files. Bad/future history bytes remain untouched until explicit reset, which retains a previous copy. The host injects the asynchronous Scrapbook handoff; the Calculator module does not import Scrapbook. Result provenance follows the last successful calculation rather than the current editable field.
 
-Depth behind glass uses a small SwiftUI Canvas projection of three wireframe cubes, with bounded stippling and a 12 fps TimelineView. It consumes theme ink/paper and shared motion/desktop visibility/suspension state, with native occlusion and screen-sleep notifications. No renderer runs continuously while gated. MiniSheet installs a native responder anchor that restores its parent's prior responder after dismissal when that parent is still key and has no replacement sheet. Scrapbook explicitly restores search after sheet dismissal and cancels on accessory deactivation; Finder retains its more specific selected-item restoration.
+Depth behind glass uses a small SwiftUI Canvas projection of three wireframe cubes, with bounded stippling and a 12 fps TimelineView. It consumes theme ink/paper and shared motion/desktop visibility/suspension state, with native occlusion and screen-sleep notifications. No renderer runs continuously while gated. Sheet dismissal uses the event-driven focus coordinator described below.
 
 
-## 0.13 filing, Redo and focus coordination
+## Filing, Redo and focus coordination
 
 ScrapbookModel exposes module-local state to focused filing, transfer and OCR coordination extensions. Batch operation IDs intersect the explicit selection with the current visible filter. Each filing transaction saves before updating memory; its session-only inverse records organisation metadata and collection names. Undo verifies expected filing state and restores only that metadata, preserving text/OCR. The actor validates a pre-existing version-1 migration backup as a regular, bounded, non-symlink compatible file before accepting it.
 

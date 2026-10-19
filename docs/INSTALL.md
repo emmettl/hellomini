@@ -1,6 +1,6 @@
 # Installing Hello Mini
 
-Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing (with a 1.5× comparison preset in 0.10.0) within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
+Hello Mini requires **Apple silicon and macOS 26 or later**. The default desktop is 1280 × 720, with a normal minimum window size of 960 × 600. **Tiny-screen mode** offers 2× interface sizing, with an optional 1.5× comparison preset within the normal window or full screen. Optional **Purist mode** uses a fixed 512 × 384 logical desktop. macOS 15 and Intel Macs are not supported.
 
 ## Homebrew
 
@@ -52,7 +52,7 @@ The generated app is locally ad-hoc signed. You can copy `dist/Hello Mini.app` t
 
 ## Updates and your data
 
-Quit Hello Mini and replace the application bundle to update it. Settings and the Scrapbook library live outside the bundle and are retained. There is no automatic updater in this version.
+Quit Hello Mini and replace the application bundle to update it. Settings and the Scrapbook library live outside the bundle and are retained. For Homebrew installations, use the update commands above; manual downloads require replacing the bundle.
 
 Back up `~/Library/Application Support/HelloMini/Scrapbook/` as a whole; the index and image files belong together. Desktop layout, themes, effect choices, time zones, Finder location, and CI project preferences are stored in the app's macOS preferences. CI tokens are separate Keychain items under `HelloMini.CI`.
 

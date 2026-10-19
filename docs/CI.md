@@ -4,9 +4,9 @@ The public source repository is `emmettl/hellomini`. The private runner reposito
 
 ## Public checks
 
-`.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub's Arm64 `xcode-27` runner image, which carries a single Xcode 27 installation and is currently a public preview running macOS 27. `scripts/ci-check-toolchain.sh` rejects any other Xcode major version or Swift release. Builds still target macOS 26. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
+`.github/workflows/ci.yml` runs on pushes to `main`, pull requests, and manual dispatches. It uses GitHub's Arm64 `xcode-27` runner image, with Xcode 27 selected by the workflow. `scripts/ci-check-toolchain.sh` rejects any other Xcode major version or Swift release. Builds still target macOS 26. Jobs have read-only repository permissions, do not persist checkout credentials, and use commit-pinned actions.
 
-The workflow runs `make check` (including Print Monitor tests in both debug and release configurations), builds a release app with `make app CONFIGURATION=release`, verifies its signature, and uploads `Hello-Mini-macos-arm64.zip`. Artifacts are retained for 14 days. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
+The workflow runs `make check` (including Print Monitor tests in both debug and release configurations), builds a release app with `make app CONFIGURATION=release`, verifies and archives its ad-hoc-signed bundle. Development artifact upload is available only on manual dispatch with `upload_artifact=true`, with one-day retention; normal pushes and PRs do not upload artifacts. `MINI_ALLOW_MISSING_METAL=1` permits the Teapot, Aquarium, and shared desk-scene Metal integration tests to be skipped only when the hosted machine has no Metal device. The other tests still run. Local checks and the physical Mini require all Metal tests.
 
 ## Private Mini builds
 
