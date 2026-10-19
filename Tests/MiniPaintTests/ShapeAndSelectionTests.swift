@@ -53,6 +53,9 @@ import Testing
   let edgeCopy = original.transform(edge, operation: .duplicate)
   #expect(edgeCopy.isValid && edgeCopy.x == 292 && edgeCopy.y == 182)
   #expect(original[311, 191] == 0)
+  let almostFull = PaintSelection(from: .init(x: 0, y: 0), to: .init(x: 318, y: 199))
+  let smallOffset = original.transform(almostFull, operation: .duplicate)
+  #expect(smallOffset.x == 1 && smallOffset.y == 0 && smallOffset.isValid)
 }
 @Test @MainActor func shapePreviewCancelCommitAndSelectionUndoAreSingleOperations() throws {
   let root = FileManager.default.temporaryDirectory.appendingPathComponent("ShapeHistory-\(UUID())")

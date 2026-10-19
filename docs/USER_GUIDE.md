@@ -196,7 +196,7 @@ A 320 × 200 monochrome canvas with **Pencil**, a five-pixel **Eraser**, **Fill*
 
 Choose a tool from the picker or Tools menu; Command-1 through Command-7 follow the tool order above. Line, Rectangle and Ellipse preview while dragging and commit on release. **Filled** applies to rectangles and ellipses; outline and fill use the selected ink pattern. Escape while drawing cancels the current gesture.
 
-The **Selection** menu offers Flip Horizontally (Shift-Command-H), Flip Vertically (Shift-Command-V), Invert Ink (Shift-Command-I) and Duplicate Selection (Shift-Command-D). Duplicate places an opaque copy eight pixels to the right/down when space permits, or left/up near an edge; overlapping copies can cover underlying pixels, including with white. A full-canvas selection has no room for an offset copy. Each changed operation is undoable; Undo/Redo restores its selection as well as pixels.
+The **Selection** menu offers Flip Horizontally (Shift-Command-H), Flip Vertically (Shift-Command-V), Invert Ink (Shift-Command-I) and Duplicate Selection (Shift-Command-D). Duplicate places an opaque copy eight pixels to the right/down when space permits, or left/up near an edge (using a smaller offset if necessary); overlapping copies can cover underlying pixels, including with white. A full-canvas selection has no room for an offset copy. Each changed operation is undoable; Undo/Redo restores its selection as well as pixels.
 
 **Control Panel → Playfulness → Marching ants** animates the black-and-white selection border. It is off by default; Reduce Motion uses a static border, and hidden, inactive, suspended or sleeping views pause it. Drawing still requires a pointing device; keyboard commands operate tools and selections.
 

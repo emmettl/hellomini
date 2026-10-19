@@ -11,10 +11,15 @@ extension PaintBitmap {
   mutating func transform(_ rect: PaintSelection, operation: SelectionOperation) -> PaintSelection {
     guard rect.isValid else { return rect }
     let original = self
-    let dx =
-      operation == .duplicate ? (Self.width - rect.x - rect.width >= 8 ? 8 : -min(8, rect.x)) : 0
-    let dy =
-      operation == .duplicate ? (Self.height - rect.y - rect.height >= 8 ? 8 : -min(8, rect.y)) : 0
+    func offset(_ origin: Int, _ length: Int, _ limit: Int) -> Int {
+      let forward = limit - origin - length
+      if forward >= 8 { return 8 }
+      if origin >= 8 { return -8 }
+      if forward > 0 { return forward }
+      return -min(8, origin)
+    }
+    let dx = operation == .duplicate ? offset(rect.x, rect.width, Self.width) : 0
+    let dy = operation == .duplicate ? offset(rect.y, rect.height, Self.height) : 0
     var target = rect
     target.x += dx
     target.y += dy
