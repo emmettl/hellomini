@@ -11,6 +11,7 @@ import Testing
 @testable import MiniChooser
 @testable import MiniFinder
 @testable import MiniNetwork
+@testable import MiniPaint
 @testable import MiniPrintMonitor
 @testable import MiniScrapbook
 
@@ -207,6 +208,47 @@ import Testing
           #expect(frame.minX >= -1 && frame.maxX <= width + 1, "Clipped \(id): \(frame)")
           if height == 240 { #expect(frame.minY >= -1 && frame.maxY <= height + 1) }
         }
+      }
+    }
+  }
+}
+
+@Test @MainActor func paintToolsAndCanvasRemainReachableAcrossThemesAndSmallDisplays() async throws
+{
+  let root = FileManager.default.temporaryDirectory.appendingPathComponent("PaintLayout-\(UUID())")
+  defer { try? FileManager.default.removeItem(at: root) }
+  let model = PaintModel(file: root.appendingPathComponent("drawing.json"))
+  model.load()
+  model.chooseTool(.ellipse)
+  model.filledShapes = true
+  for theme in MiniThemeRegistry.builtIns.themes + [
+    System7Theme.definition, PlatinumTheme.definition, AquaTheme.definition,
+  ] {
+    for display in [
+      MiniDisplayContext(scale: 1, logicalSize: CGSize(width: 512, height: 384)),
+      MiniDisplayContext(scale: 2, logicalSize: CGSize(width: 640, height: 360)),
+    ] {
+      let size = CGSize(width: 440, height: 250)
+      let evidence = LayoutEvidence()
+      let host = NSHostingView(
+        rootView: PaintView(model: model)
+          .environment(\.miniTheme, theme).environment(\.colorScheme, theme.colorScheme)
+          .environment(\.miniDisplay, display)
+          .frame(width: size.width, height: size.height).coordinateSpace(
+            name: "mini-control-layout"
+          )
+          .onPreferenceChange(MiniControlFrames.self) { evidence.frames = $0 })
+      host.frame = CGRect(origin: .zero, size: size)
+      host.layoutSubtreeIfNeeded()
+      try await Task.sleep(for: .milliseconds(80))
+      host.layoutSubtreeIfNeeded()
+      for id in ["paint.tool", "paint.pattern", "paint.export", "paint.canvas"] {
+        let frame = try #require(evidence.frames[id], "Missing \(id)")
+        #expect(
+          CGRect(origin: .zero, size: size).insetBy(dx: -1, dy: -1).contains(frame),
+          "Clipped \(id): \(frame)")
+        #expect(frame.width > 10 && frame.height > 10)
+        if id == "paint.canvas" { #expect(frame.height >= 60) }
       }
     }
   }

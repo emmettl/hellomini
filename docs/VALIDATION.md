@@ -1,6 +1,6 @@
 # Validation records
 
-Current implementation checks and release evidence are recorded in [0.13 validation](0.13_VALIDATION.md). Its automated and development-Mac results do not imply that the same binary repeated every physical hardware test.
+Current implementation checks and release evidence are recorded in [0.14 validation](0.14_VALIDATION.md). Its automated and development-Mac results do not imply that the same binary repeated every physical hardware test.
 
 ## Open coverage
 
@@ -15,6 +15,7 @@ The physical reading comparison supports 2× over 1.5× for the tested Wokyis se
 
 | Record | Coverage |
 | --- | --- |
+| [0.14](0.14_VALIDATION.md) | MiniPaint shapes/transforms, recovery, focus, lifecycle and compact-layout checks; signed release and tap evidence. |
 | [0.13](0.13_VALIDATION.md) | Batch filing/recovery, Finder Redo, event-driven focus, migration and compact-layout checks; signed release and tap evidence. |
 | [0.12](0.12_VALIDATION.md) | Collections, Calculator history/handoff, Depth behind glass and migration evidence. |
 | [0.11](0.11_VALIDATION.md) | Keyboard/AX isolation, Finder Undo, Physical windows and Mini display sleep. |

@@ -8,24 +8,39 @@ import UniformTypeIdentifiers
     case eraser = "Eraser"
     case fill = "Fill"
     case select = "Select"
+    case line = "Line"
+    case rectangle = "Rectangle"
+    case ellipse = "Ellipse"
+    var shape: PaintBitmap.Shape? {
+      switch self {
+      case .line: .line
+      case .rectangle: .rectangle
+      case .ellipse: .ellipse
+      default: nil
+      }
+    }
   }
   private(set) var bitmap = PaintBitmap()
   var tool = Tool.pencil
   var pattern = PaintPattern.black
+  var filledShapes = false
+  var hasGesture: Bool { before != nil }
   var selection: PaintSelection?
+  var focusRequest = 0
   var showNew = false
   var pendingImport: PaintBitmap?
   var applyPattern: @MainActor ([UInt8]) -> Void = { _ in }
   var notice = "320 × 200 pixels. An intimidating amount of potential."
   private(set) var ready = false
   private(set) var error: String?
-  private(set) var undoStack: [PaintBitmap] = []
-  private(set) var redoStack: [PaintBitmap] = []
+  private(set) var undoStack: [PaintEdit] = []
+  private(set) var redoStack: [PaintEdit] = []
   @ObservationIgnored private var start: PaintPoint?
   @ObservationIgnored private var previous: PaintPoint?
-  @ObservationIgnored private var before: PaintBitmap?
+  private var before: PaintBitmap?
+  @ObservationIgnored private var beforeSelection: PaintSelection?
   @ObservationIgnored private var moving: PaintSelection?
-  @ObservationIgnored private let file: URL
+  @ObservationIgnored let file: URL
   @ObservationIgnored private let send: @MainActor (CGImage) async throws -> Void
   init(file: URL? = nil, send: @escaping @MainActor (CGImage) async throws -> Void = { _ in }) {
     self.file =
@@ -37,14 +52,9 @@ import UniformTypeIdentifiers
   func load() {
     guard !ready else { return }
     do {
-      let size = try file.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? Int.max
-      guard size <= 200_000 else { throw PaintError.invalid }
-      let loaded = try JSONDecoder().decode(PaintBitmap.self, from: Data(contentsOf: file))
-      guard loaded.isValid else { throw PaintError.invalid }
-      bitmap = loaded
+      bitmap = try PaintStore(file: file).load()
       ready = true
-    } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
-      ready = true
+      error = nil
     } catch { self.error = PaintError.invalid.localizedDescription }
   }
 
@@ -54,6 +64,7 @@ import UniformTypeIdentifiers
       start = point
       previous = point
       before = bitmap
+      beforeSelection = selection
       moving = tool == .select && selection?.contains(point) == true ? selection : nil
       if tool != .select { selection = nil }
     }
@@ -66,6 +77,11 @@ import UniformTypeIdentifiers
         previous = nil
       }
       return
+    case .line, .rectangle, .ellipse:
+      if let before, let start, let shape = tool.shape {
+        bitmap = before
+        bitmap.shape(shape, from: start, to: point, filled: filledShapes, pattern: pattern)
+      }
     case .select:
       if let rect = moving, let start, let before {
         let dx = min(PaintBitmap.width - rect.x - rect.width, max(-rect.x, point.x - start.x))
@@ -84,7 +100,7 @@ import UniformTypeIdentifiers
   }
   func finish() {
     if let before, before != bitmap {
-      undoStack.append(before)
+      undoStack.append(PaintEdit(bitmap: before, selection: beforeSelection))
       if undoStack.count > 20 { undoStack.removeFirst() }
       redoStack = []
       save()
@@ -93,42 +109,63 @@ import UniformTypeIdentifiers
     previous = nil
     before = nil
     moving = nil
+    beforeSelection = nil
   }
   func undo() {
     guard before == nil, let previous = undoStack.popLast() else { return }
-    redoStack.append(bitmap)
-    bitmap = previous
-    selection = nil
+    redoStack.append(PaintEdit(bitmap: bitmap, selection: selection))
+    bitmap = previous.bitmap
+    selection = previous.selection
     save()
   }
   func redo() {
     guard before == nil, let next = redoStack.popLast() else { return }
-    undoStack.append(bitmap)
-    bitmap = next
-    selection = nil
+    undoStack.append(PaintEdit(bitmap: bitmap, selection: selection))
+    bitmap = next.bitmap
+    selection = next.selection
     save()
   }
   func clearSelection() {
-    guard ready, let selection else { return }
+    guard ready, before == nil, let selection, selection.isValid else { return }
     before = bitmap
+    beforeSelection = selection
     bitmap.clear(selection)
     finish()
     self.selection = nil
   }
   func newDrawing() {
-    guard ready else { return }
+    guard ready, before == nil else { return }
     before = bitmap
+    beforeSelection = selection
     bitmap = PaintBitmap()
     selection = nil
     finish()
   }
+  func cancelGesture() {
+    if let before {
+      bitmap = before
+      selection = beforeSelection
+    }
+    start = nil
+    previous = nil
+    before = nil
+    moving = nil
+    beforeSelection = nil
+  }
+  func chooseTool(_ tool: Tool) {
+    cancelGesture()
+    self.tool = tool
+  }
+  func transformSelection(_ operation: PaintBitmap.SelectionOperation) {
+    guard ready, before == nil, let selection, selection.isValid else { return }
+    before = bitmap
+    beforeSelection = selection
+    self.selection = bitmap.transform(selection, operation: operation)
+    finish()
+  }
   private func save() {
     do {
-      try FileManager.default.createDirectory(
-        at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
-      let encoder = JSONEncoder()
-      encoder.outputFormatting = [.withoutEscapingSlashes]
-      try encoder.encode(bitmap).write(to: file, options: .atomic)
+      try PaintStore(file: file).save(bitmap)
       error = nil
       notice = "Saved locally. The ink is already dry."
     } catch {
@@ -144,17 +181,20 @@ import UniformTypeIdentifiers
   func confirmImport() {
     guard ready, let imported = pendingImport else { return }
     before = bitmap
+    beforeSelection = selection
     bitmap = imported
     selection = nil
     pendingImport = nil
     finish()
   }
   func useAsDesktopPattern() {
-    guard ready, let selection else { return }
+    guard ready, before == nil, let selection, selection.isValid else { return }
     applyPattern(bitmap.desktopRows(selection: selection))
     notice = "Selection sampled to an 8 × 8 desktop pattern."
   }
   func exportPNG() {
+    guard ready, !hasGesture else { return }
+    defer { focusRequest += 1 }
     let panel = NSSavePanel()
     panel.allowedContentTypes = [.png]
     panel.nameFieldStringValue = "MiniPaint.png"
@@ -165,7 +205,7 @@ import UniformTypeIdentifiers
     } catch { self.error = error.localizedDescription }
   }
   func sendToScrapbook() {
-    guard ready, let image = bitmap.image() else { return }
+    guard ready, !hasGesture, let image = bitmap.image() else { return }
     Task {
       do {
         try await send(image)
@@ -173,4 +213,9 @@ import UniformTypeIdentifiers
       } catch { self.error = error.localizedDescription }
     }
   }
+}
+
+struct PaintEdit {
+  var bitmap: PaintBitmap
+  var selection: PaintSelection?
 }

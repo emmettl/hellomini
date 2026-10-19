@@ -144,7 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     effects: [
       MiniStartup.effect, ActivityMonitorApplication.effect, TeapotApplication.rotationEffect,
       CalculatorApplication.effect, CalculatorApplication.depthEffect,
-      ScrapbookApplication.filingEffect,
+      ScrapbookApplication.filingEffect, PaintApplication.antsEffect,
       WorldClockApplication.effect, PuzzleApplication.effect, PrintMonitorApplication.effect,
       FlyingToasters.effect, SystemSounds.effect, DesktopEffects.menuBlink,
       DesktopEffects.livingDither, DesktopEffects.physicalWindows, DesktopEffects.dockMagnification,
@@ -168,6 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     sounds.play(.startup)
   }
   lazy var paint = PaintApplication(
+    playfulness: playfulness,
     applyPattern: { [settings] rows in
       settings.setPattern(DesktopPattern(rows: rows))
     },

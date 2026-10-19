@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.0 — 2026-10-19
+
+- MiniPaint Line, Rectangle and Ellipse tools, with shape previews, outline/filled options and one Undo step per completed gesture.
+- Selection flips, ink inversion and opaque duplication, with selection-aware Undo/Redo and bounded offsets.
+- Optional Marching ants selection border, with static Reduce Motion fallback and visibility/activity/sleep gates.
+- Separate canvas, toolbar, shape, selection and persistence source files; guarded autosaves preserve corrupt/newer on-disk drawings and retain failed edits in memory.
+- Tool/transform keyboard shortcuts, richer accessibility state and canvas focus restoration after import/export dialogs. Recovery, gesture-observation, scaled-coordinate and all-theme compact-layout regression coverage.
+
 ## 0.13.0 — 2026-10-19
 
 - Scrapbook collection renaming, explicit multi-selection and batch filing/favourite/archive actions, with one session-only Undo Filing operation that keeps content and OCR text.

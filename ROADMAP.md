@@ -8,9 +8,9 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour; the [changelog
 
 - A persistent desktop with six themes, window controls, menus, keyboard launching, portable desktop presets, enlarged interface scales and fixed-resolution Purist mode.
 - Finder and Find File; Activity Monitor, Disk First Aid and reviewed cache cleanup; Chooser and Network; clocks, alarms, Calculator, Key Caps and Clipboard.
-- Scrapbook with search, on-device picture text recognition, collections, favourites, batch filing, recovery and portable backups; MiniPaint with drawing, Undo/Redo and explicit Scrapbook/pattern connections.
+- Scrapbook with search, on-device picture text recognition, collections, favourites, batch filing, recovery and portable backups; MiniPaint with freehand/shapes, selection transforms, Undo/Redo and explicit Scrapbook/pattern connections.
 - Print Monitor with GitHub/GitLab queues, history, jobs, artifact downloads and reviewed retries; Communications for configured telemetry backends.
-- Aquarium, Teapot, live Puzzle, Talking Moose and screensavers, plus optional themed effects including Living dither, Impossible instruments, Physical windows, Depth behind glass and Paper shuffle.
+- Aquarium, Teapot, live Puzzle, Talking Moose and screensavers, plus optional themed effects including Living dither, Impossible instruments, Physical windows, Depth behind glass, Paper shuffle and MiniPaint Marching ants.
 
 ## Next directions
 
