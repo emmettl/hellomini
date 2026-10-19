@@ -55,6 +55,7 @@ let package = Package(
         "MiniPrintMonitor", "MiniScreensaver", "MiniToasters", "MiniSystem7Theme", "MiniAquaTheme",
         "MiniMoose", "MiniPlatinumTheme",
       ]),
+    .testTarget(name: "MiniAccessoriesTests", dependencies: ["MiniAccessories"]),
     .testTarget(name: "MiniNetworkTests", dependencies: ["MiniNetwork"]),
     .testTarget(name: "MiniPaintTests", dependencies: ["MiniPaint"]),
     .testTarget(name: "MiniCommunicationsTests", dependencies: ["MiniCommunications", "MiniCore"]),

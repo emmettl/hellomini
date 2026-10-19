@@ -8,6 +8,7 @@ import MiniUI
 import SwiftUI
 import Testing
 
+@testable import MiniAccessories
 @testable import MiniChooser
 @testable import MiniFinder
 @testable import MiniNetwork
@@ -251,5 +252,24 @@ import Testing
         if id == "paint.canvas" { #expect(frame.height >= 60) }
       }
     }
+  }
+}
+
+@Test @MainActor func keyCapsKeyboardDoesNotCollapseAtCompactHeight() async throws {
+  for theme in MiniThemeRegistry.builtIns.themes + [
+    System7Theme.definition, PlatinumTheme.definition, AquaTheme.definition,
+  ] {
+    let evidence = LayoutEvidence()
+    let host = NSHostingView(
+      rootView: KeyCapsView().environment(\.miniTheme, theme)
+        .frame(width: 490, height: 240).coordinateSpace(name: "mini-control-layout")
+        .onPreferenceChange(MiniControlFrames.self) { evidence.frames = $0 })
+    host.frame = CGRect(x: 0, y: 0, width: 490, height: 240)
+    host.layoutSubtreeIfNeeded()
+    try await Task.sleep(for: .milliseconds(100))
+    host.layoutSubtreeIfNeeded()
+    let keyboard = try #require(evidence.frames["keycaps.keyboard"])
+    #expect(keyboard.height >= 160)
+    #expect(keyboard.width <= 490)
   }
 }

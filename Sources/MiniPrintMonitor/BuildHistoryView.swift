@@ -47,6 +47,8 @@ import SwiftUI
 struct BuildHistoryView: View {
   @Environment(\.miniTheme) private var theme
   @Environment(\.dismiss) private var dismiss
+  @FocusState private var branchFocused: Bool
+  @State private var focusRequest = 0
   @State private var model: BuildHistoryModel
   @State private var request: Task<Void, Never>?
   @State private var inspecting: ProjectBuild?
@@ -61,7 +63,7 @@ struct BuildHistoryView: View {
         TextField("Exact branch (blank for all)", text: $model.branch).accessibilityLabel(
           "History branch"
         )
-        .disabled(model.busy)
+        .focused($branchFocused).disabled(model.busy)
         Button("Search") { load(reset: true) }.disabled(model.busy).miniControlBounds(
           "history.search")
       }.onSubmit { load(reset: true) }
@@ -120,12 +122,19 @@ struct BuildHistoryView: View {
       RetroButtonStyle()
     )
     .onAppear { load(reset: true) }.onDisappear { request?.cancel() }
-    .sheet(item: $inspecting) { build in
+    .background(
+      MiniSheetFocusRestoration(request: focusRequest, active: true) { branchFocused = true }
+    )
+    .sheet(item: $inspecting, onDismiss: restoreFocus) { build in
       JobDetailsView(build: build).environment(\.miniTheme, theme).miniSheet(width: 580)
     }
-    .sheet(item: $artifacts) { build in
+    .sheet(item: $artifacts, onDismiss: restoreFocus) { build in
       ArtifactListView(build: build).environment(\.miniTheme, theme).miniSheet(width: 480)
     }
+  }
+  private func restoreFocus() {
+    branchFocused = false
+    focusRequest += 1
   }
   private func load(reset: Bool) {
     request?.cancel()

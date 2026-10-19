@@ -61,6 +61,10 @@ private struct WorldClockView: View {
   @Environment(\.miniTheme) private var theme
   @Bindable var model: WorldClockModel
   let playfulness: PlayfulnessSettings
+  @Environment(\.miniWindowActive) private var active
+  @FocusState private var addFocused: Bool
+  @FocusState private var queryFocused: Bool
+  @State private var focusRequest = 0
   @State private var offset: Double = 0
   @State private var adding = false
   @State private var query = ""
@@ -71,12 +75,13 @@ private struct WorldClockView: View {
     VStack(spacing: roomy ? 12 : 8) {
       ViewThatFits(in: .horizontal) {
         HStack {
-          Button("Add clock…") { adding = true }
+          Button("Add clock…") { adding = true }.focusable().focused($addFocused)
           Spacer()
           workingHours
         }
         HStack {
-          Button("Add…") { adding = true }.accessibilityLabel("Add clock")
+          Button("Add…") { adding = true }.focusable().focused($addFocused).accessibilityLabel(
+            "Add clock")
           Spacer(minLength: 4)
           workingHours
         }
@@ -158,32 +163,46 @@ private struct WorldClockView: View {
       } action: {
         size = $0
       }
-      .sheet(isPresented: $adding) {
-        VStack(alignment: .leading, spacing: 12) {
-          Text("Somewhere on this ridiculous planet.").font(theme.typography.title)
-          TextField("Find a time zone", text: $query).accessibilityLabel("Find time zone")
-          ScrollView {
-            LazyVStack(alignment: .leading) {
-              ForEach(
-                TimeZone.knownTimeZoneIdentifiers.filter {
-                  query.isEmpty || $0.localizedCaseInsensitiveContains(query)
-                }, id: \.self
-              ) { id in
-                Button(id.replacingOccurrences(of: "_", with: " ")) {
-                  model.add(id)
-                  adding = false
-                  query = ""
+      .background(
+        MiniSheetFocusRestoration(request: focusRequest, active: active) { addFocused = true }
+      )
+      .sheet(
+        isPresented: $adding,
+        onDismiss: {
+          addFocused = false
+          focusRequest += 1
+        },
+        content: {
+          VStack(alignment: .leading, spacing: 12) {
+            Text("Somewhere on this ridiculous planet.").font(theme.typography.title)
+            TextField("Find a time zone", text: $query).accessibilityLabel("Find time zone")
+              .focused(
+                $queryFocused
+              )
+              .onAppear { queryFocused = true }
+            ScrollView {
+              LazyVStack(alignment: .leading) {
+                ForEach(
+                  TimeZone.knownTimeZoneIdentifiers.filter {
+                    query.isEmpty || $0.localizedCaseInsensitiveContains(query)
+                  }, id: \.self
+                ) { id in
+                  Button(id.replacingOccurrences(of: "_", with: " ")) {
+                    model.add(id)
+                    adding = false
+                    query = ""
+                  }
+                  .disabled(model.zones.contains(id)).buttonStyle(.plain).padding(.vertical, 3)
                 }
-                .disabled(model.zones.contains(id)).buttonStyle(.plain).padding(.vertical, 3)
               }
             }
-          }
-          Button("Done") { adding = false }.buttonStyle(RetroButtonStyle())
-        }.padding(20).frame(width: 450, height: 380).foregroundStyle(theme.ink).background(
-          theme.paper
-        )
-        .miniSheet(width: 450)
-      }
+            Button("Done") { adding = false }.keyboardShortcut(.cancelAction).buttonStyle(
+              RetroButtonStyle())
+          }.padding(20).frame(width: 450, height: 380).foregroundStyle(theme.ink).background(
+            theme.paper
+          )
+          .miniSheet(width: 450)
+        })
   }
   @ViewBuilder private var workingHours: some View {
     Text("Working hours")

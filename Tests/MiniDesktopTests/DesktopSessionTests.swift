@@ -365,3 +365,15 @@ import Testing
   #expect(model.minimisedIDs.contains(other.id))
   #expect(model.active?.id == app.id)
 }
+
+@Test func oversizedLayoutIsPreservedUntilExplicitRecovery() throws {
+  let suite = "SessionSize-\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let store = DesktopSessionStore(defaults: defaults)
+  let oversized = Data(repeating: 32, count: 500_001)
+  defaults.set(oversized, forKey: DesktopSessionStore.key)
+  #expect(store.recoveryNeeded && store.load() == nil)
+  store.save(DesktopSession(openIDs: [], windows: [:]))
+  #expect(defaults.data(forKey: DesktopSessionStore.key) == oversized)
+}

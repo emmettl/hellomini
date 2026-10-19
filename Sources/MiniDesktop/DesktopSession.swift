@@ -27,7 +27,8 @@ struct DesktopSessionStore {
   var recoveryNeeded: Bool {
     guard let original = defaults.object(forKey: Self.key) else { return false }
     guard let data = original as? Data else { return true }
-    guard let session = try? JSONDecoder().decode(DesktopSession.self, from: data),
+    guard data.count <= 500_000,
+      let session = try? JSONDecoder().decode(DesktopSession.self, from: data),
       session.version == 1
     else { return true }
     return false
@@ -44,7 +45,7 @@ struct DesktopSessionStore {
     defaults.removeObject(forKey: Self.key)
   }
   func load() -> DesktopSession? {
-    guard let data = defaults.data(forKey: Self.key),
+    guard let data = defaults.data(forKey: Self.key), data.count <= 500_000,
       var session = try? JSONDecoder().decode(DesktopSession.self, from: data), session.version == 1
     else { return nil }
     var seen = Set<String>()

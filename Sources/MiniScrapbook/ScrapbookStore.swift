@@ -125,6 +125,8 @@ actor ScrapbookStore {
     let index = directory.appendingPathComponent("scrapbook.json")
     if FileManager.default.fileExists(atPath: index.path) {
       // A previous complete index remains available for manual recovery.
+      let info = try index.resourceValues(forKeys: [.fileSizeKey])
+      guard (info.fileSize ?? Int.max) <= Self.indexLimit else { throw ScrapbookError.tooLarge }
       let previous = try Data(contentsOf: index)
       let document = try JSONDecoder().decode(ScrapbookDocument.self, from: previous)
       guard (1...2).contains(document.version) else { throw ScrapbookError.unsupportedVersion }

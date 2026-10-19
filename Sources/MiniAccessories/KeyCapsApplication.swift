@@ -13,8 +13,14 @@ import SwiftUI
   public func content() -> AnyView { AnyView(KeyCapsView()) }
 }
 
-private struct KeyCapsView: View {
+struct KeyCapsView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniWindowActive) private var active
+  @Environment(\.miniWindowVisible) private var visible
+  @Environment(\.miniDesktopSuspended) private var suspended
+  @Environment(\.scenePhase) private var scenePhase
+  @State private var pressed = Set<UInt16>()
+  @State private var modifiers: NSEvent.ModifierFlags = []
   @State private var shifted = false
   @State private var symbols = false
   @State private var custom = ""
@@ -22,37 +28,74 @@ private struct KeyCapsView: View {
   private let rows = ["1234567890-=", "qwertyuiop[]", "asdfghjkl;'", "zxcvbnm,./"]
   private let upperRows = ["!@#$%^&*()_+", "QWERTYUIOP{}", "ASDFGHJKL:\"", "ZXCVBNM<>?"]
   private let characters = Array("⌘⌥⇧⌃⎋⌫↩⇥←→↑↓±×÷≠≤≥∞πµ°©®™€£¥•…—“”‘’✓✗♥★😀😂🥹😍🤔🙃😎😭👍👋🎉🐟🐠🐕🖨️💾🗑️☕🍅")
+  private var inputEnabled: Bool { active && visible && !suspended && scenePhase == .active }
+  private var showingShift: Bool {
+    shifted || modifiers.contains(.shift)
+  }
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      ViewThatFits(in: .horizontal) {
-        header(short: false)
-        header(short: true)
-      }.buttonStyle(RetroButtonStyle())
-      ScrollView {
-        if symbols {
-          LazyVGrid(columns: [GridItem(.adaptive(minimum: 34))], spacing: 6) {
-            ForEach(Array(characters.enumerated()), id: \.offset) { _, char in key(String(char)) }
-          }
-        } else {
-          VStack(spacing: 6) {
-            ForEach(0..<rows.count, id: \.self) { row in
-              HStack(spacing: 5) {
-                ForEach(Array((shifted ? upperRows[row] : rows[row]).enumerated()), id: \.offset) {
-                  _, char in
-                  key(String(char))
-                }
-              }.padding(.leading, CGFloat(row) * 8)
+    ScrollView {
+      VStack(alignment: .leading, spacing: 8) {
+        ViewThatFits(in: .horizontal) {
+          header(short: false)
+          header(short: true)
+        }.buttonStyle(RetroButtonStyle())
+        Group {
+          if symbols {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 34))], spacing: 6) {
+              ForEach(Array(characters.enumerated()), id: \.offset) { _, char in key(String(char)) }
             }
-            Button("Space") { copy(" ") }.frame(width: 210).buttonStyle(RetroButtonStyle())
+          } else {
+            VStack(spacing: 6) {
+              ForEach(0..<rows.count, id: \.self) { row in
+                HStack(spacing: 5) {
+                  ForEach(
+                    Array(
+                      KeyCapsInput.characters(
+                        rows[row], shifted: upperRows[row], shift: showingShift,
+                        caps: modifiers.contains(.capsLock)
+                      ).enumerated()), id: \.offset
+                  ) {
+                    index, char in
+                    key(String(char), pressed: pressed.contains(KeyCapsInput.rows[row][index]))
+                  }
+                }.padding(.leading, CGFloat(row) * 8)
+              }
+              Button(pressed.contains(49) ? "Space · pressed" : "Space") { copy(" ") }.frame(
+                width: 210
+              ).buttonStyle(RetroButtonStyle())
+            }.miniControlBounds("keycaps.keyboard")
           }
         }
+        HStack {
+          TextField("Any Unicode text", text: $custom).onSubmit { copy(custom) }
+          Button("Copy") { copy(custom) }.disabled(custom.isEmpty).buttonStyle(RetroButtonStyle())
+        }
+        HStack(spacing: 8) {
+          modifier("⇧", name: "Shift", flag: .shift)
+          modifier("⌃", name: "Control", flag: .control)
+          modifier("⌥", name: "Option", flag: .option)
+          modifier("⌘", name: "Command", flag: .command)
+          modifier("⇪", name: "Caps Lock", flag: .capsLock)
+        }.accessibilityElement(children: .contain)
+        Text("Live keys while this accessory is active · US positions")
+          .font(theme.typography.small)
+        Text(notice).font(theme.typography.small).lineLimit(2)
+      }.padding(12)
+    }
+    .background(
+      KeyCapsEventSource(
+        enabled: inputEnabled
+      ) { keys, flags in
+        pressed = keys
+        modifiers = flags
+      }.frame(width: 0, height: 0).accessibilityHidden(true)
+    )
+    .onChange(of: inputEnabled) { _, enabled in
+      if !enabled {
+        pressed = []
+        modifiers = []
       }
-      HStack {
-        TextField("Any Unicode text", text: $custom).onSubmit { copy(custom) }
-        Button("Copy") { copy(custom) }.disabled(custom.isEmpty).buttonStyle(RetroButtonStyle())
-      }
-      Text(notice).font(theme.typography.small).lineLimit(2)
-    }.padding(16)
+    }
   }
   private func header(short: Bool) -> some View {
     HStack {
@@ -65,12 +108,20 @@ private struct KeyCapsView: View {
     }
   }
 
-  private func key(_ value: String) -> some View {
+  private func modifier(_ title: String, name: String, flag: NSEvent.ModifierFlags) -> some View {
+    Text(title).font(theme.typography.body)
+      .padding(3)
+      .foregroundStyle(modifiers.contains(flag) ? theme.paper : theme.ink)
+      .background(modifiers.contains(flag) ? theme.ink : theme.paper)
+      .accessibilityLabel(name + (modifiers.contains(flag) ? " pressed" : " released"))
+  }
+  private func key(_ value: String, pressed: Bool = false) -> some View {
     Button {
       copy(value)
     } label: {
       Text(value).font(.system(size: 17)).frame(width: 31, height: 32)
-        .foregroundStyle(theme.ink).background(theme.paper)
+        .foregroundStyle(pressed ? theme.paper : theme.ink)
+        .background(pressed ? theme.ink : theme.paper)
         .overlay(RoundedRectangle(cornerRadius: 2).strokeBorder(theme.ink, lineWidth: 1))
     }.buttonStyle(.plain).accessibilityLabel("Copy " + value)
   }

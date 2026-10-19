@@ -40,6 +40,9 @@ import SwiftUI
 
 private struct PrintMonitorView: View {
   @Environment(\.miniTheme) private var theme
+  @Environment(\.miniWindowActive) private var active
+  @FocusState private var projectsFocused: Bool
+  @State private var focusRequest = 0
   @Environment(\.miniDisplay) private var display
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -84,7 +87,8 @@ private struct PrintMonitorView: View {
           if model.selectedProjects.count == 1, let project = model.selectedProjects.first {
             Button("History…") { history = project }.buttonStyle(RetroButtonStyle())
           }
-          Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle())
+          Button("Projects…") { managing = true }.buttonStyle(RetroButtonStyle()).focusable()
+            .focused($projectsFocused)
         }
         if compact {
           DisclosureGroup(model.filters.isActive ? "Filters (active)" : "Filters") {
@@ -199,25 +203,32 @@ private struct PrintMonitorView: View {
       }.padding(compact ? 10 : 16)
     }
     .onDisappear { manualRefreshTask?.cancel() }
+    .background(
+      MiniSheetFocusRestoration(request: focusRequest, active: active) { projectsFocused = true }
+    )
 
-    .sheet(item: $history) { project in
+    .sheet(item: $history, onDismiss: restoreFocus) { project in
       BuildHistoryView(project: project).environment(\.miniTheme, theme).miniSheet(width: 480)
     }
-    .sheet(item: $artifacts) { build in
+    .sheet(item: $artifacts, onDismiss: restoreFocus) { build in
       ArtifactListView(build: build).environment(\.miniTheme, theme).miniSheet(width: 480)
     }
-    .sheet(item: $clearing) { build in
+    .sheet(item: $clearing, onDismiss: restoreFocus) { build in
       ClearPaperJam(build: build, retry: retry).environment(\.miniTheme, theme).miniSheet(
         width: 520)
     }
-    .sheet(item: $inspecting) { build in
+    .sheet(item: $inspecting, onDismiss: restoreFocus) { build in
       JobDetailsView(build: build).id(build.id).environment(\.miniTheme, theme).miniSheet(
         width: 580)
     }
-    .sheet(isPresented: $managing) {
+    .sheet(isPresented: $managing, onDismiss: restoreFocus) {
       ProjectManager(model: model) { if model.paused { refreshManually() } }
         .environment(\.miniTheme, theme).miniSheet(width: min(550, display.logicalSize.width - 24))
     }
+  }
+  private func restoreFocus() {
+    projectsFocused = false
+    focusRequest += 1
   }
   private func filters(compact: Bool) -> some View {
     let layout =

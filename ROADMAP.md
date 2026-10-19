@@ -16,10 +16,10 @@ The [user guide](docs/USER_GUIDE.md) describes shipped behaviour; the [changelog
 
 - **Finder:** multi-step Undo/Redo, cross-volume Move, conflict replacement and transfers beyond the current 512 MB/10,000-entry limits. Each needs explicit review, cancellation and recovery behaviour; existing single-operation Undo/Redo must stay conservative.
 - **Accessibility:** complete the accessory keyboard matrix and spoken end-to-end VoiceOver audit. Continue checking small-window layouts and theme-specific controls as workflows grow.
-- **Hardware reliability:** complete actual full-system sleep/wake during an idle Mini window, attended cable hot-plug and a multi-hour Wokyis soak. The physical reading comparison supports 2× over 1.5× for the tested setup; remote screenshots do not establish legibility.
+- **Hardware reliability:** complete actual full-system sleep/wake during an idle Mini window, attended cable hot-plug (deferred by the user) and a multi-hour Wokyis soak. The physical reading comparison supports 2× over 1.5× for the tested setup; remote screenshots do not establish legibility.
 - **CI providers:** expand live history/artifact/retry coverage on configured Enterprise and self-hosted installations. GitLab has fixture coverage but no live test instance is currently available. Additional providers should use the existing provider contract.
 - **Packaging:** decide external compiled-plugin distribution when contributor needs justify it. Standalone macOS screensaver packaging, App Store distribution, cloud sync and broader platform compatibility remain future decisions.
-- **Accessory depth:** more keyboard layouts/live highlighting in Key Caps, richer painting tools and further era-specific theme controls can follow concrete user needs.
+- **Accessory depth:** additional keyboard layouts in Key Caps, richer painting tools and further era-specific theme controls can follow concrete user needs.
 
 ## Design and maintenance commitments
 

@@ -1,12 +1,12 @@
 # Validation records
 
-Current implementation checks and release evidence are recorded in [0.14 validation](0.14_VALIDATION.md). Its automated and development-Mac results do not imply that the same binary repeated every physical hardware test.
+Current implementation checks and release evidence are recorded in [0.15 validation](0.15_VALIDATION.md). Its automated and development-Mac results do not imply that the same binary repeated every physical hardware test.
 
 ## Open coverage
 
 - Spoken end-to-end VoiceOver and the complete accessory keyboard/graphics workflow matrix.
 - Actual full-system sleep/wake during an idle Mini maintenance window; display sleep and DarkWake are distinct observations.
-- Attended physical cable hot-plug and a multi-hour Wokyis soak.
+- Attended physical cable hot-plug (deferred by the user) and a multi-hour Wokyis soak.
 - Live GitLab/self-hosted and broader provider retry coverage with suitable endpoints and accounts.
 
 The physical reading comparison supports 2× over 1.5× for the tested Wokyis setup. Keep screenshots, virtual-display checks and physical-panel observations distinct.
@@ -15,6 +15,7 @@ The physical reading comparison supports 2× over 1.5× for the tested Wokyis se
 
 | Record | Coverage |
 | --- | --- |
+| [0.15](0.15_VALIDATION.md) | Local Key Caps input, broader dialog focus, recovery bounds and keyboard matrix; implementation candidate. |
 | [0.14](0.14_VALIDATION.md) | MiniPaint shapes/transforms, recovery, focus, lifecycle and compact-layout checks; signed release and tap evidence. |
 | [0.13](0.13_VALIDATION.md) | Batch filing/recovery, Finder Redo, event-driven focus, migration and compact-layout checks; signed release and tap evidence. |
 | [0.12](0.12_VALIDATION.md) | Collections, Calculator history/handoff, Depth behind glass and migration evidence. |

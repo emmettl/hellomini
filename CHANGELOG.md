@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.15.0 — Unreleased
+
+- Key Caps live US-position key/modifier highlighting while active, with local event observation and held-key cleanup on deactivation.
+- Explicit focus restoration for World Clock, desktop presets/backups, Print Monitor and Communications dialogs; World Clock search focus and Escape dismissal.
+- Preset recovery retry, previous compatible preference backup and late-corruption protection; bounded desktop-layout loads and Scrapbook save-time index checks.
+- Separate preset storage and desktop surface rendering; keyboard coverage and recovery-policy documentation.
+
 ## 0.14.0 — 2026-10-19
 
 - MiniPaint Line, Rectangle and Ellipse tools, with shape previews, outline/filled options and one Undo step per completed gesture.

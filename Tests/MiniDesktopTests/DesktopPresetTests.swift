@@ -105,3 +105,28 @@ import Testing
   #expect(!LivingDither.animates(reduceMotion: false, visible: true, awake: false, active: true))
   #expect(!LivingDither.animates(reduceMotion: false, visible: true, awake: true, active: false))
 }
+
+@Test @MainActor func presetWritesPreserveLateCorruptionAndKeepPreviousCompatibleData() throws {
+  let suite = "PresetLateRecovery.\(UUID())"
+  let defaults = try #require(UserDefaults(suiteName: suite))
+  defer { defaults.removePersistentDomain(forName: suite) }
+  let model = DesktopModel(applications: [], initiallyOpen: [], defaults: defaults)
+  let settings = AppearanceSettings(defaults: defaults)
+  let store = DesktopPresetStore(defaults: defaults)
+  store.save(name: "Original", model: model, settings: settings)
+  let original = try #require(defaults.data(forKey: DesktopPresetStore.key))
+  defaults.set(Data("broken".utf8), forKey: DesktopPresetStore.key)
+  store.save(name: "Second", model: model, settings: settings)
+  #expect(store.presets.count == 1 && store.error != nil)
+  #expect(defaults.data(forKey: DesktopPresetStore.key) == Data("broken".utf8))
+  defaults.set(original, forKey: DesktopPresetStore.key)
+  store.reload()
+  store.save(name: "Second", model: model, settings: settings)
+  #expect(store.presets.count == 2)
+  #expect(defaults.data(forKey: DesktopPresetStore.key + ".previous") == original)
+  defaults.set("unexpected type", forKey: DesktopPresetStore.key)
+  store.reload()
+  #expect(!store.readable)
+  store.remove(store.presets[0].id)
+  #expect(defaults.string(forKey: DesktopPresetStore.key) == "unexpected type")
+}

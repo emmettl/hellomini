@@ -7,6 +7,8 @@ struct ProjectManager: View {
   @Environment(\.dismiss) private var dismiss
   let model: ProjectQueue
   let added: () -> Void
+  @FocusState private var pathFocused: Bool
+  @State private var focusRequest = 0
   @State private var service = CIService.github
   @State private var path = ""
   @State private var customServer = false
@@ -23,7 +25,7 @@ struct ProjectManager: View {
           ForEach(CIService.allCases, id: \.self) { Text($0.rawValue).tag($0) }
         }.labelsHidden().frame(width: 110)
         TextField("owner/project", text: $path).accessibilityLabel("CI project path")
-          .onSubmit(add)
+          .focused($pathFocused).onSubmit(add)
         Button("Add", action: add).disabled(model.busy || model.storageError != nil)
           .miniControlBounds("projects.add")
       }
@@ -75,7 +77,17 @@ struct ProjectManager: View {
     .buttonStyle(RetroButtonStyle()).padding(20)
     .frame(width: min(550, display.logicalSize.width - 24))
     .foregroundStyle(theme.ink).background(theme.paper)
-    .sheet(item: $tokenProject) { project in
+    .onAppear { pathFocused = true }
+    .background(
+      MiniSheetFocusRestoration(request: focusRequest, active: true) { pathFocused = true }
+    )
+    .sheet(
+      item: $tokenProject,
+      onDismiss: {
+        pathFocused = false
+        focusRequest += 1
+      }
+    ) { project in
       ProjectTokenEditor(project: project).environment(\.miniTheme, theme).miniSheet(width: 470)
     }
     .confirmationDialog(

@@ -11,6 +11,8 @@ public struct DesktopView: View {
   @State private var showPresets = false
   @State private var model: DesktopModel
   @State private var dockFocusRequest = 0
+  @State private var sheetFocusRequest = 0
+  @FocusState private var launcherFocus: String?
   private let settings: AppearanceSettings
   private let themes: MiniThemeRegistry
   private let picture: DesktopPicture?
@@ -46,23 +48,7 @@ public struct DesktopView: View {
       let windowArea = DesktopDockLayout.windowArea(
         desktop: geometry.size, hasDock: theme.dock != nil)
       ZStack(alignment: .topLeading) {
-        ThemeSurfaceView(theme.desktop)
-        if let pattern = settings.customPattern {
-          Canvas { context, size in
-            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(theme.paper))
-            var dots = Path()
-            for y in stride(from: 0, to: Int(ceil(size.height)), by: 8) {
-              for x in stride(from: 0, to: Int(ceil(size.width)), by: 8) {
-                for py in 0..<8 {
-                  for px in 0..<8 where pattern.contains(x: px, y: py) {
-                    dots.addRect(CGRect(x: x + px, y: y + py, width: 1, height: 1))
-                  }
-                }
-              }
-            }
-            context.fill(dots, with: .color(theme.ink))
-          }.allowsHitTesting(false).accessibilityHidden(true)
-        }
+        DesktopSurface(theme: theme, pattern: settings.customPattern)
         if playfulness?.allows(DesktopEffects.livingDither.id) == true {
           LivingDither(
             windows: model.applications.filter { model.visibleIDs.contains($0.id) }.map {
@@ -97,6 +83,7 @@ public struct DesktopView: View {
                   .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .focusable().focused($launcherFocus, equals: app.id)
                 .accessibilityLabel(
                   "\(model.minimisedIDs.contains(app.id) ? "Restore" : "Launch") \(app.name)"
                 )
@@ -211,13 +198,28 @@ public struct DesktopView: View {
         "The saved desktop is unreadable or from a newer version. Its original data is preserved and layout saving is paused. Reset backs up the original and starts saving the current desktop with default window positions. App documents are retained. You can return here from the Window menu."
       )
     }
-    .sheet(isPresented: $model.showBackups) {
-      DesktopRecoveryView(model: model).environment(\.miniTheme, theme).miniSheet(width: 420)
-    }
-    .sheet(isPresented: $showPresets) {
-      DesktopPresetsView(store: presets, model: model, settings: settings, themes: themes)
-        .environment(\.miniTheme, theme).miniSheet(width: 460)
-    }
+    .background(
+      MiniSheetFocusRestoration(request: sheetFocusRequest, active: !suspended) {
+        if theme.dock != nil {
+          dockFocusRequest += 1
+        } else {
+          launcherFocus = model.active?.id ?? model.applications.first?.id
+        }
+      }
+    )
+    .sheet(
+      isPresented: $model.showBackups, onDismiss: restoreDesktopFocus,
+      content: {
+        DesktopRecoveryView(model: model).environment(\.miniTheme, theme).miniSheet(width: 420)
+      }
+    )
+    .sheet(
+      isPresented: $showPresets, onDismiss: restoreDesktopFocus,
+      content: {
+        DesktopPresetsView(store: presets, model: model, settings: settings, themes: themes)
+          .environment(\.miniTheme, theme).miniSheet(width: 460)
+      }
+    )
     .alert(
       "Hello Mini",
       isPresented: Binding(get: { actionError != nil }, set: { if !$0 { actionError = nil } })
@@ -229,6 +231,11 @@ public struct DesktopView: View {
     .environment(\.miniTheme, theme)
     .tint(theme.accent)
     .preferredColorScheme(theme.colorScheme)
+  }
+
+  private func restoreDesktopFocus() {
+    launcherFocus = nil
+    sheetFocusRequest += 1
   }
 
   private func isVisible(_ app: any MiniApplication, desktop: CGSize) -> Bool {

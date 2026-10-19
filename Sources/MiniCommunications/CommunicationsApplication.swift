@@ -68,6 +68,9 @@ private enum StationPage: String, CaseIterable {
 }
 
 private struct CommunicationsView: View {
+  @Environment(\.miniWindowActive) private var active
+  @FocusState private var setupFocused: Bool
+  @State private var focusRequest = 0
   @Environment(\.miniTheme) private var theme
   @Environment(\.miniWindowVisible) private var visible
   @Environment(\.miniDesktopSuspended) private var suspended
@@ -155,7 +158,16 @@ private struct CommunicationsView: View {
     .font(theme.typography.body)
     .foregroundStyle(theme.ink)
     .background(theme.paper)
-    .sheet(isPresented: $model.showSetup) { StationSetupView(model: model).miniSheet(width: 480) }
+    .background(
+      MiniSheetFocusRestoration(request: focusRequest, active: active) { setupFocused = true }
+    )
+    .sheet(
+      isPresented: $model.showSetup,
+      onDismiss: {
+        setupFocused = false
+        focusRequest += 1
+      }, content: { StationSetupView(model: model).miniSheet(width: 480) }
+    )
     .onChange(of: page) { _, page in if page == .chart { model.loadChart() } }
     .onChange(of: model.selection) { _, _ in if page == .chart { model.loadChart() } }
     .onChange(of: model.demo) { _, _ in if page == .chart { model.loadChart() } }
@@ -166,6 +178,7 @@ private struct CommunicationsView: View {
         Text(model.displayedConfiguration.name).font(theme.typography.title).lineLimit(1)
       }
       Button(compact ? "Setup…" : "Station Setup…") { model.showSetup = true }
+        .focusable().focused($setupFocused)
         .disabled(model.loadError != nil)
       Button(model.demo ? "End Simulation" : model.isConnected ? "Disconnect" : "Connect") {
         if model.isConnected { model.disconnect() } else { model.connect() }

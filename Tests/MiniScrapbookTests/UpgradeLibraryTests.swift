@@ -46,3 +46,23 @@ import Testing
   #expect(try await target.imageData(picture.id) == png)
   #expect(await target.collections == ["Empty", "Work"])
 }
+
+@Test func lateUnreadableIndexBlocksImageAndBackupReplacement() async throws {
+  let root = FileManager.default.temporaryDirectory.appendingPathComponent("LateIndex-\(UUID())")
+  try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: root) }
+  let store = ScrapbookStore(directory: root)
+  let note = Scrap(kind: .note, title: "Keep", text: "original")
+  try await store.save([note])
+  _ = try await store.load()
+  let index = root.appendingPathComponent("scrapbook.json")
+  let previous = root.appendingPathComponent("scrapbook.previous.json")
+  let sentinel = Data("preserved backup".utf8)
+  try sentinel.write(to: previous)
+  for bytes in [Data("broken".utf8), Data(#"{"version":99,"scraps":[]}"#.utf8)] {
+    try bytes.write(to: index)
+    await #expect(throws: (any Error).self) { try await store.save([note]) }
+    #expect(try Data(contentsOf: index) == bytes)
+    #expect(try Data(contentsOf: previous) == sentinel)
+  }
+}
